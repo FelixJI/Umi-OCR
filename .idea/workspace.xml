@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/PyStand_for_UmiOCR/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Umi-OCR.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/.settings" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/RUN_CLI.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/RUN_GUI.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/logs/log_2025-09-09.jsonl.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/test_speed.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/UmiOCR-data/themes.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/release.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" show_ignored="true" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;FelixJI&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/FelixJI/Umi-OCR.git&quot;,
+    &quot;accountId&quot;: &quot;82c980ed-32c7-4db9-8a65-d27bad76c2ff&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="32RpRVhFqbzlKuWW7mc4Od1dJwN" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.main.executor": "Debug",
+    "Python.run.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="" />
+      <created>1757393230469</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757393230469</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1757470835364" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
+    <SUITE FILE_PATH="coverage/Umi_OCR$run.coverage" NAME="run 覆盖结果" MODIFIED="1757469077451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data/py_src" />
+  </component>
+</project>

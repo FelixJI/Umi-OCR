@@ -1,0 +1,46 @@
+[Global]
+configs_advanced=false
+shortcut.desktop=false
+shortcut.startMenu=false
+shortcut.startup=false
+ui.theme=Default Light
+ui.fontFamily=Microsoft YaHei
+ui.dataFontFamily=Microsoft YaHei
+ui.scale=1
+ui.disableEffect=false
+ui.imgShowOverlay=true
+window.startupInvisible=false
+window.isMainWindowTop=false
+window.barIsLock=false
+window.closeWin2Hide=true
+window.hideTrayIcon=false
+window.simpleNotificationType=inside
+window.geometry="240,132,800,500"
+window.messageMemory=@Variant(\0\0\0\x7f\0\0\0\tQJSValue\0\0\0\0\0\0\0\0\t\0\0\0\0)
+window.doubleLayout=@Variant(\0\0\0\x7f\0\0\0\tQJSValue\0\0\0\0\0\0\0\0\b\0\0\0\0)
+screenshot.hideWindow=true
+screenshot.hideWindowTime=0.2
+server.enable=true
+server.host=127.0.0.1
+server.port=1224
+logs.saveLogLevel=ERROR
+ocr.api=win7_x64_RapidOCR-json
+ocr.win7_x64_RapidOCR-json.numThread=16
+
+[ScreenshotOCR]
+configs_advanced=false
+ocr.angle=false
+ocr.language=\x7b80\x4f53\x4e2d\x6587
+ocr.maxSideLen=1024
+tbpu.parser=multi_para
+hotkey.screenshot=win+alt+c
+hotkey.paste=win+alt+v
+hotkey.reScreenshot=
+action.copy=false
+action.popMainWindow=true
+other.simpleNotificationType=default
+
+[TabPageManager]
+openPageList=@Variant(\0\0\0\t\0\0\0\x1\0\0\0\n\0\0\0>\0S\0\x63\0r\0\x65\0\x65\0n\0s\0h\0o\0t\0O\0\x43\0R\0/\0S\0\x63\0r\0\x65\0\x65\0n\0s\0h\0o\0t\0O\0\x43\0R\0.\0q\0m\0l)
+refresh=true
+showPageIndex=0
