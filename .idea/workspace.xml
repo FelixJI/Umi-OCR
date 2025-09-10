@@ -4,25 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/PyStand_for_UmiOCR/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Umi-OCR.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/.settings" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/RUN_CLI.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/RUN_GUI.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/logs/log_2025-09-09.jsonl.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/test_speed.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UmiOCR-data/themes.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/release.py" afterDir="false" />
+    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="新增运行环境-Windows">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" show_ignored="true" />
+  <component name="ChangesViewManager" show_ignored="true">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -53,7 +49,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable"
+    "settings.editor.selected.configurable": "preferences.pathVariables"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -63,6 +59,9 @@
       </set>
     </attachedChunks>
   </component>
+  <component name="SvnConfiguration">
+    <configuration>C:\Users\felji\AppData\Roaming\Subversion</configuration>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
       <changelist id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="" />
@@ -71,6 +70,15 @@
       <option name="presentableId" value="Default" />
       <updated>1757393230469</updated>
     </task>
+    <task id="LOCAL-00001" summary="新增运行环境-Windows">
+      <option name="closed" value="true" />
+      <created>1757471846435</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1757471846435</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -83,6 +91,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="新增运行环境-Windows" />
+    <option name="LAST_COMMIT_MESSAGE" value="新增运行环境-Windows" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1757470835364" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
