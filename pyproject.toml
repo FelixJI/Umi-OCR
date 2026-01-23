@@ -1,0 +1,33 @@
+[project]
+name = "Umi-OCR"
+version = "2.1.5"
+description = "免费、离线的批量OCR图片转文字工具"
+readme = "README.md"
+requires-python = ">=3.10"
+# 仅支持 Windows 10+
+
+dependencies = [
+    # PDF 处理
+    "pymupdf>=1.26.0",
+
+    # 字体子集
+    "fonttools>=4.61.0",
+
+    # 图像处理
+    "pillow>=12.0.0",
+
+    # 系统信息
+    "psutil>=7.2.0",
+
+    # 键鼠事件（替换 pynput，移除 six 依赖）
+    "keyboard>=0.13.5",
+
+    # UI 界面 (Qt6)
+    "PySide6>=6.10.0",
+
+    # 二维码解析
+    "zxing-cpp>=2.3.0",
+]
+
+[dependency-groups]
+dev = []

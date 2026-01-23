@@ -1,16 +1,14 @@
-# 根据当前环境，提供不同平台对象
+# Umi-OCR 平台模块
+# 仅支持 Windows 10+
+
 import sys
 
-# 根据当前操作系统选择要导入的模块
-_plat = sys.platform
-if _plat.startswith("win32"):
-    from .win32.win32_api import Api as _Platform
-elif _plat.startswith("linux"):
-    from .linux.linux_api import Api as _Platform
-elif _plat.startswith("darwin"):
-    raise ImportError("尚未支持macos系统！")
-else:
-    raise ImportError(f"未知系统：{_plat}")
+# 检查操作系统
+if not sys.platform.startswith("win32"):
+    raise ImportError(f"Umi-OCR 仅支持 Windows 系统。当前系统：{sys.platform}")
+
+# 导入 Windows API
+from .win32.win32_api import Api
 
 # 构造单例：平台对象
-Platform = _Platform()
+Platform = Api()

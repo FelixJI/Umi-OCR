@@ -7,7 +7,7 @@
 前端页面访问各种后端功能，必须靠这个控制器作为中转。
 """
 
-from PySide2.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot
 
 from umi_log import logger
 
@@ -23,8 +23,7 @@ PageClass = [BatchOCR, ScreenshotOCR, QRCode, BatchDOC]
 
 
 TagPageConnObj = None  # 记录实例
-# PySide2 没有 qmlRegisterSingletonType，PyQt5或者PySide6中才有。
-# 不过没关系，我们手动维护控制器的单例状态就是了
+# 手动维护控制器的单例状态（虽然 PySide6 已支持 qmlRegisterSingletonType）
 
 
 # 页面连接器类（手动单例）

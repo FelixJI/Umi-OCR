@@ -10,7 +10,7 @@ from .tools import getDataText
 class OutputCsv(Output):
     def __init__(self, argd):
         self.encodings = [  # 保存编码优先级
-            "ansi",  # Windows系统本地编码。在linux和macos下会抛出异常
+            "ansi",  # Windows 系统本地编码
             "ascii",  # 纯英
             "gbk",  # 简中
             "big5",  # 繁中

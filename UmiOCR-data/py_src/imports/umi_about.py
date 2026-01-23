@@ -83,18 +83,12 @@ def init(app_path=""):
         app_home = ""
         app_dir = ""
         logger.warning("未能获取程序入口路径。")
-    # 简短的平台代号
+    # 简短的平台代号（仅支持 Windows）
     _plat = sys.platform
     if _plat.startswith("win32"):
         _system = "win32"
-    elif _plat.startswith("linux"):
-        _system = "linux"
-    elif _plat.startswith("darwin"):
-        _system = "darwin"
-    elif _plat and isinstance(_plat, str):
-        _system = _plat
     else:
-        _system = "unknow"
+        _system = _plat if _plat else "unknown"
     u["app"] = {
         # 程序入口
         "path": app_path,

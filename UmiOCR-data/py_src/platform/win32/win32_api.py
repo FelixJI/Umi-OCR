@@ -4,7 +4,7 @@
 
 import os
 import subprocess
-from PySide2.QtCore import QStandardPaths as Qsp, QFile, QFileInfo
+from PySide6.QtCore import QStandardPaths as Qsp, QFile, QFileInfo
 
 from umi_log import logger
 from umi_about import UmiAbout
@@ -108,17 +108,10 @@ class Api:
     HardwareCtrl = _HardwareCtrl()
 
     # 根据系统及硬件，判断最适合的渲染器类型
+    # 仅支持 Windows 10+，直接使用 GLES
     @staticmethod
     def getOpenGLUse():
-        import platform
-
-        # 判断系统版本，若 >win10 则使用 GLES ，否则使用软渲染
-        version = platform.version()
-        if "." in version:
-            ver = version.split(".")[0]
-            if ver.isdigit() and int(ver) >= 10:
-                return "AA_UseOpenGLES"
-        return "AA_UseSoftwareOpenGL"
+        return "AA_UseOpenGLES"
 
     # 键值转键名
     @staticmethod
