@@ -1,7 +1,7 @@
 {
     "i18n": "zh_CN",
-    "opengl": "AA_UseOpenGLES",
+    "opengl": "AA_UseSoftwareOpenGL",
     "server_port": 1224,
-    "last_pid": 84900,
-    "last_ptime": "1769073109.0012944"
+    "last_pid": 37504,
+    "last_ptime": "1769149583.0592227"
 }

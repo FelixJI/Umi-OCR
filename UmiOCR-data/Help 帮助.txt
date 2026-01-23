@@ -31,10 +31,10 @@ C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
 
 # 弹窗报错 Failed to create OpenGL context ……
 
-1. 下载运行库：
+1. 下载运行库（如需软件渲染）：
 https://github.com/hiroi-sora/Umi-OCR_v2/files/13167436/opengl32sw_64.zip
 2. 解压，将其中的dll文件放置于：
-UmiOCR-data/site-packages/PySide2/
+（使用 PySide6 时通常不需要手动操作）
 
 ================================
 

@@ -3,8 +3,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Qt.labs.qmlmodels 1.0 // 表格
-import QtGraphicalEffects 1.15 // 子元素圆角
-import QtQuick.Dialogs 1.3 // 文件对话框
+import Qt5Compat.GraphicalEffects // 子元素圆角
+import QtQuick.Dialogs // 文件对话框 (Qt6)
 
 Item {
     id: fTableRoot
@@ -413,14 +413,14 @@ Item {
     }
 
     // 文件选择对话框
-    // QT-5.15.2 会报错：“Model size of -225 is less than 0”，不影响使用。
-    // QT-5.15.5 修复了这个Bug，但是PySide2尚未更新到这个版本号。只能先忍忍了
+    // QT-5.15.2 会报错："Model size of -225 is less than 0"，不影响使用。
+    // QT-5.15.5 / PySide6 修复了这个Bug。
     // https://bugreports.qt.io/browse/QTBUG-92444
     FileDialog_ {
         id: fileDialog
         title: fileDialogTitle
         nameFilters: fileDialogNameFilters
-        folder: shortcuts.pictures
+        currentFolder: shortcuts.pictures  // Qt6
         selectMultiple: true // 多选
         onAccepted: {
             addPaths(fileDialog.fileUrls_)

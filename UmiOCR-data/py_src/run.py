@@ -47,7 +47,21 @@ import site
 # 启动主qml。工作路径必须为 UmiOCR-data
 def runQml(engineAddImportPath):
     # ==================== 0. 导入包 ====================
-    from PySide6.QtCore import Qt, qInstallMessageHandler
+    # 首先设置环境变量（在任何 Qt 类导入之前）
+    try:
+        import PySide6
+        pyside_path = os.path.dirname(PySide6.__file__)
+        qml_path = os.path.join(pyside_path, "qml")
+        plugins_path = os.path.join(pyside_path, "plugins")
+        # 设置环境变量（Windows 用 ; 分隔，Linux 用 :）
+        import os as os_module
+        sep = ";" if os_module.name == "nt" else ":"
+        os.environ["QML2_IMPORT_PATH"] = qml_path + sep + os.path.abspath("qt_res/qml")
+        os.environ["QT_PLUGIN_PATH"] = plugins_path + sep + pyside_path + sep + qml_path
+    except Exception:
+        pass  # logger 还未导入，忽略错误
+
+    from PySide6.QtCore import Qt, qInstallMessageHandler, QCoreApplication
     from PySide6.QtGui import QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
 
@@ -113,6 +127,17 @@ def runQml(engineAddImportPath):
     engine = QQmlApplicationEngine()
     if engineAddImportPath:
         engine.addImportPath(engineAddImportPath)  # 相对路径重新导入包
+    # 添加当前项目的 qml 目录
+    engine.addImportPath("qt_res/qml")
+    # 确保能找到 PySide6 的 Qt5Compat 模块
+    try:
+        import PySide6
+        pyside_path = os.path.dirname(PySide6.__file__)
+        qml_path = os.path.join(pyside_path, "qml")
+        engine.addImportPath(qml_path)
+        logger.info(f"Added QML import path: {qml_path}")
+    except Exception as e:
+        logger.warning(f"Failed to add Qt5Compat path: {e}")
     engine.addImageProvider("pixmapprovider", PixmapProvider)  # 注册图片提供器
     rootContext = engine.rootContext()  # 注册常量
     rootContext.setContextProperty("UmiAbout", UmiAbout)

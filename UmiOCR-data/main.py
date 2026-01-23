@@ -40,12 +40,11 @@ SOFTWARE.
 - 重定向标准输入输出流
 - 指定工作目录为 "/UmiOCR-data"
 - 添加Python库搜索目录 "site-packages"
-- 添加PySide2插件搜索目录 "PySide2/plugins"
+- 添加PySide6插件搜索目录（如使用虚拟环境则自动查找）
 
 环境初始化后，调用正式入口 py_src/run.py 启动软件。
 
-耗时分析：
-runtime/python.exe -X importtime main.py
+注意：Nuitka 打包时会使用 nuitka_main.py 作为入口，忽略此文件。
 """
 
 
@@ -115,9 +114,10 @@ def initRuntimeEnvironment():
         if os.path.exists(path):
             site.addsitedir(path)
     # 初始化Qt搜索路径为相对路径，避免上层目录存在中文编码
-    from PySide2.QtCore import QCoreApplication
+    from PySide6.QtCore import QCoreApplication
 
-    QCoreApplication.addLibraryPath("./site-packages/PySide2/plugins")
+    # PySide6 在虚拟环境中，通常自动找到插件路径
+    # 如需手动指定，可使用：QCoreApplication.addLibraryPath("./site-packages/PySide6/plugins")
 
 
 if __name__ == "__main__":
@@ -141,7 +141,8 @@ if __name__ == "__main__":
         # 启动正式入口
         from py_src.run import main
 
-        main(app_path=app_path, engineAddImportPath="./site-packages/PySide2/qml")
+        # 启动程序（PySide6 自动查找 QML 模块）
+        main(app_path=app_path, engineAddImportPath=None)
     except Exception:
         err = traceback.format_exc()
         from py_src.imports.umi_log import logger, Logs_Dir

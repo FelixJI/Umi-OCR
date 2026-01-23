@@ -1,5 +1,5 @@
 import QtQuick 2.0
-import QtGraphicalEffects 1.15 // 改颜色
+import Qt5Compat.GraphicalEffects // 改颜色
 
 
 Item {

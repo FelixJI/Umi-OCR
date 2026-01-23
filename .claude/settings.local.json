@@ -6,7 +6,16 @@
       "Bash(python:*)",
       "Bash(.venv/Scripts/python.exe -m uv pip install:*)",
       "Bash(.venv/Scripts/python.exe:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__web-search-prime__webSearchPrime",
+      "mcp__web-reader__webReader",
+      "Bash(dir:*)",
+      "Bash(set:*)",
+      "Bash(qmlimportscanner.exe:*)",
+      "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\qmlimportscanner.exe\")",
+      "Bash(export:*)",
+      "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\lib\\\\site-packages\\\\PySide6\\\\qmlimportscanner.exe\")",
+      "Bash(mklink /J \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\UmiOCR-data\\\\qt_res\\\\qml\\\\Qt5Compat\" \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\lib\\\\site-packages\\\\PySide6\\\\qml\\\\Qt5Compat\")"
     ]
   }
 }

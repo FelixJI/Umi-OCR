@@ -168,7 +168,7 @@ Item {
                 https://bugreports.qt.io/browse/QTBUG-103718
                 https://codereview.qt-project.org/c/qt/qtdeclarative/+/606008
                 上述链接指出，qt新版本或dev分支已为 TextEdit 补上 textEdited 信号。
-                但是，pyside2暂未更新此版本。
+                PySide6 已包含此修复。
                 本项目作为临时措施，在下文用一些先验条件来判断当前的修改是否有可能由用户发起，
                 以此降低误判的概率。
                 */

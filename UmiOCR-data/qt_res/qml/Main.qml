@@ -5,7 +5,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
-import QtGraphicalEffects 1.15
+import Qt5Compat.GraphicalEffects
 import Qt.labs.settings 1.1
 import MissionConnector 1.0 // Python任务连接器
 import KeyMouseConnector 1.0 // 键盘/鼠标连接器

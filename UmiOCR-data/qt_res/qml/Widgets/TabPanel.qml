@@ -4,7 +4,7 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtGraphicalEffects 1.15
+import Qt5Compat.GraphicalEffects
 
 Item {
     property alias currentIndex: bar.currentIndex // 当前下标

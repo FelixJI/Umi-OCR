@@ -87,7 +87,7 @@ Rectangle {
         title: qsTr("保存图片")
         selectExisting: false
         selectFolder: false
-        folder: shortcuts.desktop // 默认放桌面
+        currentFolder: shortcuts.desktop // Qt6 默认放桌面
         nameFilters: ["*.png", "*.jpg"]
         onAccepted: {
             if(!fileUrl) {

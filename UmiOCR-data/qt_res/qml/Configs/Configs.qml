@@ -84,7 +84,7 @@ configDict为嵌套形式，而originDict与valueDict为展开形式的单层字
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Dialogs 1.3 // 文件对话框
+import QtQuick.Dialogs // 文件对话框 (Qt6)
 import "../Widgets"
 
 Item {
@@ -1025,7 +1025,7 @@ Item {
                         selectFolder: origin.selectFolder
                         selectMultiple: false  // 始终禁止多选
                         nameFilters: origin.nameFilters
-                        folder: shortcuts.desktop
+                        currentFolder: shortcuts.desktop  // Qt6 使用 currentFolder
                         onAccepted: {
                             if(fileDialog.fileUrls_.length > 0) {
                                 textInput.text = fileDialog.fileUrls_[0] // 设置对话框文本

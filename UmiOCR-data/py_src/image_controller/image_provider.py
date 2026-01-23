@@ -6,14 +6,19 @@ import os
 from uuid import uuid4  # 唯一ID
 from urllib.parse import unquote
 from PySide6.QtCore import Qt, QByteArray, QBuffer
-from PySide6.QtGui import QPixmap, QImage, QPainter, QClipboard
+from PySide6.QtGui import QPixmap, QImage, QPainter
 from PySide6.QtQuick import QQuickImageProvider
 
 from umi_log import logger
 from . import ImageQt
 from ..platform import Platform
 
-Clipboard = QClipboard()  # 剪贴板
+# PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
+def getClipboard():
+    from PySide6.QtWidgets import QApplication
+    return QApplication.clipboard()
+
+Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
 
 # Pixmap型图片提供器
@@ -171,9 +176,9 @@ def copyImage(path):
         return data
     try:
         if typ == "pixmap":
-            Clipboard.setPixmap(data)
+            getClipboard().setPixmap(data)
         elif typ == "qimage":
-            Clipboard.setImage(data)
+            getClipboard().setImage(data)
         return "[Success]"
     except Exception as e:
         return f"[Error] can't copy: {e}\n{path}"

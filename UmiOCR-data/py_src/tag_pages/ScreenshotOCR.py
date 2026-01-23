@@ -2,8 +2,6 @@
 # =============== 截图OCR页 ===============
 # ========================================
 
-from PySide6.QtGui import QClipboard  # 截图 剪贴板
-
 from umi_log import logger
 from .page import Page  # 页基类
 from ..image_controller.image_provider import PixmapProvider  # 图片提供器
@@ -12,7 +10,12 @@ from ..event_bus.pubsub_service import PubSubService  # 发布/订阅管理器
 
 # 只要触发了截图/粘贴/图片识图任务，并结束任务（无论是否成功），都发送 <<ScreenshotOcrEnd>> 事件。
 
-Clipboard = QClipboard()  # 剪贴板
+# PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
+def getClipboard():
+    from PySide6.QtWidgets import QApplication
+    return QApplication.clipboard()
+
+Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
 
 class ScreenshotOCR(Page):

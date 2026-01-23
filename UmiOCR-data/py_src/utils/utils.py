@@ -11,7 +11,12 @@ from urllib.parse import unquote  # 路径解码
 
 from umi_log import logger
 
-Clipboard = QClipboard()  # 剪贴板
+# PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
+def getClipboard():
+    from PySide6.QtWidgets import QApplication
+    return QApplication.clipboard()
+
+Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
 
 # 传入文件名，检测是否含非法字符。没问题返回True
@@ -25,7 +30,7 @@ def allowedFileName(fn):
 
 # 复制文本到剪贴板
 def copyText(text):
-    Clipboard.setText(text)
+    getClipboard().setText(text)
 
 
 # QUrl列表 转 String列表

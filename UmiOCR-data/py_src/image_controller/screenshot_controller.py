@@ -6,9 +6,14 @@ from ..image_controller.image_provider import PixmapProvider  # 图片提供器
 from ..utils.file_finder import findFiles
 
 import time
-from PySide6.QtGui import QGuiApplication, QClipboard, QImage, QPixmap  # 截图 剪贴板
+from PySide6.QtGui import QGuiApplication, QImage, QPixmap  # 截图
 
-Clipboard = QClipboard()  # 剪贴板
+# PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
+def getClipboard():
+    from PySide6.QtWidgets import QApplication
+    return QApplication.clipboard()
+
+Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
 
 class _ScreenshotControllerClass:
@@ -72,11 +77,11 @@ class _ScreenshotControllerClass:
     # type: imgID paths text
     def getPaste(self):
         # 获取剪贴板数据
-        mimeData = Clipboard.mimeData()
+        mimeData = getClipboard().mimeData()
         res = {"type": ""}  # 结果字典
         # 检查剪贴板的内容，若是图片，则提取它并扔给OCR
         if mimeData.hasImage():
-            image = Clipboard.image()
+            image = getClipboard().image()
             pixmap = QPixmap.fromImage(image)
             pasteID = PixmapProvider.addPixmap(pixmap)  # 存入提供器
             res = {"type": "imgID", "imgID": pasteID}

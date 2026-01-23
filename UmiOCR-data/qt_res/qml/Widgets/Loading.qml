@@ -3,7 +3,7 @@
 // ==============================================
 
 import QtQuick 2.15
-import QtGraphicalEffects 1.15 // 阴影
+import Qt5Compat.GraphicalEffects // 阴影
 
 Item {
     id: lRoot
