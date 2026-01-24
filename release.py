@@ -6,9 +6,14 @@ import os
 import json
 import shutil
 import argparse
-import subprocess
+from pathlib import Path
 
 # 定义参数
+
+# 定义目录变量
+PROJECT_ROOT = Path(__file__).parent
+SOURCE_DIR = PROJECT_ROOT / "src"
+RESOURCES_DIR = PROJECT_ROOT / "resources"
 parser = argparse.ArgumentParser(description="Umi-OCR Release 生成发布包")
 # 是否打压缩包
 parser.add_argument(
@@ -34,12 +39,12 @@ parser.add_argument(
     default="Umi-OCR.exe",
     help="[选填] 启动器，默认为 Umi-OCR.exe",
 )
-# 保留的内容
-parser.add_argument(
-    "--datas",
-    default="i18n,plugins,py_src,qt_res,runtime,site-packages,main.py,RUN_CLI.bat,RUN_GUI.bat,test_speed.bat,about.json,Help 帮助.txt,themes.json",
-    help="[选填] 内容目录文件选取，格式：文件1,文件2,文件3……",
-)
+    # 保留的内容
+    parser.add_argument(
+        "--datas",
+        default="i18n,resources,qml,runtime,site-packages,main.py",
+        help="[选填] 内容目录文件选取，格式：文件1,文件2,文件3……",
+    )
 # 插件区分
 parser.add_argument(
     "--plugins",
@@ -77,11 +82,20 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # 检查必要文件和目录
-print("=== 检查前置条件 ===")
-if not os.path.exists(args.run):
-    print(f"错误: 启动器不存在: {args.run}")
-    print("请先使用 build_nuitka.py 或其他方式构建 Umi-OCR.exe")
-    exit(1)
+    print("=== 检查前置条件 ===")
+    if not os.path.exists(args.run):
+        print(f"错误: 启动器不存在: {args.run}")
+        print("请先使用 build_nuitka.py 或其他方式构建 Umi-OCR.exe")
+        exit(1)
+    if not os.path.exists(args.about):
+        print(f"错误: 版本文件不存在: {args.about}")
+        exit(1)
+    if not os.path.exists(SOURCE_DIR):
+        print(f"错误: 源码目录不存在: {SOURCE_DIR}")
+        exit(1)
+    if not os.path.exists(RESOURCES_DIR):
+        print(f"错误: 资源目录不存在: {RESOURCES_DIR}")
+        exit(1)
 
 if not os.path.exists(args.about):
     print(f"错误: 版本文件不存在: {args.about}")

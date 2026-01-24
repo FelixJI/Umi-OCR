@@ -17,6 +17,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent
 DATA_DIR = PROJECT_ROOT / "UmiOCR-data"
 ABOUT_FILE = DATA_DIR / "about.json"
+SOURCE_DIR = PROJECT_ROOT / "src"
+RESOURCES_DIR = PROJECT_ROOT / "resources"
 BUILD_DIR = PROJECT_ROOT / "build_nuitka"
 DIST_DIR = PROJECT_ROOT / "dist_nuitka"
 TOOLS_7Z = PROJECT_ROOT / "dev-tools" / "7z"
@@ -92,6 +94,14 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         shutil.rmtree(BUILD_DIR)
         print(f"清理构建目录: {BUILD_DIR}")
 
+    # 确保源码目录存在
+    if not SOURCE_DIR.exists():
+        SOURCE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 确保资源目录存在
+    if not RESOURCES_DIR.exists():
+        RESOURCES_DIR.mkdir(parents=True, exist_ok=True)
+
     # 确保输出目录存在
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -116,17 +126,14 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         "--include-package=PySide6.QtQuickControls2",
         "--include-package=PySide6.QtWebEngineWidgets",
         "--include-package-data=PySide6",
-        "--include-data-files=UmiOCR-data/qt_res=qt_res",
-        "--include-data-files=UmiOCR-data/i18n=i18n",
-        "--include-data-files=UmiOCR-data/themes.json=themes.json",
-        "--include-data-files=UmiOCR-data/about.json=about.json",
-        f"--windows-icon-from-ico={DATA_DIR / 'qt_res/images/icons/umiocr.ico'}",
+        f"--include-data-files=resources/qml=qml",
+        f"--include-data-files=resources/i18n=i18n",
+        f"--include-data-files=resources/themes.json=themes.json",
+        f"--include-data-files=resources/about.json=about.json",
+        f"--windows-icon-from-ico={RESOURCES_DIR / 'images/icons/umiocr.ico'}",
         "--company-name=Umi-OCR",
         f"--product-name={about['name']}",
         f"--file-version={version.replace('v', '').replace('.', ',')}",
-        "--file-description=OCR software, free and offline",
-        f"--include-data-files=PySide6/Qt6/plugins=plugins",
-        f"--include-data-files=PySide6/Qt6/qml=qml",
         "--windows-disable-console",
         "--follow-imports",
         "--include-module=keyboard",
@@ -139,20 +146,12 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         str(entry_script),
     ]
 
-    # 添加插件
-    if plugins:
-        for plugin in plugins:
-            plugin_path = DATA_DIR / "plugins" / plugin
-            if plugin_path.exists():
-                nuitka_args.append(
-                    f"--include-data-files=UmiOCR-data/plugins/{plugin}=plugins/{plugin}"
-                )
-                print(f"包含插件: {plugin}")
+    # 添加插件（移除 - 旧系统已内置 PaddleOCR）
+    # 插件系统已移除，PaddleOCR 已内置
 
     print("=== Nuitka 编译 ===")
     print(f"版本: {version}")
     print(f"输出目录: {output_dir}")
-    print(f"插件: {plugins if plugins else '无'}")
     print()
 
     # 执行 Nuitka
@@ -177,17 +176,17 @@ def copy_additional_files(output_dir: Path, plugins: list | None = None):
     ]
 
     for script in scripts_to_copy:
-        src = DATA_DIR / script
+        src = SOURCE_DIR / script
         if src.exists():
             shutil.copy2(src, output_dir / script)
             print(f"复制: {script}")
 
-    # 复制帮助文件（尝试多种可能的文件名）
+    # 复制帮助文件（从源码目录，已移至 src/）
     help_files = ["帮助.txt", "Help 帮助.txt"]
     for help_file in help_files:
-        src = DATA_DIR / help_file
+        src = SOURCE_DIR / help_file
         if src.exists():
-            shutil.copy2(src, output_dir / "帮助.txt")
+            shutil.copy2(src, output_dir / help_file)
             print(f"复制: {help_file}")
             break
 
