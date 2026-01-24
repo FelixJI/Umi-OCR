@@ -64,6 +64,7 @@ def runQml(engineAddImportPath):
     from PySide6.QtCore import Qt, qInstallMessageHandler, QCoreApplication
     from PySide6.QtGui import QGuiApplication
     from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
+    from PySide6.QtQuickControls2 import QQuickStyle
 
     from umi_about import UmiAbout  # 项目信息
     from umi_log import get_qt_message_handler, logger  # 日志
@@ -85,6 +86,10 @@ def runQml(engineAddImportPath):
     qtApp.setApplicationName(UmiAbout["name"])
     qtApp.setOrganizationName(UmiAbout["authors"][0]["name"])
     qtApp.setOrganizationDomain(UmiAbout["url"]["home"])
+
+    # ==================== 2.1 设置 QuickControls 样式 ====================
+    # 使用 Basic 样式以避免 Windows 原生样式的自定义限制
+    QQuickStyle.setStyle("Basic")
 
     # ==================== 3. OpenGlES 兼容性检查 ====================
     app_opengl.checkOpengl()

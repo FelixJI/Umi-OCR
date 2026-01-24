@@ -4,38 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="chore: 更新IDE配置和排除.venv目录，更新依赖，删除Linux和Windows7平台支持。">
+    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="新增运行环境-Windows">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Umi-OCR.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Umi-OCR_Rapid_v2.1.5.7z" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/PyStand.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/PyStand.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/Readme.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/appicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PyStand_for_UmiOCR/resource.rc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UmiOCR-data/.settings" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/.settings" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/Help 帮助.txt" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/Help 帮助.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/image_provider.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/image_provider.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/screenshot_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/screenshot_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UmiOCR-data/RUN_CLI.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/UmiOCR-data/RUN_GUI.bat" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/tag_pages/ScreenshotOCR.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/tag_pages/ScreenshotOCR.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Configs.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Configs.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/ImageManager/ScreenshotWindowComp.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/ImageManager/ScreenshotWindowComp.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Settings_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Settings_.qml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Main.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Main.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageBox.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageBox.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimple.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimple.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimpleComp.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimpleComp.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/PopupManager.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/PopupManager.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/TabBar_/TabButton_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/TabBar_/TabButton_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FileDialog_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FileDialog_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FilesTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FilesTableView.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/HProgressBar.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/HProgressBar.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Icon_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Icon_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ImageViewer/ImageScale.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ImageViewer/ImageScale.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Loading.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Loading.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ModalLayer.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ModalLayer.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ResultLayout/ResultsTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ResultLayout/ResultsTableView.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/TabPanel.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/TabPanel.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UmiOCR-data/test_speed.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_nuitka.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_nuitka.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev-tools/7z/7z.sfx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev-tools/7z/7zr.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/release.py" beforeDir="false" afterPath="$PROJECT_DIR$/release.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,12 +47,12 @@
     &quot;assignee&quot;: &quot;FelixJI&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/FelixJI/Umi-OCR.git&quot;,
-    &quot;accountId&quot;: &quot;82c980ed-32c7-4db9-8a65-d27bad76c2ff&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/FelixJI/Umi-OCR.git",
+    "accountId": "0cd8c651-f00d-4ccc-a6a5-0db55967f381"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -71,22 +61,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/felji/PycharmProjects/Umi-OCR&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.main.executor": "Run",
+    "Python.run.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/felji/PycharmProjects/Umi-OCR/UmiOCR-data/plugins/win_linux_PaddleOCR-json",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\felji\PycharmProjects\Umi-OCR\UmiOCR-data\plugins\win_linux_PaddleOCR-json" />
       <recent name="C:\Users\felji\PycharmProjects\Umi-OCR" />
     </key>
   </component>
@@ -174,6 +166,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Umi_OCR$run.coverage" NAME="run 覆盖结果" MODIFIED="1757469077451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data/py_src" />
-    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769149892107" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
+    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769227632429" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
   </component>
 </project>

@@ -37,19 +37,19 @@ parser.add_argument(
 # 保留的内容
 parser.add_argument(
     "--datas",
-    default="i18n,plugins,py_src,qt_res,runtime,site-packages,main.py,RUN_CLI.bat,RUN_GUI.bat,test_speed.bat,about.json,帮助.txt",
+    default="i18n,plugins,py_src,qt_res,runtime,site-packages,main.py,RUN_CLI.bat,RUN_GUI.bat,test_speed.bat,about.json,Help 帮助.txt,themes.json",
     help="[选填] 内容目录文件选取，格式：文件1,文件2,文件3……",
 )
 # 插件区分
 parser.add_argument(
     "--plugins",
-    default="Paddle,win7_x64_PaddleOCR-json|Rapid,win7_x64_RapidOCR-json",
+    default="Rapid,win7_x64_RapidOCR-json",
     help="[选填] 插件选取，格式：打包名1,插件1,插件2|打包名2,插件2,插件3",
 )
 # 要屏蔽的目录
 parser.add_argument(
     "--ignores",
-    default="__pycache__,win7_x64_Pix2Text",
+    default="__pycache__,temp_doc,logs,.venv,.git,.idea,.vscode",
     help='[选填] 要排除的目录名称，以","划分',
 )
 # 7z工具路径
@@ -76,6 +76,23 @@ args = parser.parse_args()
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
+# 检查必要文件和目录
+print("=== 检查前置条件 ===")
+if not os.path.exists(args.run):
+    print(f"错误: 启动器不存在: {args.run}")
+    print("请先使用 build_nuitka.py 或其他方式构建 Umi-OCR.exe")
+    exit(1)
+
+if not os.path.exists(args.about):
+    print(f"错误: 版本文件不存在: {args.about}")
+    exit(1)
+
+if not os.path.exists("UmiOCR-data"):
+    print("错误: UmiOCR-data 目录不存在")
+    exit(1)
+
+print("前置条件检查通过\n")
+
 
 # 拷贝所有文件
 def copy_all():
@@ -88,8 +105,11 @@ def copy_all():
     os.makedirs(target + "/UmiOCR-data")
     print("开始拷贝基础文件")
     # 拷贝启动器
-    shutil.copy(args.run, target)
-    print("   ", args.run)
+    if os.path.exists(args.run):
+        shutil.copy(args.run, target)
+        print("   ", args.run)
+    else:
+        print(f"警告: 启动器不存在 {args.run}")
     # 排除的目录
     ignores = args.ignores.split(",")
 
@@ -107,6 +127,8 @@ def copy_all():
         elif os.path.isdir(path):
             print("   ", path)
             shutil.copytree(path, data_target + "/" + data, ignore=ignore_func)
+        else:
+            print(f"   跳过（不存在）: {path}")
     print("结束拷贝基础文件")
     # 清理缓存
     cache_n = 0
@@ -123,7 +145,7 @@ def copy_all():
             files_size += os.path.getsize(file_path)
             files_n += 1
     print(f"清理缓存：{cache_n}")
-    print(f"文件总数：{files_n}，总大小：{files_size//1048576}MB")
+    print(f"文件总数：{files_n}，总大小：{files_size // 1048576}MB")
 
 
 copy_all()

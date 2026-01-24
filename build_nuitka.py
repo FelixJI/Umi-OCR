@@ -28,9 +28,9 @@ def get_version():
         about = json.load(f)
     v = about["version"]
     version = f"v{v['major']}.{v['minor']}.{v['patch']}"
-    if v['prerelease']:
+    if v["prerelease"]:
         version += f"_{v['prerelease']}"
-        if v['prereleaseNumber']:
+        if v["prereleaseNumber"]:
             version += f".{v['prereleaseNumber']}"
     return version, about
 
@@ -74,14 +74,10 @@ main(app_path="", engineAddImportPath=None)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(script_content)
-    print(f"创建入口脚本: {entry_script}")
+    print(f"创建入口脚本: {output_path}")
 
 
-def build_nuitka(
-    output_dir: Path,
-    plugins: list = None,
-    clean: bool = True
-):
+def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = True):
     """
     使用 Nuitka 编译项目
 
@@ -105,7 +101,9 @@ def build_nuitka(
 
     # Nuitka 命令参数
     nuitka_args = [
-        sys.executable, "-m", "Nuitka",
+        sys.executable,
+        "-m",
+        "Nuitka",
         "--standalone",
         "--assume-yes-for-downloads",
         f"--output-dir={output_dir}",
@@ -167,11 +165,11 @@ def build_nuitka(
     return True
 
 
-def copy_additional_files(output_dir: Path, plugins: list = None):
+def copy_additional_files(output_dir: Path, plugins: list | None = None):
     """复制额外文件到输出目录"""
     print("\n=== 复制额外文件 ===")
 
-    # 复制运行脚本
+    # 复制运行脚本（如果存在）
     scripts_to_copy = [
         "RUN_CLI.bat",
         "RUN_GUI.bat",
@@ -184,24 +182,25 @@ def copy_additional_files(output_dir: Path, plugins: list = None):
             shutil.copy2(src, output_dir / script)
             print(f"复制: {script}")
 
-    # 复制帮助文件
-    help_file = DATA_DIR / "帮助.txt"
-    if help_file.exists():
-        shutil.copy2(help_file, output_dir / "帮助.txt")
-        print(f"复制: 帮助.txt")
+    # 复制帮助文件（尝试多种可能的文件名）
+    help_files = ["帮助.txt", "Help 帮助.txt"]
+    for help_file in help_files:
+        src = DATA_DIR / help_file
+        if src.exists():
+            shutil.copy2(src, output_dir / "帮助.txt")
+            print(f"复制: {help_file}")
+            break
 
 
-def package_7z(
-    output_dir: Path,
-    package_name: str,
-    sfx: bool = False
-):
+def package_7z(output_dir: Path, package_name: str, sfx: bool = False):
     """打包成 7z 或自解压 exe"""
     seven_zipr = TOOLS_7Z / "7zr.exe"
     sfx_module = TOOLS_7Z / "7z.sfx"
 
+    # 检查 7z 工具是否存在
     if not seven_zipr.exists():
-        print(f"未找到 7zr.exe: {seven_zipr}")
+        print(f"\n警告: 未找到 7zr.exe: {seven_zipr}")
+        print("跳过压缩包创建。如需打包，请将 7zr.exe 放置在 {TOOLS_7Z} 目录下。")
         return False
 
     # 构建 7z 命令
@@ -217,7 +216,11 @@ def package_7z(
 
     print(f"\n=== 创建压缩包 ===")
     print(f"压缩包: {package_name}.7z")
-    subprocess.run(cmd)
+    result = subprocess.run(cmd)
+
+    if result.returncode != 0:
+        print("警告: 7z 压缩失败")
+        return False
 
     # 创建自解压 exe
     if sfx and sfx_module.exists():
@@ -225,11 +228,14 @@ def package_7z(
         archive_path = str(archive_name) + ".7z"
         sfx_output = str(archive_name) + ".exe"
         subprocess.run(
-            ["cmd", "/c", f"copy /b \"{sfx_path}\"+\"{archive_path}\" \"{sfx_output}\""],
+            ["cmd", "/c", f'copy /b "{sfx_path}"+"{archive_path}" "{sfx_output}"'],
             shell=True,
-            cwd=output_dir
+            cwd=output_dir,
         )
         print(f"自解压文件: {package_name}.exe")
+    elif sfx and not sfx_module.exists():
+        print(f"警告: 未找到 7z.sfx: {sfx_module}")
+        print("跳过自解压文件创建。")
 
     return True
 
@@ -243,29 +249,33 @@ def main():
   python build_nuitka.py              # 完整打包（编译+7z+sfx）
   python build_nuitka.py --no-package  # 只编译，不打包 7z
   python build_nuitka.py --plugins="xxx" # 指定插件打包
-        """
+        """,
     )
-    parser.add_argument("--clean", action="store_true", default=True,
-                        help="清理之前的构建")
-    parser.add_argument("--no-clean", action="store_true",
-                        help="不清理之前的构建")
-    parser.add_argument("--package", action="store_true", default=True,
-                        help="打包成 7z 压缩包")
-    parser.add_argument("--no-package", action="store_true",
-                        help="不打包成 7z")
-    parser.add_argument("--sfx", action="store_true", default=True,
-                        help="创建自解压 exe")
-    parser.add_argument("--no-sfx", action="store_true",
-                        help="不创建自解压 exe")
-    parser.add_argument("--plugins", default="",
-                        help="要包含的插件，逗号分隔")
-    parser.add_argument("--output", default="./dist_nuitka",
-                        help="输出目录（默认: ./dist_nuitka）")
+    parser.add_argument(
+        "--clean", action="store_true", default=True, help="清理之前的构建"
+    )
+    parser.add_argument("--no-clean", action="store_true", help="不清理之前的构建")
+    parser.add_argument(
+        "--package", action="store_true", default=True, help="打包成 7z 压缩包"
+    )
+    parser.add_argument("--no-package", action="store_true", help="不打包成 7z")
+    parser.add_argument(
+        "--sfx", action="store_true", default=True, help="创建自解压 exe"
+    )
+    parser.add_argument("--no-sfx", action="store_true", help="不创建自解压 exe")
+    parser.add_argument("--plugins", default="", help="要包含的插件，逗号分隔")
+    parser.add_argument(
+        "--output", default="./dist_nuitka", help="输出目录（默认: ./dist_nuitka）"
+    )
 
     args = parser.parse_args()
 
     clean = args.clean and not args.no_clean
-    plugins = [p.strip() for p in args.plugins.split(",") if p.strip()] if args.plugins else []
+    plugins = (
+        [p.strip() for p in args.plugins.split(",") if p.strip()]
+        if args.plugins
+        else []
+    )
     output_dir = Path(args.output)
 
     # 构建

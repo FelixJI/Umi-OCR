@@ -15,7 +15,13 @@
       "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\qmlimportscanner.exe\")",
       "Bash(export:*)",
       "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\lib\\\\site-packages\\\\PySide6\\\\qmlimportscanner.exe\")",
-      "Bash(mklink /J \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\UmiOCR-data\\\\qt_res\\\\qml\\\\Qt5Compat\" \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\lib\\\\site-packages\\\\PySide6\\\\qml\\\\Qt5Compat\")"
+      "Bash(mklink /J \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\UmiOCR-data\\\\qt_res\\\\qml\\\\Qt5Compat\" \"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\lib\\\\site-packages\\\\PySide6\\\\qml\\\\Qt5Compat\")",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(C:UsersfeljiAppDataLocalProgramsPythonPython313Scriptsuv.exe run C:/Users/felji/PycharmProjects/Umi-OCR/.venv/Scripts/python.exe C:UsersfeljiPycharmProjectsUmi-OCRUmiOCR-datamain.py)",
+      "Bash(tee:*)",
+      "WebSearch",
+      "Bash(findstr:*)"
     ]
   }
 }

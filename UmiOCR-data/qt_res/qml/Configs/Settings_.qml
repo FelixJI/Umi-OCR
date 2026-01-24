@@ -2,8 +2,11 @@
 // =============== 对Settings的封装，提供本地化保存 ===============
 // ==============================================================
 
-import Qt.labs.settings 1.0
+import QtCore
 
+// Qt 6.5+ 使用 QtCore.Settings 替代 Qt.labs.settings
+// 区别：使用 category 而不是 fileName
 Settings {
-    fileName: "./.settings" // 配置文件名
+    // category 由使用方指定（如 Configs.qml）
+    // 如果未指定，使用默认空字符串
 }

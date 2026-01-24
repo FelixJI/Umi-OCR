@@ -88,11 +88,105 @@
 - [全局设置](#全局设置)
 - [命令行调用](docs/README_CLI.md)
 - [HTTP接口](docs/http/README.md)
-- [构建项目（Windows、Linux）](#构建项目)
+- [使用源码](#使用源码)
 
 ## 使用源码
 
-开发者请务必阅读 [构建项目](#构建项目) 。
+### 环境要求
+
+- Python 3.10+
+- uv 包管理器（推荐）
+
+### 安装步骤
+
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/hiroi-sora/Umi-OCR.git
+   cd Umi-OCR
+   ```
+
+2. **安装 uv（如果尚未安装）**
+   ```bash
+   # Windows (PowerShell)
+   irm https://astral.sh/uv/install.ps1 | iex
+
+   # Linux/macOS
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+3. **创建虚拟环境并安装依赖**
+   ```bash
+   uv sync
+   ```
+
+4. **运行项目**
+   ```bash
+   uv run python UmiOCR-data/main.py
+   ```
+
+### 构建可执行文件（可选）
+
+如果需要构建独立的可执行文件，可以使用 Nuitka 打包。
+
+#### 准备工作
+
+1. **安装 Nuitka**
+   ```bash
+   uv pip install nuitka
+   ```
+
+2. **准备 7z 工具（可选）**
+   - 下载 [7-Zip](https://www.7-zip.org/)
+   - 将 `7zr.exe` 放置在 `dev-tools/7z/` 目录下
+   - 如果需要创建自解压文件，还需要 `7z.sfx` 模块
+
+#### 使用 build_nuitka.py 构建
+
+```bash
+# 完整构建（编译 + 打包）
+python build_nuitka.py
+
+# 只编译，不打包 7z
+python build_nuitka.py --no-package
+
+# 指定插件编译
+python build_nuitka.py --plugins="win7_x64_RapidOCR-json"
+
+# 自定义输出目录
+python build_nuitka.py --output="./my_build"
+```
+
+构建参数说明：
+- `--clean/--no-clean`: 是否清理之前的构建（默认清理）
+- `--package/--no-package`: 是否打包成 7z（默认打包）
+- `--sfx/--no-sfx`: 是否创建自解压 exe（默认创建）
+- `--plugins`: 指定要包含的插件，逗号分隔
+
+#### 使用 release.py 生成发布包
+
+在成功构建 `Umi-OCR.exe` 后，可以使用 `release.py` 生成不同插件的发布包。
+
+```bash
+# 生成发布包（会根据插件自动创建不同版本）
+python release.py
+
+# 指定插件组合
+python release.py --plugins="Rapid,win7_x64_RapidOCR-json"
+
+# 不生成压缩包
+python release.py --no-to_7z
+
+# 不创建自解压文件
+python release.py --no-to_sfx
+```
+
+发布包参数说明：
+- `--path`: 发布包存放路径（默认 `./release`）
+- `--run`: 启动器路径（默认 `Umi-OCR.exe`）
+- `--datas`: 要包含的数据目录和文件
+- `--plugins`: 插件组合配置
+- `--to_7z/--no-to_7z`: 是否生成压缩包
+- `--to_sfx/--no-to_sfx`: 是否生成自解压文件
 
 ## 下载发行版
 
@@ -288,18 +382,7 @@ Umi-OCR
 - [PaddleOCR-json](https://github.com/hiroi-sora/PaddleOCR-json)
 - [RapidOCR-json](https://github.com/hiroi-sora/RapidOCR-json)
 
-运行环境框架：
-
-- [PyStand](https://github.com/skywind3000/PyStand) 定制版
-
-## 构建项目
-
-请跳转下述仓库，完成对应平台的开发/运行环境部署。
-
-- [Windows](https://github.com/hiroi-sora/Umi-OCR_runtime_windows)
-- [Linux](https://github.com/hiroi-sora/Umi-OCR_runtime_linux)
-
---- 
+---
 
 ## 软件本地化翻译：
 
