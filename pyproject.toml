@@ -7,6 +7,10 @@ requires-python = ">=3.10"
 # 仅支持 Windows 10+
 
 dependencies = [
+    # OCR Engine - PaddleOCR
+    "paddlepaddle>=3.2.0",
+    "paddleocr>=3.3.0",
+
     # PDF 处理
     "pymupdf>=1.26.0",
 
@@ -27,6 +31,12 @@ dependencies = [
 
     # 二维码解析
     "zxing-cpp>=2.3.0",
+
+    # NumPy for PaddleOCR image processing
+    "numpy>=1.24.0",
+
+    # Optional: OpenCV for advanced image handling
+    "opencv-python>=4.8.0",
 ]
 
 [dependency-groups]

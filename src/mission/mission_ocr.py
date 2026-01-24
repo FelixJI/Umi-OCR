@@ -67,17 +67,25 @@ class __MissionOcrClass(Mission):
     def msnPreTask(self, msnInfo):  # 用于更新api和参数
         # 检查API对象
         if not self._api:
-            return "[Error] MissionOCR: API object is None."
-        # 检查参数更新
-        startInfo = self._dictShortKey(msnInfo["argd"])
-        # 恢复int类型
-        argdIntConvert(startInfo)
-        msg = self._api.start(startInfo)
+            # 使用内置 PaddleOCR
+            from ..ocr.api import _ensureInitialized
+
+            _ensureInitialized()
+            self._api = getApiOcr("paddleocr_native", {})
+            if not self._api or isinstance(self._api, str):
+                logger.error(
+                    f"MissionOCR: Failed to initialize built-in PaddleOCR: {self._api}"
+                )
+                return "[Error] MissionOCR: Failed to initialize built-in PaddleOCR"
+
+        # 内置引擎不需要复杂的参数管理，直接传递配置
+        argd = self._dictShortKey(msnInfo["argd"])
+        msg = self._api.start(argd)
         if msg.startswith("[Error]"):
             logger.error(f"OCR引擎启动失败： {msg}")
             return msg  # 更新失败，结束该队列
         else:
-            return ""  # 更新成功 TODO: continue
+            return ""  # 更新成功
 
     def msnTask(self, msnInfo, msn):  # 执行msn
         if "path" in msn:

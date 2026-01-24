@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 """
 ======================================================
 ========== Umi-OCR Windows 运行环境初始化入口 ==========
@@ -108,8 +107,8 @@ def initRuntimeEnvironment():
     # 初始化工作目录和Python搜索路径
     script = os.path.abspath(__file__)  # 启动脚本.py的路径
     cwd = os.path.dirname(script)  # 工作目录
-    os.chdir(cwd)  # 重新设定工作目录（不在最顶层，而在 UmiOCR-data 文件夹下）
-    for n in [".", "site-packages"]:  # 将模块目录添加到 Python 搜索路径中
+    os.chdir(cwd)  # 重新设定工作目录（在项目根目录下）
+    for n in [".", "site-packages", "src"]:  # 将模块目录添加到 Python 搜索路径中
         path = os.path.abspath(os.path.join(cwd, n))
         if os.path.exists(path):
             site.addsitedir(path)

@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 """
 =========================================
 ========== Umi-OCR 软件启动入口 ==========
@@ -50,11 +49,13 @@ def runQml(engineAddImportPath):
     # 首先设置环境变量（在任何 Qt 类导入之前）
     try:
         import PySide6
+
         pyside_path = os.path.dirname(PySide6.__file__)
         qml_path = os.path.join(pyside_path, "qml")
         plugins_path = os.path.join(pyside_path, "plugins")
         # 设置环境变量（Windows 用 ; 分隔，Linux 用 :）
         import os as os_module
+
         sep = ";" if os_module.name == "nt" else ":"
         os.environ["QML2_IMPORT_PATH"] = qml_path + sep + os.path.abspath("qt_res/qml")
         os.environ["QT_PLUGIN_PATH"] = plugins_path + sep + pyside_path + sep + qml_path
@@ -137,6 +138,7 @@ def runQml(engineAddImportPath):
     # 确保能找到 PySide6 的 Qt5Compat 模块
     try:
         import PySide6
+
         pyside_path = os.path.dirname(PySide6.__file__)
         qml_path = os.path.join(pyside_path, "qml")
         engine.addImportPath(qml_path)
@@ -146,7 +148,7 @@ def runQml(engineAddImportPath):
     engine.addImageProvider("pixmapprovider", PixmapProvider)  # 注册图片提供器
     rootContext = engine.rootContext()  # 注册常量
     rootContext.setContextProperty("UmiAbout", UmiAbout)
-    engine.load("qt_res/qml/Main.qml")  # 通过本地文件启动
+    engine.load("resources/qml/Main.qml")  # 通过本地文件启动
     if not engine.rootObjects():
         return 1
     res = qtApp.exec_()
