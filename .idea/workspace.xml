@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="新增运行环境-Windows">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_nuitka.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_nuitka.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
