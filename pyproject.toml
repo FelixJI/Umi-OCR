@@ -37,6 +37,9 @@ dependencies = [
 
     # Optional: OpenCV for advanced image handling
     "opencv-python>=4.8.0",
+
+    # Excel export support for table recognition
+    "openpyxl>=3.1.0",
 ]
 
 [dependency-groups]

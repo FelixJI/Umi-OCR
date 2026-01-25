@@ -2,85 +2,169 @@
 # =============== 内置 OCR 引擎管理 ===============
 # ===============================================
 
+"""
+OCR引擎注册和管理模块
+支持多种PaddleOCR引擎：
+- PP-OCRv5: 标准文字识别
+- PaddleOCR-VL: 视觉语言模型（109语言）
+- PP-StructureV3: 文档结构化
+- PP-ChatOCRv4: 智能信息抽取
+"""
+
 from umi_log import logger
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
 # 内置 OCR API 字典
 ApiDict = {}
 AllDict = {}
 
+# 默认引擎
+DEFAULT_ENGINE = "pp_ocrv5"
+
 
 def initBuiltInOcr():
     """
-    初始化内置 OCR 引擎。
-    替代动态插件系统，直接注册 PaddleOCR。
+    初始化所有内置 OCR 引擎。
+    注册 PP-OCRv5、PaddleOCR-VL、PP-StructureV3、PP-ChatOCRv4。
     """
     global ApiDict, AllDict
 
-    # 导入内置 PaddleOCR 引擎
-    try:
-        from ..paddleocr_direct import PaddleOCREngine
-    except ImportError as e:
-        logger.error(f"Failed to import PaddleOCR engine: {e}", exc_info=True)
+    # 注册所有引擎
+    engines_registered = []
+    
+    # 1. PP-OCRv5 - 标准识别
+    if _register_ocrv5():
+        engines_registered.append("pp_ocrv5")
+    
+    # 2. PaddleOCR-VL - 视觉语言模型
+    if _register_vl():
+        engines_registered.append("paddle_vl")
+    
+    # 3. PP-StructureV3 - 文档结构化
+    if _register_structure():
+        engines_registered.append("pp_structure")
+    
+    # 4. PP-ChatOCRv4 - 智能抽取
+    if _register_chat():
+        engines_registered.append("pp_chat")
+    
+    # 保持向后兼容：注册paddleocr_native别名
+    if "pp_ocrv5" in ApiDict:
+        ApiDict["paddleocr_native"] = ApiDict["pp_ocrv5"]
+        AllDict["paddleocr_native"] = AllDict["pp_ocrv5"]
+    
+    if engines_registered:
+        logger.info(f"已注册 OCR 引擎: {', '.join(engines_registered)}")
+        return True
+    else:
+        logger.error("没有任何 OCR 引擎注册成功")
         return False
 
-    # 注册内置 OCR 引擎
-    apiKey = "paddleocr_native"
-    ApiDict[apiKey] = PaddleOCREngine
 
-    # 配置信息
-    AllDict[apiKey] = {
-        "api_class": PaddleOCREngine,
-        "group": "ocr",
-        "global_options": {
-            "lang": {
-                "label": "语言/Language",
-                "type": "str",
-                "default": "ch",
-                "options": [
-                    {"value": "ch", "label": "简体中文"},
-                    {"value": "chinese_cht", "label": "繁体中文"},
-                    {"value": "en", "label": "English"},
-                    {"value": "japan", "label": "日本語"},
-                    {"value": "korean", "label": "한국어"},
-                    {"value": "cyrillic", "label": "Cyrillic"},
-                ],
-            },
-            "use_angle_cls": {
-                "label": "文字方向检测/Orientation Detection",
-                "type": "bool",
-                "default": True,
-            },
-            "cpu_threads": {
-                "label": "CPU 线程数/CPU Threads",
-                "type": "int",
-                "default": 4,
-                "min": 1,
-                "max": 8,
-            },
-            "ram_max": {
-                "label": "最大内存限制/Max Memory (MB)",
-                "type": "int",
-                "default": -1,
-                "min": -1,
-            },
-            "ram_time": {
-                "label": "内存清理间隔/Ram Cleanup Time (s)",
-                "type": "int",
-                "default": 300,
-                "min": 0,
-            },
-        },
-        "local_options": {},
-    }
+def _register_ocrv5() -> bool:
+    """注册 PP-OCRv5 引擎"""
+    try:
+        from ..engines.paddle_ocrv5 import PaddleOCRv5Engine
+        
+        apiKey = "pp_ocrv5"
+        ApiDict[apiKey] = PaddleOCRv5Engine
+        
+        AllDict[apiKey] = {
+            "api_class": PaddleOCRv5Engine,
+            "group": "ocr",
+            "label": "PP-OCRv5 标准识别",
+            "description": "多语言混合文字识别，支持简中/繁中/英文/日文/韩文",
+            "global_options": PaddleOCRv5Engine.get_config_schema(),
+            "local_options": {},
+        }
+        
+        logger.debug("PP-OCRv5 引擎注册成功")
+        return True
+        
+    except ImportError as e:
+        logger.warning(f"PP-OCRv5 引擎注册失败: {e}")
+        return False
 
-    logger.info(f"Built-in PaddleOCR engine registered successfully")
-    return True
+
+def _register_vl() -> bool:
+    """注册 PaddleOCR-VL 引擎"""
+    try:
+        from ..engines.paddle_vl import PaddleVLEngine
+        
+        apiKey = "paddle_vl"
+        ApiDict[apiKey] = PaddleVLEngine
+        
+        AllDict[apiKey] = {
+            "api_class": PaddleVLEngine,
+            "group": "ocr",
+            "label": "PaddleOCR-VL 多语言视觉",
+            "description": "0.9B视觉语言模型，支持109种语言，复杂元素识别",
+            "global_options": PaddleVLEngine.get_config_schema(),
+            "local_options": {},
+        }
+        
+        logger.debug("PaddleOCR-VL 引擎注册成功")
+        return True
+        
+    except ImportError as e:
+        logger.warning(f"PaddleOCR-VL 引擎注册失败: {e}")
+        return False
+
+
+def _register_structure() -> bool:
+    """注册 PP-StructureV3 引擎"""
+    try:
+        from ..engines.paddle_structure import PaddleStructureEngine
+        
+        apiKey = "pp_structure"
+        ApiDict[apiKey] = PaddleStructureEngine
+        
+        AllDict[apiKey] = {
+            "api_class": PaddleStructureEngine,
+            "group": "structure",
+            "label": "PP-StructureV3 文档结构化",
+            "description": "表格识别、版式分析，输出Markdown/JSON/Excel/HTML",
+            "global_options": PaddleStructureEngine.get_config_schema(),
+            "local_options": {},
+        }
+        
+        logger.debug("PP-StructureV3 引擎注册成功")
+        return True
+        
+    except ImportError as e:
+        logger.warning(f"PP-StructureV3 引擎注册失败: {e}")
+        return False
+
+
+def _register_chat() -> bool:
+    """注册 PP-ChatOCRv4 引擎"""
+    try:
+        from ..engines.paddle_chat import PaddleChatEngine
+        
+        apiKey = "pp_chat"
+        ApiDict[apiKey] = PaddleChatEngine
+        
+        AllDict[apiKey] = {
+            "api_class": PaddleChatEngine,
+            "group": "chat",
+            "label": "PP-ChatOCRv4 智能抽取",
+            "description": "集成ERNIE 4.5，智能问答和关键信息抽取（需API Key）",
+            "requires_api_key": True,
+            "global_options": PaddleChatEngine.get_config_schema(),
+            "local_options": {},
+        }
+        
+        logger.debug("PP-ChatOCRv4 引擎注册成功")
+        return True
+        
+    except ImportError as e:
+        logger.warning(f"PP-ChatOCRv4 引擎注册失败: {e}")
+        return False
 
 
 def getApiOcr(apiKey: str, argd: Dict[str, Any]) -> Any:
     """
-    生成一个 ocr api 实例。
+    生成一个 OCR API 实例。
 
     Args:
         apiKey: OCR 引擎标识符
@@ -89,13 +173,15 @@ def getApiOcr(apiKey: str, argd: Dict[str, Any]) -> Any:
     Returns:
         OCR API 实例，失败返回 [Error] 开头的字符串
     """
+    _ensureInitialized()
+    
     if apiKey in ApiDict:
         try:
-            return ApiDict[apiKey](argd)  # 实例化后返回
+            return ApiDict[apiKey](argd)
         except Exception as e:
-            logger.error(f"生成api实例{apiKey}失败。", exc_info=True, stack_info=True)
+            logger.error(f"生成API实例 {apiKey} 失败", exc_info=True)
             return f"[Error] Failed to generate API instance {apiKey}: {e}"
-    return f'[Error] "{apiKey}" not in ApiDict.'
+    return f'[Error] "{apiKey}" not in ApiDict. 可用引擎: {list(ApiDict.keys())}'
 
 
 def getLocalOptions(apiKey: str) -> Dict[str, Any]:
@@ -108,17 +194,161 @@ def getLocalOptions(apiKey: str) -> Dict[str, Any]:
     Returns:
         配置选项字典
     """
+    _ensureInitialized()
+    
     if apiKey in AllDict:
-        return AllDict[apiKey]["local_options"]
+        return AllDict[apiKey].get("local_options", {})
     return {}
 
 
-# 向后兼容：初始化时自动调用
-# 为了保持向后兼容，首次调用时自动初始化
+def getGlobalOptions(apiKey: str) -> Dict[str, Any]:
+    """
+    返回一个 API 的全局配置字典。
+
+    Args:
+        apiKey: OCR 引擎标识符
+
+    Returns:
+        配置选项字典
+    """
+    _ensureInitialized()
+    
+    if apiKey in AllDict:
+        return AllDict[apiKey].get("global_options", {})
+    return {}
+
+
+def getEngineInfo(apiKey: str) -> Optional[Dict[str, Any]]:
+    """
+    获取引擎的完整信息。
+
+    Args:
+        apiKey: OCR 引擎标识符
+
+    Returns:
+        引擎信息字典，包含 label, description, group 等
+    """
+    _ensureInitialized()
+    
+    if apiKey in AllDict:
+        return AllDict[apiKey]
+    return None
+
+
+def getAllEngineOptions() -> Dict[str, Any]:
+    """
+    获取所有引擎的配置选项，用于初始化OcrManager。
+    
+    Returns:
+        字典，key为引擎标识符，value为引擎信息
+    """
+    _ensureInitialized()
+    
+    options = {}
+    for apiKey, info in AllDict.items():
+        # 跳过别名
+        if apiKey == "paddleocr_native":
+            continue
+        
+        options[apiKey] = {
+            "global_options": info.get("global_options", {}),
+            "local_options": info.get("local_options", {}),
+            "label": info.get("label", apiKey),
+            "description": info.get("description", ""),
+            "group": info.get("group", "ocr"),
+            "requires_api_key": info.get("requires_api_key", False),
+        }
+    
+    return options
+
+
+def getAvailableEngines() -> List[Dict[str, Any]]:
+    """
+    获取所有可用引擎列表。
+
+    Returns:
+        引擎信息列表
+    """
+    _ensureInitialized()
+    
+    engines = []
+    for apiKey, info in AllDict.items():
+        # 跳过别名
+        if apiKey == "paddleocr_native":
+            continue
+        engines.append({
+            "key": apiKey,
+            "label": info.get("label", apiKey),
+            "description": info.get("description", ""),
+            "group": info.get("group", "ocr"),
+            "requires_api_key": info.get("requires_api_key", False),
+        })
+    return engines
+
+
+def getEnginesByGroup(group: str) -> List[Dict[str, Any]]:
+    """
+    获取指定分组的引擎列表。
+
+    Args:
+        group: 引擎分组 (ocr/structure/chat)
+
+    Returns:
+        引擎信息列表
+    """
+    _ensureInitialized()
+    
+    engines = []
+    for apiKey, info in AllDict.items():
+        if apiKey == "paddleocr_native":
+            continue
+        if info.get("group") == group:
+            engines.append({
+                "key": apiKey,
+                "label": info.get("label", apiKey),
+                "description": info.get("description", ""),
+            })
+    return engines
+
+
+def isEngineAvailable(apiKey: str) -> bool:
+    """
+    检查引擎是否可用。
+
+    Args:
+        apiKey: OCR 引擎标识符
+
+    Returns:
+        是否可用
+    """
+    _ensureInitialized()
+    return apiKey in ApiDict
+
+
+def getDefaultEngine() -> str:
+    """
+    获取默认引擎标识符。
+
+    Returns:
+        默认引擎的 apiKey
+    """
+    _ensureInitialized()
+    
+    if DEFAULT_ENGINE in ApiDict:
+        return DEFAULT_ENGINE
+    # 回退到第一个可用引擎
+    for key in ApiDict:
+        if key != "paddleocr_native":
+            return key
+    return ""
+
+
+# 向后兼容：初始化标志
 _initialized = False
 
 
 def _ensureInitialized():
+    """确保引擎已初始化"""
     global _initialized
     if not _initialized:
         initBuiltInOcr()

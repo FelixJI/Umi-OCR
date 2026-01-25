@@ -46,6 +46,22 @@ Item {
                 + " `Aztec, Codabar, Code128, Code39, Code93, DataBar, DataBarExpanded, DataMatrix, EAN13, EAN8, ITF, LinearCodes, MatrixCodes, MaxiCode, MicroQRCode, PDF417, QRCode, UPCA, UPCE`",
         },
         {
+            key: "TableOCR",
+            needController: true,
+            title: qsTr("表格识别"),
+            intro: qsTr("# 表格识别\n\n识别图片或PDF中的表格，支持结构化输出。\n\n支持格式：")
+                + " `Markdown, JSON, HTML, Excel`\n\n"
+                + qsTr("支持功能：表格识别、版式分析"),
+        },
+        {
+            key: "InvoiceOCR",
+            needController: true,
+            title: qsTr("发票识别"),
+            intro: qsTr("# 发票识别\n\n使用云端OCR服务识别各类发票和票据。\n\n支持类型：")
+                + " `增值税发票, 火车票, 出租车发票, 机票行程单, 定额发票`\n\n"
+                + qsTr("支持云服务：百度智能云、腾讯云、阿里云"),
+        },
+        {
             key: "GlobalConfigsPage",
             title: qsTr("全局设置"),
             intro: qsTr("# 全局设置\n\n调节全局设置项，对所有页面生效。")
