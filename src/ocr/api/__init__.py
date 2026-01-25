@@ -19,7 +19,7 @@ def initBuiltInOcr():
 
     # 导入内置 PaddleOCR 引擎
     try:
-        from .paddleocr_direct import PaddleOCREngine
+        from ..paddleocr_direct import PaddleOCREngine
     except ImportError as e:
         logger.error(f"Failed to import PaddleOCR engine: {e}", exc_info=True)
         return False

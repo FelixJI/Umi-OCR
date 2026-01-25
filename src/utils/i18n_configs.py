@@ -1,13 +1,28 @@
 # UI语言设置
 
 import os
+import ctypes
 from PySide6.QtCore import QTranslator
 
 from . import pre_configs
 from plugin_i18n import setLangCode
 from umi_log import logger
 
-I18nDir = "i18n"  # 翻译文件 目录
+
+def MessageBox(msg, type_="error"):
+    """Display message box for errors (Windows only)"""
+    info = "Umi-OCR Message"
+    if type_ == "error":
+        info = "【错误】 Umi-OCR Error"
+    elif type_ == "warning":
+        info = "【警告】 Umi-OCR Warning"
+    try:
+        ctypes.windll.user32.MessageBoxW(None, str(msg), str(info), 0)
+    except Exception:
+        print(f"{info}: {msg}")
+
+
+I18nDir = "UmiOCR-data/i18n"  # 翻译文件 目录
 DefaultLang = "zh_CN"  # 默认语言，项目中qsTr()标记的原生语言，无翻译文件。
 
 # 语言表。每个语种只有第一个语言代码是有效的（对应到翻译文件.qm），
@@ -82,12 +97,12 @@ class _I18n:
         if not translator.load(path):
             msg = f"无法加载UI语言！\n[Error] Unable to load UI language: {path}"
             logger.warning(msg)
-            os.MessageBox(msg, type_="warning")
+            MessageBox(msg, type_="warning")
             return
         if not qtApp.installTranslator(translator):  # 安装翻译器
             msg = f"无法加载翻译模块！\n[Error] Unable to installTranslator: {path}"
             logger.warning(msg)
-            os.MessageBox(msg, type_="warning")
+            MessageBox(msg, type_="warning")
             return
         logger.info(f"i18n file loaded successfully. {self.langCode} - {text}")
 

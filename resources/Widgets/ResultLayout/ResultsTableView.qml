@@ -172,7 +172,7 @@ Item {
                 本项目作为临时措施，在下文用一些先验条件来判断当前的修改是否有可能由用户发起，
                 以此降低误判的概率。
                 */
-                if(!activeFocus_) return // 临时措施：排除没有焦点的文本修改
+                if(!hasActiveFocus) return // 临时措施：排除没有焦点的文本修改
                 if(resText===textMain) return // 临时措施：排除文本内容无变化的修改
 
                 resultsModel.setProperty(index, "resText", textMain) // 文字改变时写入列表

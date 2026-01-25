@@ -11,6 +11,8 @@ Item {
 
     // 开始一次截图。传入回调函数。
     function screenshot(callback) {
+        console.log("[ScreenshotManager] screenshot() 被调用")
+        console.log("[ScreenshotManager] selectMode:", selectMode, "enableMaskLayer:", enableMaskLayer)
         // 重复调用验证
         if(running) {
             qmlapp.popup.simple(errorTitle, errorRepeat)
@@ -19,10 +21,12 @@ Item {
         running = true
         // 获取所有屏幕的截图图像
         const grabList = getGrabList()
+        console.log("[ScreenshotManager] grabList 数量:", grabList.length)
         // 遍历截图列表，收集覆盖窗口属性 argds
         let argds = []
         for(let i in grabList) {
             const g = grabList[i]  // 截图属性
+            console.log("[ScreenshotManager] 处理屏幕", i, "- imgID:", g.imgID, "screenName:", g.screenName)
             // 合法性检查
             if(g.imgID.startsWith("[")) {
                 qmlapp.popup.message(errorTitle,
@@ -49,21 +53,26 @@ Item {
                 width: screen.width,
                 height: screen.height,
                 selectionMode: selectMode,
+                enableMaskLayer: ssWinRoot.enableMaskLayer, // 遮罩层配置
+                autoWindowDetect: ssWinRoot.autoWindowDetect, // 自动窗口识别配置
                 screenshotEnd: ssWinRoot.ssEnd // 关闭函数
             }
-            console.log("即将传入 ssWinComp 参数：", JSON.stringify(argds))
+            console.log("[ScreenshotManager] 创建截图窗口参数 - selectionMode:", argd.selectionMode, "enableMaskLayer:", argd.enableMaskLayer)
             argds.push(argd)
         }
         // 记录回调
         lastCallback = callback
         if(winDict === undefined) winDict = {}
         // 生成覆盖窗口
+        console.log("[ScreenshotManager] 准备创建", argds.length, "个截图窗口")
         for(let a in argds) {
             const obj = ssWinComp.createObject(this, argds[a])
             winDict[argds[a].imgID] = obj
+            console.log("[ScreenshotManager] 截图窗口已创建 - imgID:", argds[a].imgID)
         }
         // 注册esc事件监听
         qmlapp.pubSub.subscribeGroup("<<esc>>", ssWinRoot, "ssEsc", "ssEsc")
+        console.log("[ScreenshotManager] 截图窗口创建完成")
     }
 
     // 重复上一次截图区域
@@ -206,7 +215,30 @@ Item {
     property var lastCallback: undefined // 截图完毕的回调，得到 clipImgID
     property var winDict: {} // 存放当前已打开的窗口
     property QtObject imageConn: qmlapp.imageManager.imageConnector
-    property string selectMode: "drag"
+    
+    // 从全局配置读取截图模式，如果全局配置未加载则默认为 drag
+    property string selectMode: {
+        if(qmlapp.globalConfigs) {
+            return qmlapp.globalConfigs.getValue("screenshot.selectMode") || "drag"
+        }
+        return "drag"
+    }
+    
+    // 从全局配置读取遮罩层启用状态
+    property bool enableMaskLayer: {
+        if(qmlapp.globalConfigs) {
+            return qmlapp.globalConfigs.getValue("screenshot.enableMaskLayer") !== false
+        }
+        return true
+    }
+    
+    // 从全局配置读取自动窗口识别状态
+    property bool autoWindowDetect: {
+        if(qmlapp.globalConfigs) {
+            return qmlapp.globalConfigs.getValue("screenshot.autoWindowDetect") === true
+        }
+        return false
+    }
     Component {
         id: ssWinComp
         ScreenshotWindowComp { }

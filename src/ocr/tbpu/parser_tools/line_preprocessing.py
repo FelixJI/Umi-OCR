@@ -18,6 +18,22 @@ def _distance(point1, point2):
 
 # 计算一个box的旋转角度
 def _calculateAngle(box):
+    # 处理字典格式的box（OCR API返回格式）
+    if isinstance(box, dict):
+        # 从字典转换为列表格式：[[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+        box_list = [
+            [box.get("x1", 0), box.get("y1", 0)],
+            [box.get("x2", 0), box.get("y2", 0)],
+            [box.get("x3", 0), box.get("y3", 0)],
+            [box.get("x4", 0), box.get("y4", 0)],
+        ]
+        # 检查是否所有坐标都有效
+        if all(coordinate != 0 for point in box_list for coordinate in point):
+            box = box_list
+        else:
+            # 如果坐标无效，返回0角度
+            return 0.0
+
     # 获取宽高
     width = _distance(box[0], box[1])
     height = _distance(box[1], box[2])
@@ -46,15 +62,28 @@ def _estimateRotation(textBlocks):
 def _getBboxes(textBlocks, rotation_rad):
     # 角度低于阈值（接近0°），则不进行旋转，以提高性能。
     if abs(rotation_rad) <= angle_threshold_rad:
-        bboxes = [
-            (  # 直接构造bbox
-                min(x for x, y in tb["box"]),
-                min(y for x, y in tb["box"]),
-                max(x for x, y in tb["box"]),
-                max(y for x, y in tb["box"]),
-            )
-            for tb in textBlocks
-        ]
+        bboxes = []
+        for tb in textBlocks:
+            box = tb["box"]
+            # 处理字典格式的box
+            if isinstance(box, dict):
+                xs = [
+                    box.get("x1", 0),
+                    box.get("x2", 0),
+                    box.get("x3", 0),
+                    box.get("x4", 0),
+                ]
+                ys = [
+                    box.get("y1", 0),
+                    box.get("y2", 0),
+                    box.get("y3", 0),
+                    box.get("y4", 0),
+                ]
+            else:
+                # 列表格式
+                xs = [x for x, y in box]
+                ys = [y for x, y in box]
+            bboxes.append((min(xs), min(ys), max(xs), max(ys)))
     # 否则，进行旋转操作。
     else:
         logger.debug(f"文本块预处理旋转 {degrees(rotation_rad):.2f} °")
@@ -64,10 +93,24 @@ def _getBboxes(textBlocks, rotation_rad):
         sin_angle = sin(-rotation_rad)
         for tb in textBlocks:
             box = tb["box"]
-            rotated_box = [  # 旋转box的每个顶点
-                (cos_angle * x - sin_angle * y, sin_angle * x + cos_angle * y)
-                for x, y in box
-            ]
+            # 处理字典格式的box，转换为列表
+            if isinstance(box, dict):
+                box_list = [
+                    [box.get("x1", 0), box.get("y1", 0)],
+                    [box.get("x2", 0), box.get("y2", 0)],
+                    [box.get("x3", 0), box.get("y3", 0)],
+                    [box.get("x4", 0), box.get("y4", 0)],
+                ]
+                rotated_box = [  # 旋转box的每个顶点
+                    (cos_angle * x - sin_angle * y, sin_angle * x + cos_angle * y)
+                    for x, y in box_list
+                ]
+            else:
+                # 列表格式
+                rotated_box = [  # 旋转box的每个顶点
+                    (cos_angle * x - sin_angle * y, sin_angle * x + cos_angle * y)
+                    for x, y in box
+                ]
             # 解包旋转后的顶点坐标，分别得到所有x和y的值
             xs, ys = zip(*rotated_box)
             # 构建标准bbox (左上角x, 左上角y, 右下角x, 右下角y)

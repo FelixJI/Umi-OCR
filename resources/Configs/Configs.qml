@@ -85,6 +85,7 @@ configDict为嵌套形式，而originDict与valueDict为展开形式的单层字
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Dialogs // 文件对话框 (Qt6)
+import Qt.labs.platform 1.1 // StandardPaths (Qt6)
 import "../Widgets"
 
 Item {
@@ -236,7 +237,22 @@ Item {
                         }
                         break
                     // 无需检查
-                    case "var": // 任意
+                    case "var": { // 任意，需要特殊处理以支持数组和对象
+                        // 检查是否为JSON字符串（从旧格式或正确格式读取）
+                        if(typeof val === "string") {
+                            try {
+                                const parsed = JSON.parse(val)
+                                // 验证解析结果是否合理
+                                if(typeof parsed === "object" && parsed !== null) {
+                                    val = parsed
+                                }
+                            } catch(e) {
+                                // 解析失败，保持原字符串
+                            }
+                        }
+                        flag = true
+                        break
+                    }
                     case "file": // 文件
                     case "text": // 文本
                     case "hotkey": // 热键
@@ -310,8 +326,15 @@ Item {
         }
         valueDict[key] = val
         if(originDict[key].save) { // 需要保存值
-            if(saveNow) // 立刻保存
-                settings.setValue(key, val)
+            if(saveNow) { // 立刻保存
+                // 对于var类型的数组和对象，序列化为JSON字符串
+                let saveVal = val
+                const config = originDict[key]
+                if(config && config.type === "var" && typeof val === "object" && val !== null) {
+                    saveVal = JSON.stringify(val)
+                }
+                settings.setValue(key, saveVal)
+            }
             else // 缓存保存
                 saveValue(key)
         }
@@ -348,7 +371,13 @@ Item {
         interval: cacheInterval
         onTriggered: {
             for(let k in cacheDict) {
-                settings.setValue(k, cacheDict[k]) // 缓存写入本地
+                let val = cacheDict[k]
+                // 对于var类型的数组和对象，序列化为JSON字符串
+                const config = originDict[k]
+                if(config && config.type === "var" && typeof val === "object" && val !== null) {
+                    val = JSON.stringify(val)
+                }
+                settings.setValue(k, val) // 缓存写入本地
             }
             cacheDict = {} // 清空缓存
         }
@@ -1025,7 +1054,7 @@ Item {
                         selectFolder: origin.selectFolder
                         selectMultiple: false  // 始终禁止多选
                         nameFilters: origin.nameFilters
-                        currentFolder: shortcuts.desktop  // Qt6 使用 currentFolder
+                        currentFolder: StandardPaths.writableLocation(StandardPaths.DesktopLocation)  // Qt6 使用 currentFolder
                         onAccepted: {
                             if(fileDialog.fileUrls_.length > 0) {
                                 textInput.text = fileDialog.fileUrls_[0] // 设置对话框文本

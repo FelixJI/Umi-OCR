@@ -37,7 +37,7 @@ TabPage {
                     anchors.right: parent.right
                     height: size_.line * 10
                     fillMode: Image.PreserveAspectFit
-                    source: "../../../images/Umi-OCR_logo_full.png"
+                    source: "../../images/Umi-OCR_logo_full.png" // 修正路径
                 }
                 Text_ {
                     anchors.horizontalCenter: parent.horizontalCenter

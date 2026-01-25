@@ -3,9 +3,13 @@
 
 import threading
 import logging
+import os
 from paddleocr import PaddleOCR
 from typing import List, Dict, Optional, Union
 from pathlib import Path
+
+# Disable PaddleOCR's verbose logging
+os.environ["DISABLE_MODEL_SOURCE_CHECK"] = "True"
 
 logger = logging.getLogger(__name__)
 
@@ -60,18 +64,35 @@ class PaddleOCREngine:
             }
             paddle_lang = lang_map.get(lang, "en")
 
-            # Initialize PaddleOCR
+            # Detect GPU availability and log
+            import paddle
+
+            gpu_available = (
+                paddle.device.is_compiled_with_cuda()
+                and paddle.device.cuda.device_count() > 0
+            )
+
+            if gpu_available:
+                gpu_count = paddle.device.cuda.device_count()
+                logger.info(
+                    f"GPU detected: {gpu_count} device(s). PaddleOCR will automatically use GPU."
+                )
+            else:
+                logger.info(
+                    "No GPU detected or GPU not available. PaddleOCR will use CPU."
+                )
+
+            # Initialize PaddleOCR with new API (use_textline_orientation instead of use_angle_cls)
             self.ocr = PaddleOCR(
                 lang=paddle_lang,
-                use_angle_cls=use_angle_cls,
-                show_log=False,  # Disable PaddleOCR internal logs
+                use_textline_orientation=use_angle_cls,
                 # det_model_dir=self.config.get("det_model_dir"),  # Optional: custom model paths
                 # rec_model_dir=self.config.get("rec_model_dir"),
                 # cls_model_dir=self.config.get("cls_model_dir")
             )
 
             logger.info(
-                f"PaddleOCR initialized successfully with language: {paddle_lang}"
+                f"PaddleOCR initialized successfully with language: {paddle_lang}, device: {'GPU' if gpu_available else 'CPU'}"
             )
 
         except Exception as e:
@@ -142,7 +163,9 @@ class PaddleOCREngine:
                 if self.ocr is None:
                     self._initialize_paddleocr()
 
-                result = self.ocr.ocr(imgPath, cls=True)
+                # PaddleOCR 3.3.0 doesn't accept 'cls' parameter anymore
+                # Text orientation is handled automatically
+                result = self.ocr.ocr(imgPath)
                 return self._parse_result(result)
             except Exception as e:
                 logger.error(f"OCR failed for path {imgPath}: {e}", exc_info=True)
@@ -172,7 +195,9 @@ class PaddleOCREngine:
                 img = Image.open(io.BytesIO(imageBytes))
                 img_array = np.array(img)
 
-                result = self.ocr.ocr(img_array, cls=True)
+                # PaddleOCR 3.x doesn't accept 'cls' parameter anymore
+                # Text orientation is handled automatically via use_textline_orientation
+                result = self.ocr.ocr(img_array)
                 return self._parse_result(result)
             except Exception as e:
                 logger.error(f"OCR failed for bytes input: {e}", exc_info=True)
@@ -204,7 +229,9 @@ class PaddleOCREngine:
                 img = Image.open(io.BytesIO(imageBytes))
                 img_array = np.array(img)
 
-                result = self.ocr.ocr(img_array, cls=True)
+                # PaddleOCR 3.x doesn't accept 'cls' parameter anymore
+                # Text orientation is handled automatically via use_textline_orientation
+                result = self.ocr.ocr(img_array)
                 return self._parse_result(result)
             except Exception as e:
                 logger.error(f"OCR failed for base64 input: {e}", exc_info=True)

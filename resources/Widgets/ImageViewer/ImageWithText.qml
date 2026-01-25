@@ -220,7 +220,7 @@ ImageScale {
         }
 
         // 按下
-        onPressed: {
+        onPressed: function(mouse) {
             mouseArea.forceActiveFocus()
             if (mouse.button === Qt.RightButton) {
                 selectMenu.popup()
@@ -257,7 +257,7 @@ ImageScale {
             }
         }
         // 抬起
-        onReleased: {
+        onReleased: function(mouse) {
             if(!showOverlay) return
             if (mouse.button === Qt.RightButton) return
             const tbi = mouseInTextBox()
@@ -283,7 +283,7 @@ ImageScale {
             ]
         }
         // 按键事件
-        Keys.onPressed: {
+        Keys.onPressed: function(event) {
             if (event.modifiers & Qt.ControlModifier) {
                 event.key===Qt.Key_A && selectAll()
                 event.key===Qt.Key_C && selectCopy()

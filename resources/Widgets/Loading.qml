@@ -37,7 +37,7 @@ Item {
             anchors.topMargin: size_.spacing
             Image {
                 id: image
-                source: "../../images/icons/dango_right.png"
+                source: "../../images/umiocr.svg"
                 mipmap: true // 启用高质量缩放
                 fillMode: Image.Stretch
                 property real p1x

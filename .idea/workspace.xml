@@ -5,8 +5,42 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="新增运行环境-Windows">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore_backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Umi-OCR.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Umi-OCR.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev-tools/Update_dependency_libraries.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Configs/Configs.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Configs/Configs.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Configs/GlobalConfigs.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Configs/GlobalConfigs.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/ImageManager/ScreenshotManager.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/ImageManager/ScreenshotManager.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/ImageManager/ScreenshotWindowComp.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/ImageManager/ScreenshotWindowComp.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Main.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Main.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/MainWindow/MainWindowManager.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/MainWindow/MainWindowManager.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/MainWindow/SystemTray.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/MainWindow/SystemTray.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TabBar_/BarManager.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/TabBar_/BarManager.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TabBar_/HTabBar.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/TabBar_/HTabBar.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TabBar_/TabButton_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/TabBar_/TabButton_.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TabPages/About/About.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/TabPages/About/About.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/TabPages/ScreenshotOCR/ScreenshotOCR.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/TabPages/ScreenshotOCR/ScreenshotOCR.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/Button_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/Button_.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/FilesTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/FilesTableView.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/ImageViewer/ImageScale.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/ImageViewer/ImageScale.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/ImageViewer/ImageWithText.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/ImageViewer/ImageWithText.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/Loading.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/Loading.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/ResultLayout/ResultTextContainer.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/ResultLayout/ResultTextContainer.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/Widgets/ResultLayout/ResultsTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/Widgets/ResultLayout/ResultsTableView.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/image_controller/screenshot_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/image_controller/screenshot_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/imports/umi_about.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/imports/umi_about.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ocr/api/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ocr/api/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ocr/paddleocr_direct.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ocr/paddleocr_direct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ocr/tbpu/parser_tools/line_preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ocr/tbpu/parser_tools/line_preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/cmd_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/cmd_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/app_opengl.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/app_opengl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/i18n_configs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/i18n_configs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,12 +62,12 @@
     &quot;assignee&quot;: &quot;FelixJI&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/FelixJI/Umi-OCR.git",
-    "accountId": "0cd8c651-f00d-4ccc-a6a5-0db55967f381"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/FelixJI/Umi-OCR.git&quot;,
+    &quot;accountId&quot;: &quot;0cd8c651-f00d-4ccc-a6a5-0db55967f381&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -42,21 +76,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "Python.run.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "refactor/paddleocr-native",
-    "last_opened_file_path": "C:/Users/felji/PycharmProjects/Umi-OCR/UmiOCR-data/plugins/win_linux_PaddleOCR-json",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;refactor/paddleocr-native&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/felji/PycharmProjects/Umi-OCR/UmiOCR-data/plugins/win_linux_PaddleOCR-json&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\felji\PycharmProjects\Umi-OCR\UmiOCR-data\plugins\win_linux_PaddleOCR-json" />
@@ -147,6 +181,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Umi_OCR$run.coverage" NAME="run 覆盖结果" MODIFIED="1757469077451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data/py_src" />
-    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769227632429" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
+    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769305912038" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

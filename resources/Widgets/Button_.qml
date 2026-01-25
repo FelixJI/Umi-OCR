@@ -53,10 +53,10 @@ Button {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         // 穿透
-        onPressed: {
+        onPressed: function(mouse) {
             mouse.accepted = false
         }
-        onReleased: {
+        onReleased: function(mouse) {
             mouse.accepted = false
         }
     }

@@ -3,8 +3,24 @@
 from PySide6.QtGui import QGuiApplication, QOpenGLContext
 from PySide6.QtCore import Qt
 import os
+import ctypes
 
 from umi_log import logger
+
+
+def MessageBox(msg, type_="error"):
+    """Display message box for errors (Windows only)"""
+    info = "Umi-OCR Message"
+    if type_ == "error":
+        info = "【错误】 Umi-OCR Error"
+    elif type_ == "warning":
+        info = "【警告】 Umi-OCR Warning"
+    try:
+        ctypes.windll.user32.MessageBoxW(None, str(msg), str(info), 0)
+    except Exception:
+        print(f"{info}: {msg}")
+
+
 from . import pre_configs
 from ..platform import Platform
 

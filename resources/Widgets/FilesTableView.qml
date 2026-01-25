@@ -5,6 +5,7 @@ import QtQuick.Controls 2.15
 import Qt.labs.qmlmodels 1.0 // 表格
 import Qt5Compat.GraphicalEffects // 子元素圆角
 import QtQuick.Dialogs // 文件对话框 (Qt6)
+import Qt.labs.platform 1.1 // StandardPaths (Qt6)
 
 Item {
     id: fTableRoot
@@ -420,7 +421,7 @@ Item {
         id: fileDialog
         title: fileDialogTitle
         nameFilters: fileDialogNameFilters
-        currentFolder: shortcuts.pictures  // Qt6
+        currentFolder: StandardPaths.writableLocation(StandardPaths.PicturesLocation)  // Qt6
         selectMultiple: true // 多选
         onAccepted: {
             addPaths(fileDialog.fileUrls_)

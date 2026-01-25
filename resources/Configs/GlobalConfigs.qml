@@ -152,6 +152,7 @@ Configs {
             },
             "closeWin2Hide": {
                 "title": qsTr("关闭主窗口时"),
+                "default": true, // 默认最小化到系统托盘
                 "optionsList": [
                     [true, qsTr("最小化到系统托盘")],
                     [false, qsTr("退出应用")],
@@ -195,6 +196,29 @@ Configs {
                 "unit": qsTr("秒"),
                 "isInt": false,
                 "advanced": true,
+            },
+            "enableMaskLayer": {
+                "title": qsTr("启用遮罩层"),
+                "toolTip": qsTr("截图时显示半透明遮罩层，帮助区分截图区域"),
+                "default": true,
+            },
+            "autoWindowDetect": {
+                "title": qsTr("自动窗口识别"),
+                "toolTip": qsTr("开启后可自动检测并选中鼠标悬停位置的窗口"),
+                "default": false,
+            },
+            "selectMode": {
+                "title": qsTr("截图模式"),
+                "optionsList": [
+                    ["drag", qsTr("拖动截屏")],
+                    ["click", qsTr("点击截屏")],
+                ],
+                "default": "drag",
+                "onChanged": (val, old)=>{
+                    if(qmlapp.imageManager && qmlapp.imageManager.screenshotManager) {
+                        qmlapp.imageManager.screenshotManager.selectMode = val
+                    }
+                },
             },
         },
 
@@ -302,7 +326,8 @@ Configs {
     OcrManager { id: ocrManager } // OCR管理器 qmlapp.globalConfigs.ocrManager
     UtilsConfigDicts { id: utilsDicts } // 通用配置项 qmlapp.globalConfigs.utilsDicts
     GlobalConfigsConnector { id: globalConfigConn } // 全局设置连接器
-    PluginsConnector { id: pluginsConnector } // 插件全局设置连接器
+    // PluginsConnector { id: pluginsConnector } // 插件全局设置连接器
+    // Plugin system removed - no plugin support needed
 
     property alias ocrManager: ocrManager
     property alias utilsDicts: utilsDicts
@@ -310,17 +335,17 @@ Configs {
     property var fontPanel: undefined // 缓存字体控制面板组件引用
 
     Component.onCompleted: {
-        // 初始化主题
+    // 初始化主题
         theme.manager.init()
-        // 加载插件
-        initPlugins()
+        // 插件系统已移除 - 使用内置PaddleOCR引擎
+        // initPlugins()
         // 初始化配置项
         reload()
         // 检查权限和异常情况
         checkAccess()
-        // 应用OCR信息
-        if(configDict.ocr)
-            ocrManager.init2()
+        // 应用OCR信息 - 现在由内置引擎自动初始化
+        // if(configDict.ocr)
+        //     ocrManager.init2()
         console.log("GlobalConfig 初始化全局配置完毕！")
         // 延迟执行
         Qt.callLater(()=>{

@@ -21,7 +21,14 @@
       "Bash(C:UsersfeljiAppDataLocalProgramsPythonPython313Scriptsuv.exe run C:/Users/felji/PycharmProjects/Umi-OCR/.venv/Scripts/python.exe C:UsersfeljiPycharmProjectsUmi-OCRUmiOCR-datamain.py)",
       "Bash(tee:*)",
       "WebSearch",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(timeout:*)",
+      "mcp__acp__Bash",
+      "Bash(tail:*)",
+      "Bash(taskkill:*)",
+      "Bash(xargs:*)",
+      "Bash(wmic:*)",
+      "Bash(start:*)"
     ]
   }
 }

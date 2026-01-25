@@ -8,16 +8,18 @@ from ..utils.file_finder import findFiles
 import time
 from PySide6.QtGui import QGuiApplication, QImage, QPixmap  # 截图
 
+
 # PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
 def getClipboard():
     from PySide6.QtWidgets import QApplication
+
     return QApplication.clipboard()
+
 
 Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
 
 class _ScreenshotControllerClass:
-
     def getScreenshot(self, wait=0):
         """
         延时wait秒后，获取所有屏幕的截图。返回列表(不为空)，每项为：\n
@@ -35,8 +37,25 @@ class _ScreenshotControllerClass:
             screensList = QGuiApplication.screens()
             for screen in screensList:
                 name = screen.name()
-                # 获取截图
-                pixmap = screen.grabWindow(0)
+                # 获取截图 - 使用 PySide6 推荐方法
+                try:
+                    # PySide6/Qt6: grabWindow(0) 截取整个屏幕
+                    pixmap = screen.grabWindow(0)
+                except Exception as grab_err:
+                    # 降级方案：通过虚拟桌面窗口ID截取
+                    try:
+                        # 获取主窗口并截取（使用文件开头已导入的 QGuiApplication）
+                        pixmap = screen.grabWindow(0)
+                        # 如果失败，尝试创建临时全屏窗口
+                        if pixmap.isNull() or pixmap.width() == 0:
+                            raise Exception("grabWindow returned invalid pixmap")
+                    except Exception as e2:
+                        return [
+                            {
+                                "imgID": f"[Error] Failed to grab screen {name}: {str(e2)}"
+                            }
+                        ]
+
                 width = pixmap.width()
                 height = pixmap.height()
                 # 检查截图失败
@@ -77,14 +96,46 @@ class _ScreenshotControllerClass:
     # type: imgID paths text
     def getPaste(self):
         # 获取剪贴板数据
-        mimeData = getClipboard().mimeData()
+        clipboard = getClipboard()
+        mimeData = clipboard.mimeData()
         res = {"type": ""}  # 结果字典
         # 检查剪贴板的内容，若是图片，则提取它并扔给OCR
         if mimeData.hasImage():
-            image = getClipboard().image()
-            pixmap = QPixmap.fromImage(image)
-            pasteID = PixmapProvider.addPixmap(pixmap)  # 存入提供器
-            res = {"type": "imgID", "imgID": pasteID}
+            try:
+                # 尝试多种方式获取剪贴板图片
+                image = clipboard.image()
+
+                # 如果直接获取失败，尝试从pixmap获取
+                if image.isNull():
+                    pixmap = clipboard.pixmap()
+                    if pixmap.isNull():
+                        res = {
+                            "type": "error",
+                            "error": "[Warning] Image in clipboard is invalid.",
+                        }
+                        return res
+                    # QPixmap转QImage再转回QPixmap确保格式正确
+                    image = pixmap.toImage()
+
+                # QImage转QPixmap
+                pixmap = QPixmap.fromImage(image)
+
+                # 检查转换结果
+                if pixmap.isNull():
+                    res = {
+                        "type": "error",
+                        "error": "[Warning] Failed to convert clipboard image to QPixmap.",
+                    }
+                    return res
+
+                pasteID = PixmapProvider.addPixmap(pixmap)  # 存入提供器
+                res = {"type": "imgID", "imgID": pasteID}
+            except Exception as e:
+                res = {
+                    "type": "error",
+                    "error": f"[Warning] Failed to get image from clipboard: {e}",
+                }
+
         # 若为URL
         elif mimeData.hasUrls():
             urlList = mimeData.urls()
@@ -102,7 +153,7 @@ class _ScreenshotControllerClass:
             text = mimeData.text()
             res = {"type": "text", "text": text}
         else:
-            res = {"type": "error", "error": "[Warning] Unknow mimeData in clipboard."}
+            res = {"type": "error", "error": "[Warning] Unknown mimeData in clipboard."}
         return res  # 返回结果字典
 
 

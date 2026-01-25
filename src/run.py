@@ -41,6 +41,20 @@ SOFTWARE.
 import os
 import sys
 import site
+import ctypes
+
+
+def MessageBox(msg, type_="error"):
+    """Display message box for errors (Windows only)"""
+    info = "Umi-OCR Message"
+    if type_ == "error":
+        info = "【错误】 Umi-OCR Error"
+    elif type_ == "warning":
+        info = "【警告】 Umi-OCR Warning"
+    try:
+        ctypes.windll.user32.MessageBoxW(None, str(msg), str(info), 0)
+    except Exception:
+        print(f"{info}: {msg}")
 
 
 # 启动主qml。工作路径必须为 UmiOCR-data
@@ -57,13 +71,15 @@ def runQml(engineAddImportPath):
         import os as os_module
 
         sep = ";" if os_module.name == "nt" else ":"
-        os.environ["QML2_IMPORT_PATH"] = qml_path + sep + os.path.abspath("qt_res/qml")
+        os.environ["QML2_IMPORT_PATH"] = qml_path + sep + os.path.abspath("resources")
         os.environ["QT_PLUGIN_PATH"] = plugins_path + sep + pyside_path + sep + qml_path
     except Exception:
         pass  # logger 还未导入，忽略错误
 
     from PySide6.QtCore import Qt, qInstallMessageHandler, QCoreApplication
-    from PySide6.QtGui import QGuiApplication
+    from PySide6.QtWidgets import (
+        QApplication,
+    )  # QApplication支持widgets，QGuiApplication不支持
     from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
     from PySide6.QtQuickControls2 import QQuickStyle
 
@@ -76,14 +92,15 @@ def runQml(engineAddImportPath):
 
     # ==================== 1. 全局参数设置 ====================
     # 启用 OpenGL 上下文之间的资源共享
-    QGuiApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
+    QApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
     # 启用高分屏自动缩放
-    QGuiApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     # 初始化渲染器
     app_opengl.initOpengl()
 
     # ==================== 2. 启动qt ====================
-    qtApp = QGuiApplication(sys.argv)
+    # 使用 QApplication 而不是 QGuiApplication，因为 QSystemTrayIcon 需要 widgets 支持
+    qtApp = QApplication(sys.argv)
     qtApp.setApplicationName(UmiAbout["name"])
     qtApp.setOrganizationName(UmiAbout["authors"][0]["name"])
     qtApp.setOrganizationDomain(UmiAbout["url"]["home"])
@@ -103,20 +120,28 @@ def runQml(engineAddImportPath):
     from .event_bus.key_mouse.key_mouse_connector import (  # 键盘/鼠标连接器
         KeyMouseConnector,
     )
-    from .plugins_controller.plugins_connector import PluginsConnector  # 插件连接器
+
+    # Plugins removed - no plugin system in refactored version
+    # from .plugins_controller.plugins_connector import PluginsConnector  # 插件连接器
+    from .utils.plugins_placeholder import (
+        PluginsConnector,
+    )  # Placeholder for removed plugin system
     from .utils.utils_connector import UtilsConnector  # 通用连接器
     from .utils.global_configs_connector import GlobalConfigsConnector  # 全局配置连接器
     from .utils.theme_connector import ThemeConnector  # 主题连接器
     from .image_controller.image_connector import ImageConnector  # 图片处理连接器
     from .image_controller.image_provider import PixmapProvider  # 图片提供器
     from .utils.i18n_configs import I18n  # 语言
+    from .utils.system_tray_connector import SystemTrayConnector  # 系统托盘连接器
 
     qmlRegisterType(TagPageConnector, "TagPageConnector", 1, 0, "TagPageConnector")
     qmlRegisterType(MissionConnector, "MissionConnector", 1, 0, "MissionConnector")
     qmlRegisterType(PubSubConnector, "PubSubConnector", 1, 0, "PubSubConnector")
     qmlRegisterType(KeyMouseConnector, "KeyMouseConnector", 1, 0, "KeyMouseConnector")
     qmlRegisterType(UtilsConnector, "UtilsConnector", 1, 0, "UtilsConnector")
-    qmlRegisterType(PluginsConnector, "PluginsConnector", 1, 0, "PluginsConnector")
+    qmlRegisterType(
+        PluginsConnector, "PluginsConnector", 1, 0, "PluginsConnector"
+    )  # Placeholder for removed plugin system
     qmlRegisterType(ThemeConnector, "ThemeConnector", 1, 0, "ThemeConnector")
     qmlRegisterType(ImageConnector, "ImageConnector", 1, 0, "ImageConnector")
     qmlRegisterType(
@@ -125,6 +150,7 @@ def runQml(engineAddImportPath):
     qmlRegisterType(
         DocPreviewConnector, "DocPreviewConnector", 1, 0, "DocPreviewConnector"
     )
+    qmlRegisterType(SystemTrayConnector, "SystemTray", 1, 0, "SystemTrayIcon")
 
     # ==================== 5. 启动翻译 ====================
     I18n.init(qtApp)
@@ -134,7 +160,7 @@ def runQml(engineAddImportPath):
     if engineAddImportPath:
         engine.addImportPath(engineAddImportPath)  # 相对路径重新导入包
     # 添加当前项目的 qml 目录
-    engine.addImportPath("qt_res/qml")
+    engine.addImportPath("resources")
     # 确保能找到 PySide6 的 Qt5Compat 模块
     try:
         import PySide6
@@ -148,7 +174,7 @@ def runQml(engineAddImportPath):
     engine.addImageProvider("pixmapprovider", PixmapProvider)  # 注册图片提供器
     rootContext = engine.rootContext()  # 注册常量
     rootContext.setContextProperty("UmiAbout", UmiAbout)
-    engine.load("resources/qml/Main.qml")  # 通过本地文件启动
+    engine.load("resources/Main.qml")  # 通过本地文件启动
     if not engine.rootObjects():
         return 1
     res = qtApp.exec_()
@@ -164,7 +190,7 @@ def main(app_path, engineAddImportPath=""):
     `engineAddImportPath`: 可选，qml包路径\n
     """
     # 初始化运行信息
-    site.addsitedir("./py_src/imports")  # 自定义库添加到搜索路径
+    site.addsitedir("./src/imports")  # 自定义库添加到搜索路径
     import umi_about
 
     if not umi_about.init(app_path):  # 初始化版本信息，失败则结束运行

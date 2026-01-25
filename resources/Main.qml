@@ -81,7 +81,7 @@ Window {
         }
     }
 
-    onClosing: { // 窗口关闭事件
+    onClosing: function(close) { // 窗口关闭事件
         close.accepted = false // 阻止原生事件
         mainWin.close() // 调用主窗管理器的关闭
     }
@@ -99,15 +99,14 @@ Window {
         // Esc 关闭窗口
         Keys.enabled: true
         Keys.onEscapePressed: {
-            // 如果设置了关闭窗口后隐藏到托盘区，则关闭窗口
+            // 如果设置了关闭窗口后隐藏到托盘区，则调用关闭逻辑
             if(qmlapp.globalConfigs.getValue("window.closeWin2Hide")) {
-                mainWindowRoot.visibility = Window.Hidden
+                qmlapp.mainWin.close() // 调用主窗管理器的关闭，会显示托盘
             }
             // 否则，最小化窗口，以兼容没有托盘区的平台
             else {
                 mainWindowRoot.visibility = Window.Minimized
             }
-            // TODO： Deiban 平台测试！
         }
 
         // 为了防止主窗启动不显示时，内容的宽度初始值为0，先让内容挂到固定宽度的Item下

@@ -4,6 +4,7 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Qt.labs.platform 1.1
 
 import ".."
 
@@ -87,7 +88,7 @@ Rectangle {
         title: qsTr("保存图片")
         selectExisting: false
         selectFolder: false
-        currentFolder: shortcuts.desktop // Qt6 默认放桌面
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DesktopLocation) // Qt6 默认放桌面
         nameFilters: ["*.png", "*.jpg"]
         onAccepted: {
             if(!fileUrl) {

@@ -118,12 +118,9 @@ RowLayout  {
                     width: hTabBarMain.tabWidth
                 }
 
-                // 事件：创建新标签时（与父类的槽同时生效）
-                onItemAdded: { 
-                    // 链接表现相关的槽函数
-                    item.dragStart.connect(dragStart)
-                    item.dragFinish.connect(dragFinish)
-                    item.dragMoving.connect(dragMoving)
+                // 事件：创建新标签时
+                onItemAdded: {
+                    // 重设序号由 BarManager 内部处理
                 }
 
                 // 事件：按钮数量变化
@@ -135,8 +132,10 @@ RowLayout  {
                 property var originalPosList: [] // 记录按钮初始位置的列表
                 property int originalX // 记录本轮拖拽前，被拖拽按钮原本的位置
                 function dragStart(index){ // 方法：开始拖拽
+                    console.log("dragStart called for index:", index)
                     // 重新记录当前所有按钮的位置
-                    originalX = itemAt(index).x
+                    const dragItem = itemAt(index)
+                    originalX = dragItem.x
                     intervalList = [-Infinity] // 下限：负无穷
                     originalPosList = [itemAt(0).x]
                     for(let i=1, c=model.count; i < c; i++){ // 按钮位置区间
@@ -144,16 +143,15 @@ RowLayout  {
                         intervalList.push(it.x)
                         originalPosList.push(it.x)
                     }
-                    intervalList.push(Infinity) // 上限：负无穷
+                    intervalList.push(Infinity) // 上限：正无穷
                     dragIndicator.visible = true
-
                 }
                 function btnDragIndex(index){ // 函数：返回当前index应该所处的序号
                     const dragItem = itemAt(index)
                     const x = dragItem.x + Math.round(dragItem.width/2) // 被拖动按钮的中心位置
                     let go = 0 // 应该拖放到的位置
-                    for(const c=intervalList.length-1; go < c; go++){
-                        if(x >= intervalList[go] && x <= intervalList[go+1]){
+                    for(let c=intervalList.length-1; go < c; go++){
+                        if(x >= intervalList[go] && x < intervalList[go+1]){
                             break;
                         }
                     }
@@ -164,10 +162,14 @@ RowLayout  {
                     dragIndicator.x = originalPosList[go]
                 }
                 function dragFinish(index){ // 方法：结束拖拽
+                    console.log("dragFinish called for index:", index)
                     dragIndicator.visible = false
                     let go = btnDragIndex(index) // 应该拖放到的序号
                     if(index !== go){ // 需要移动
-                        // model.move(index, go, 1)
+                        console.log("Moving tab from", index, "to", go)
+                        // 先重置被拖拽按钮的位置
+                        itemAt(index).x = originalX
+                        // 再移动 model，让布局自动调整
                         qmlapp.tab.moveTabPage(index, go)
                     } else { // 无需移动，则回到原位
                         itemAt(index).x = originalX
@@ -175,7 +177,7 @@ RowLayout  {
                     resetIndex()
                 }
             }
-            
+
             // 元素：控制按钮
             Rectangle{
                 id: tabBarControl

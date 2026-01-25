@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 """
 =========================================================
 =============== 为全局提供 Umi-OCR 关于信息 ===============
@@ -61,18 +60,39 @@ def init(app_path=""):
     global UmiAbout
     # 读取配置
     try:
-        with open("about.json", "r", encoding="utf-8") as file:
+        # Try to find about.json in UmiOCR-data directory or current directory
+        about_path = "about.json"
+        if not os.path.exists(about_path):
+            # Check UmiOCR-data directory
+            about_path = os.path.join("UmiOCR-data", "about.json")
+        if not os.path.exists(about_path):
+            # Check parent directory
+            about_path = os.path.join(
+                os.path.dirname(__file__), "..", "..", "UmiOCR-data", "about.json"
+            )
+            about_path = os.path.abspath(about_path)
+
+        with open(about_path, "r", encoding="utf-8") as file:
             u = load(file)
     except Exception as e:
-        os.MessageBox(f"[Error] 无法读取配置 about.json 。\n{e}")
+        # Import MessageBox from main module
+        try:
+            import os.path as osp
+
+            sys.path.insert(0, osp.abspath(osp.join(osp.dirname(__file__), "..", "..")))
+            from main import MessageBox as MsgBox
+
+            MsgBox(f"[Error] 无法读取配置 about.json 。\n{e}")
+        except Exception:
+            print(f"[Error] 无法读取配置 about.json 。\n{e}")
         return False
     # 完整版本号
-    v = f'{u["version"]["major"]}.{u["version"]["minor"]}.{u["version"]["patch"]}'
+    v = f"{u['version']['major']}.{u['version']['minor']}.{u['version']['patch']}"
     if u["version"]["prerelease"]:
-        v += f'-{u["version"]["prerelease"]}.{u["version"]["prereleaseNumber"]}'
+        v += f"-{u['version']['prerelease']}.{u['version']['prereleaseNumber']}"
     u["version"]["string"] = v
     # 全名
-    u["fullname"] = f'{u["name"]} v{v}'
+    u["fullname"] = f"{u['name']} v{v}"
     # 程序运行信息
     if app_path:
         app_path = os.path.abspath(app_path)

@@ -6,8 +6,24 @@ import os
 import sys
 import time
 import psutil
+import ctypes
 
 from umi_log import logger
+
+
+def MessageBox(msg, type_="error"):
+    """Display message box for errors (Windows only)"""
+    info = "Umi-OCR Message"
+    if type_ == "error":
+        info = "【错误】 Umi-OCR Error"
+    elif type_ == "warning":
+        info = "【警告】 Umi-OCR Warning"
+    try:
+        ctypes.windll.user32.MessageBoxW(None, str(msg), str(info), 0)
+    except Exception:
+        print(f"{info}: {msg}")
+
+
 from ..utils import pre_configs
 from ..platform import Platform
 
@@ -34,9 +50,23 @@ def _isMultiOpen():
     recordPID = pre_configs.getValue("last_pid")
     recordPTime = pre_configs.getValue("last_ptime")
     if psutil.pid_exists(recordPID):  # 上次记录的pid如今存在
-        processTime = getPidTime(recordPID)
-        if recordPTime == processTime:  # 当前该进程启动时间与记录的相同，则为多开
-            return True
+        try:
+            process = psutil.Process(recordPID)
+            processTime = str(process.create_time())
+            if recordPTime == processTime:  # 当前该进程启动时间与记录的相同
+                # 额外检查进程名，确保是 Umi-OCR 或 Python 进程
+                processName = process.name().lower()
+                processCmdline = " ".join(process.cmdline()).lower()
+                # 检查是否为 Umi-OCR 相关进程（python 或包含 umi 的进程）
+                if "python" in processName or "umi" in processName or "umi" in processCmdline:
+                    return True
+        except psutil.NoSuchProcess:
+            pass
+        except psutil.AccessDenied:
+            # 如果无法访问进程信息，谨慎起见不认为是多开
+            pass
+        except Exception as e:
+            logger.warning(f"检查多开时出错: {e}")
     return False
 
 
@@ -167,7 +197,13 @@ def initCmd():
         force = True
     # 检查，发现软件多开，则向已在运行的进程发送初始指令
     if _isMultiOpen():
-        _sendCmd(argv)
+        # 如果没有参数（只是想打开程序），发送显示主窗口命令
+        if not argv and not force:
+            logger.info("检测到已有程序运行，显示主窗口")
+            _sendCmd(["--show"])
+        else:
+            # 有参数则发送参数
+            _sendCmd(argv)
         return False
     # 未多开，则启动进程
     else:

@@ -24,8 +24,13 @@ Item {
     Component.onCompleted: {
         loadGeometry(true) // 恢复上次大小位置
         // 启动时可见
-        const visi = !qmlapp.globalConfigs.getValue("window.startupInvisible")
+        const startupInvisible = qmlapp.globalConfigs.getValue("window.startupInvisible")
+        const visi = !startupInvisible
         setVisibility(visi)
+        // 始终显示托盘图标，无论窗口是否可见
+        Qt.callLater(()=>{
+            qmlapp.systemTray.show()
+        })
         if(!visi) {
             qmlapp.popup.simple(qsTr("欢迎使用 Umi-OCR"), qsTr("已启用后台模式，可通过快捷键使用功能。"))
         }
@@ -122,9 +127,12 @@ Item {
 
     // 关闭主窗口
     function close() {
+        const closeWin2Hide = qmlapp.globalConfigs.getValue("window.closeWin2Hide")
         // 隐藏
-        if(qmlapp.globalConfigs.getValue("window.closeWin2Hide")) {
+        if(closeWin2Hide) {
             setVisibility(false)
+            // 确保托盘图标显示
+            qmlapp.systemTray.show()
         }
         // 关闭
         else {

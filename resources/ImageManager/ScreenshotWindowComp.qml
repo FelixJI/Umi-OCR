@@ -36,20 +36,45 @@ Window {
     property real firstClickX: -1            // 记录首次点击的X
     property real firstClickY: -1            // 记录首次点击的Y
     property bool hasFirstClick: false       // 是否已完成第一次点击
+    
+    // 新增配置属性
+    property bool enableMaskLayer: true      // 是否启用遮罩层
+    property bool autoWindowDetect: false    // 是否启用自动窗口识别
 
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint // 无边框+置顶
+    // 窗口标志：无边框 + 置顶
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
     Component.onCompleted: {
+        console.log("[ScreenshotWindowComp] 初始化开始")
+        console.log("[ScreenshotWindowComp] imgID:", imgID, "screenName:", screenName)
+        console.log("[ScreenshotWindowComp] selectionMode:", selectionMode, "enableMaskLayer:", enableMaskLayer)
+        console.log("[ScreenshotWindowComp] 窗口尺寸:", width, "x", height)
+        
+        // 加载图片
         image.showImgID(imgID)
-        visible = true // 窗口可见
-        // 窗口模式设置为全屏，避免Linux任务栏排斥窗口位置
-        win.visibility = Window.FullScreen
-        raise() // 弹到最前层
-        requestActivate() // 激活窗口
+        
+        // 先设置全屏模式，再设置可见性
+        win.visibility = Window.FullScreen  // 使用全屏模式
+        
+        // 延迟显示窗口，确保全屏模式已设置
+        Qt.callLater(function() {
+            win.showFullScreen()  // 显示全屏窗口
+            win.raise()  // 弹到最前层
+            win.requestActivate()  // 请求激活窗口
+            // 再次尝试激活，确保窗口获得焦点
+            Qt.callLater(function() {
+                win.raise()
+                win.requestActivate()
+                console.log("[ScreenshotWindowComp] 窗口已显示, 可见:", win.visible, "激活:", win.active)
+            })
+        })
+        
+        console.log("[ScreenshotWindowComp] 初始化完成")
     }
 
     // 截图完毕，成功为true
     function ssEnd(okk) {
+        console.log("[ScreenshotWindowComp] ssEnd 被调用 - 成功:", okk)
         visible = false // 先隐藏窗口
         let argd = {}
         if(okk) { // 成功
@@ -66,9 +91,11 @@ Window {
                 clipW: clipW,
                 clipH: clipH,
             }
+            console.log("[ScreenshotWindowComp] 截图成功 - clipX:", clipX, "clipY:", clipY, "clipW:", clipW, "clipH:", clipH)
         }
         else {
             argd = {clipX:-1, clipY:-1, clipW:-1, clipH:-1}
+            console.log("[ScreenshotWindowComp] 截图取消")
         }
         // 向父级回报
         win.screenshotEnd(argd)
@@ -84,9 +111,9 @@ Window {
     Rectangle {
         id: darkLayer
         anchors.fill: parent
-        color: darkLayerColor
+        color: win.enableMaskLayer ? darkLayerColor : "#00000000" // 根据配置控制遮罩层显示
         // 遮罩，拖拽时扣除框选区域
-        layer.enabled: mouseStatus==1
+        layer.enabled: mouseStatus==1 && win.enableMaskLayer
         layer.effect: OpacityMask {
             invert: true // 取反
             maskSource: Item {
@@ -162,9 +189,11 @@ Window {
         focus: true // 获取焦点
 
         // 按下
-        onPressed: {
+        onPressed: function(mouse) {
+            console.log("[截图] onPressed - button:", mouse.button, "selectionMode:", win.selectionMode, "mouseStatus:", mouseStatus)
             if (win.selectionMode === "click") {
                 if (mouse.button === Qt.RightButton) {
+                    console.log("[截图] click模式 - 右键取消")
                     win.hasFirstClick = false
                     ssEnd(false)  // 取消截图
                 }
@@ -172,9 +201,11 @@ Window {
                 return
             }
             if (mouse.button === Qt.RightButton) {
+                console.log("[截图] drag模式 - 右键跳过")
                 return
             }
             if(mouseStatus == 0) {
+                console.log("[截图] 开始拖拽 - x:", mouse.x, "y:", mouse.y)
                 mouseStatus = 1
                 win.mouseX = mouse.x
                 win.mouseY = mouse.y
@@ -183,7 +214,7 @@ Window {
             }
         }
         // 移动
-        onPositionChanged: {
+        onPositionChanged: function(mouse) {
             if (win.selectionMode === "click"){
                 win.mouseX = mouse.x
                 win.mouseY = mouse.y
@@ -231,33 +262,37 @@ Window {
             }
         }
         // 松开
-        onReleased: {
-            // addnew
+        onReleased: function(mouse) {
+            console.log("[截图] onReleased - button:", mouse.button, "mouseStatus:", mouseStatus)
             if (win.selectionMode === "click") {
                 // 点击模式，首次单击后不立即结束
                 return
             }
             if (mouse.button === Qt.RightButton) {
+                console.log("[截图] 右键取消截图")
                 ssEnd(false)
                 return
             }
             if(mouseStatus == 1) {
+                console.log("[截图] 拖拽结束 - clipX:", win.clipX, "clipY:", win.clipY, "clipW:", win.clipW, "clipH:", win.clipH)
                 ssEnd(true)
             }
         }
-        // adnew
         // 点击模式使用 onClicked 进行两次点击逻辑
-        onClicked: {
+        onClicked: function(mouse) {
+            console.log("[截图] onClicked - button:", mouse.button, "selectionMode:", win.selectionMode)
             if (win.selectionMode !== "click") return
             if (mouse.button === Qt.LeftButton) {
                 if (!win.hasFirstClick) {
                     // 第一次点击：记录起点
+                    console.log("[截图] click模式 - 第一次点击 x:", mouse.x, "y:", mouse.y)
                     win.firstClickX = mouse.x; win.firstClickY = mouse.y
                     win.clipX = win.firstClickX; win.clipY = win.firstClickY
                     win.clipW = 0; win.clipH = 0
                     win.hasFirstClick = true
                 } else {
                     // 第二次点击：计算矩形并完成截图
+                    console.log("[截图] click模式 - 第二次点击 x:", mouse.x, "y:", mouse.y)
                     var x2 = mouse.x, y2 = mouse.y
                     win.clipX = Math.min(win.firstClickX, x2)
                     win.clipY = Math.min(win.firstClickY, y2)
@@ -268,6 +303,7 @@ Window {
                 }
             } else if (mouse.button === Qt.RightButton) {
                 // 右键取消截图
+                console.log("[截图] click模式 - 右键取消")
                 win.hasFirstClick = false
                 ssEnd(false)
             }

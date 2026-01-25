@@ -16,6 +16,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 Repeater {
+    id: barManagerRoot
 
     // ========================= 【属性与变量】 =========================
 
@@ -95,11 +96,16 @@ Repeater {
     // ========================= 【创建和删除事件】 =========================
 
     // 创建新标签时
-    onItemAdded: { 
+    onItemAdded: function(index, item) {
+        resetIndex() // 重设序号
+        // 通知父组件有新项目
+        barManagerRoot.childItemAdded(index, item)
+    }
+
+    onItemRemoved: function(index, item) {
         resetIndex() // 重设序号
     }
 
-    onItemRemoved: {
-        resetIndex() // 重设序号
-    }
+    // 自定义信号，用于通知父组件
+    signal childItemAdded(int index, var item)
 }

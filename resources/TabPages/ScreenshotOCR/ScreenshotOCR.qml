@@ -246,15 +246,19 @@ TabPage {
         Menu {
             id: modeMenu
             parent: Qt.application.activeWindow
-            width: 60
+            width: 80
 
             MenuItem {
                 text: qsTr("拖动截屏")
-                onTriggered: qmlapp.imageManager.screenshotManager.selectMode = "drag"
+                onTriggered: {
+                    qmlapp.globalConfigs.setValue("screenshot.selectMode", "drag", true)
+                }
             }
             MenuItem {
                 text: qsTr("点击截屏")
-                onTriggered: qmlapp.imageManager.screenshotManager.selectMode = "click"
+                onTriggered: {
+                    qmlapp.globalConfigs.setValue("screenshot.selectMode", "click", true)
+                }
             }
         }
 
