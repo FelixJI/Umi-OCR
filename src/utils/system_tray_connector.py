@@ -14,6 +14,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 
 from umi_log import logger
+from src.event_bus.pubsub_service import PubSubService
 
 
 class SystemTrayConnector(QObject):
@@ -200,6 +201,20 @@ class SystemTrayConnector(QObject):
         """设置qmlapp引用"""
         self._qmlapp = qmlapp
 
+    def _getQmlProperty(self, property_name):
+        """
+        安全地从 QML qmlapp 对象获取属性
+        
+        QML 对象的属性需要通过 property() 方法访问，而不是直接属性访问
+        """
+        if not self._qmlapp:
+            return None
+        try:
+            return self._qmlapp.property(property_name)
+        except Exception as e:
+            logger.error(f"[SystemTrayConnector] 获取属性 {property_name} 失败: {e}")
+            return None
+
     @Slot(str, str, result="QVariant")
     def addMenuItem(self, eventTitle, text=""):
         """
@@ -214,36 +229,10 @@ class SystemTrayConnector(QObject):
         # 连接到触发函数
         def onTriggered():
             logger.info(f"[SystemTrayConnector] 菜单项被点击: {eventTitle}")
-            if not self._qmlapp:
-                logger.error(f"[SystemTrayConnector] qmlapp 未设置，无法执行菜单操作")
-                return
-
             try:
-                # 特殊事件直接调用方法
-                if eventTitle == "<<mainWin.open>>":
-                    logger.info(f"[SystemTrayConnector] 尝试打开主窗口")
-                    main_win = self._qmlapp.mainWin
-                    if main_win:
-                        main_win.setVisibility(True)
-                        logger.info(f"[SystemTrayConnector] 已调用 mainWin.setVisibility(True)")
-                    else:
-                        logger.error(f"[SystemTrayConnector] mainWin 对象为空")
-                elif eventTitle == "<<mainWin.quit>>":
-                    logger.info(f"[SystemTrayConnector] 尝试退出应用")
-                    main_win = self._qmlapp.mainWin
-                    if main_win:
-                        main_win.quit()
-                        logger.info(f"[SystemTrayConnector] 已调用 mainWin.quit()")
-                    else:
-                        logger.error(f"[SystemTrayConnector] mainWin 对象为空")
-                else:
-                    # 其他事件使用 pubsub
-                    pub_sub = self._qmlapp.pubSub
-                    if pub_sub:
-                        pub_sub.publish(eventTitle)
-                        logger.info(f"[SystemTrayConnector] 已发布事件: {eventTitle}")
-                    else:
-                        logger.error(f"[SystemTrayConnector] pubSub 对象为空")
+                # 直接使用 Python 的 PubSubService 发布事件
+                PubSubService.publish(eventTitle)
+                logger.info(f"[SystemTrayConnector] 已发布事件: {eventTitle}")
             except Exception as e:
                 logger.error(f"[SystemTrayConnector] 菜单项点击失败: {e}", exc_info=True)
 

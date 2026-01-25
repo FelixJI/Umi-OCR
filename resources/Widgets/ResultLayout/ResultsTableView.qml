@@ -12,6 +12,7 @@ Item {
     // ========================= 【对外接口】 =========================
 
     property alias ctrlBar: ctrlBar // 控制栏的引用
+    property alias model: resultsModel // 结果模型
 
     // 添加一条OCR结果。元素：
     // timestamp 时间戳，秒为单位
@@ -87,6 +88,26 @@ Item {
             }
         }
         return undefined
+    }
+
+    // 通用添加结果方法，用于非OCR结果
+    function addResult(res) {
+        let now = Date.now() / 1000
+        resultsModel.append({
+            "status__": "text",
+            "title": res.title || "",
+            "datetime": "",
+            "resText": res.content || "",
+            "timestamp": now,
+            "selectL_": -1,
+            "selectR_": -1,
+            "selectUpdate_": 0,
+            "source": JSON.stringify(res),
+        })
+        // 自动滚动
+        if(autoToBottom) {
+            tableView.toBottom()
+        }
     }
     
     // ========================= 【布局】 =========================

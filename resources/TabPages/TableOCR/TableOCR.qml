@@ -102,7 +102,10 @@ TabPage {
     }
 
     function onGet(path, res) {
-        const time = res.time ? res.time.toFixed(2) : "0.00"
+        let time = "0.00"
+        if(res.time) {
+            time = res.time.toFixed(2)
+        }
         let state = ""
         switch(res.code){
             case 100:
@@ -204,16 +207,24 @@ TabPage {
             icon_: "save"
             enabled: ctrlPanel.state_ === "stop" && results.length > 0
             onClicked: {
-                qmlapp.utilsConnector.selectFolder(qsTr("选择导出目录"), "", function(folder) {
-                    if(folder) {
-                        const result = tabPage.callPy("exportAllToExcel", folder)
+                qmlapp.utilsConnector.selectFile(qsTr("导出表格识别结果"), "", [
+                    qsTr("Excel文件")+" (*.xlsx)",
+                    qsTr("CSV文件")+" (*.csv)",
+                    qsTr("JSON文件")+" (*.json)"
+                ], function(filePath) {
+                    if(filePath) {
+                        let format = "excel"
+                        if(filePath.endsWith(".csv")) format = "csv"
+                        else if(filePath.endsWith(".json")) format = "json"
+
+                        const result = tabPage.callPy("exportResults", filePath, format)
                         if(result.code === 100) {
                             qmlapp.popup.simple(qsTr("导出成功"), result.data, "success")
                         } else {
                             qmlapp.popup.message(qsTr("导出失败"), result.data, "error")
                         }
                     }
-                })
+                }, false, true)  // selectExisting=false, saveMode=true
             }
         }
     }
@@ -221,8 +232,8 @@ TabPage {
     // 拖入图片的回调
     DropArea_ {
         anchors.fill: mainContainer
-        enabled: ctrlPanel.state_ === "stop"
-        onPathsDropped: tabPage.addImages(paths)
+        enable: ctrlPanel.state_ === "stop"
+        callback: tabPage.addImages
     }
 
     // 主区域容器
@@ -263,14 +274,6 @@ TabPage {
                 ResultsTableView {
                     id: resultsTableView
                     anchors.fill: parent
-                    
-                    // 自定义添加结果方法
-                    function addResult(res) {
-                        model.append({
-                            title: res.title || "",
-                            content: res.content || ""
-                        })
-                    }
                 }
             }
         }

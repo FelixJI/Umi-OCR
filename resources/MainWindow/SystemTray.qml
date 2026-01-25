@@ -7,18 +7,6 @@ import SystemTray 1.0
 
 SystemTrayIcon {
 
-    // ========================= 【接口】 =========================
-
-    // 显示托盘图标
-    function show() {
-        systemTrayRoot.show()
-    }
-
-    // 隐藏托盘图标
-    function hide() {
-        systemTrayRoot.hide()
-    }
-
     // ========================= 【布局】 =========================
 
     id: systemTrayRoot
@@ -37,6 +25,6 @@ SystemTrayIcon {
 
     onActivated: {
         if(reason === SystemTrayIcon.DoubleClick)
-            qmlapp.mainWin.setVisibility(true) // 主窗可见
+            qmlapp.pubSub.publish("<<mainWin.open>>") // 通过 pubsub 事件打开主窗
     }
 }

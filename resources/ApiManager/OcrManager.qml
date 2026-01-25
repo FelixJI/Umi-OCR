@@ -24,6 +24,7 @@ Item {
         "api": {
             "title": qsTr("当前接口"),
             "optionsList": [],
+            "default": "pp_ocrv5",  // 默认使用PP-OCRv5引擎
         },
         "engine_info": {
             "title": qsTr("引擎说明"),
@@ -204,29 +205,29 @@ Item {
         localOptions = {}
         // 清空引擎列表
         globalOptions.api.optionsList = []
-        
+
         for (var key in options) {
             const gOpt = options[key].global_options
             const lOpt = options[key].local_options
             const group = options[key].group || "ocr"
             const label = gOpt ? gOpt.title : (options[key].label || key)
             const description = options[key].description || ""
-            
+
             // 添加到选项列表
             globalOptions.api.optionsList.push([key, label])
-            
+
             if(gOpt) { // 有全局配置
                 globalOptions[key] = gOpt
             }
             else { // 无全局配置
                 globalOptions[key] = {"title": label, "type":"group"}
             }
-            
+
             if(lOpt) // 有局部配置
                 localOptions[key] = lOpt
             else // 无局部配置
                 localOptions[key] = {"title": label, "type":"group"}
-            
+
             // 记录引擎分组
             if (engineGroups[group]) {
                 engineGroups[group].engines.push({
@@ -236,6 +237,13 @@ Item {
                     "requires_api_key": options[key].requires_api_key || false
                 })
             }
+        }
+        // 确保默认引擎在可用引擎列表中
+        const defaultEngine = globalOptions.api.default
+        if (!localOptions.hasOwnProperty(defaultEngine) && globalOptions.api.optionsList.length > 0) {
+            // 如果默认引擎不可用，使用第一个可用引擎
+            globalOptions.api.default = globalOptions.api.optionsList[0][0]
+            console.log("默认引擎不可用，使用第一个可用引擎:", globalOptions.api.default)
         }
         qmlapp.globalConfigs.configDict.ocr = globalOptions // 写入全局预配置
     }

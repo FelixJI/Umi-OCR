@@ -9,6 +9,17 @@ Configs {
     category_: "InvoiceOCR"
 
     configDict: {
+        // OCR 引擎选择
+        "ocr": qmlapp.globalConfigs.ocrManager.deploy(this, "ocr"),
+
+        // 后处理
+        "tbpu": {
+            "title": qsTr("OCR文本后处理"),
+            "type": "group",
+
+            "parser": qmlapp.globalConfigs.utilsDicts.getTbpuParser(),
+        },
+
         // 发票识别参数
         "invoice": {
             "title": qsTr("发票识别设置"),
@@ -89,7 +100,7 @@ Configs {
             },
             "dir": {
                 "title": qsTr("指定目录"),
-                "toolTip": qsTr("必须先指定"保存到指定目录"才生效"),
+                "toolTip": qsTr("必须先指定「保存到指定目录」才生效"),
                 "type": "file",
                 "selectExisting": true,
                 "selectFolder": true,

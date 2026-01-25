@@ -102,7 +102,10 @@ TabPage {
     }
 
     function onGet(path, res) {
-        const time = res.time ? res.time.toFixed(2) : "0.00"
+        let time = "0.00"
+        if(res.time) {
+            time = res.time.toFixed(2)
+        }
         let state = ""
         switch(res.code){
             case 100:
@@ -248,8 +251,8 @@ TabPage {
     // 拖入图片的回调
     DropArea_ {
         anchors.fill: mainContainer
-        enabled: ctrlPanel.state_ === "stop"
-        onPathsDropped: tabPage.addImages(paths)
+        enable: ctrlPanel.state_ === "stop"
+        callback: tabPage.addImages
     }
 
     // 主区域容器

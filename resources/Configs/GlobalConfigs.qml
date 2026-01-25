@@ -343,9 +343,8 @@ Configs {
         reload()
         // 检查权限和异常情况
         checkAccess()
-        // 应用OCR信息 - 现在由内置引擎自动初始化
-        // if(configDict.ocr)
-        //     ocrManager.init2()
+        // 初始化OCR管理器 - 使用内置引擎
+        initOcrManager()
         console.log("GlobalConfig 初始化全局配置完毕！")
         // 延迟执行
         Qt.callLater(()=>{
@@ -357,6 +356,25 @@ Configs {
                 globalConfigConn.runUmiWeb(gRoot, "setRealPort", host)
             }
         })
+    }
+
+    // 初始化OCR管理器 - 使用内置引擎
+    function initOcrManager() {
+        try {
+            // 调用Python获取内置OCR引擎选项
+            const engineOptions = qmlapp.msnConnector.callPy("ocr", "getAllEngineOptions", [])
+            if(engineOptions && Object.keys(engineOptions).length > 0) {
+                // 初始化OCR管理器
+                ocrManager.init1(engineOptions)
+                console.log("OCR管理器初始化成功，引擎数量:", Object.keys(engineOptions).length)
+                // 应用默认配置
+                ocrManager.init2()
+            } else {
+                console.warn("未找到可用的OCR引擎")
+            }
+        } catch(e) {
+            console.error("OCR管理器初始化失败:", e)
+        }
     }
 
     // 检查权限和异常情况

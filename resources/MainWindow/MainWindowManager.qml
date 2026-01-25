@@ -34,6 +34,20 @@ Item {
         if(!visi) {
             qmlapp.popup.simple(qsTr("欢迎使用 Umi-OCR"), qsTr("已启用后台模式，可通过快捷键使用功能。"))
         }
+
+        // 订阅托盘菜单事件
+        qmlapp.pubSub.subscribe("<<mainWin.open>>", this, "openFromTray")
+        qmlapp.pubSub.subscribe("<<mainWin.quit>>", this, "quitFromTray")
+    }
+
+    // 从托盘打开窗口
+    function openFromTray() {
+        setVisibility(true)
+    }
+
+    // 从托盘退出应用
+    function quitFromTray() {
+        quit()
     }
 
     // ========================= 【记录窗口位置大小】 =========================

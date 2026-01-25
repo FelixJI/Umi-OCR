@@ -34,6 +34,10 @@ def _calculateAngle(box):
             # 如果坐标无效，返回0角度
             return 0.0
 
+    # 检查是否为空列表
+    if not box:
+        return 0.0
+
     # 获取宽高
     width = _distance(box[0], box[1])
     height = _distance(box[1], box[2])
@@ -128,7 +132,8 @@ def _getBboxes(textBlocks, rotation_rad):
 
 # 预处理 textBlocks ，将包围盒 ["box"] 转为标准化 bbox ，同时去除 ["text"] 不完整的项
 def linePreprocessing(textBlocks):
-    textBlocks = [i for i in textBlocks if i.get("text", False)]
+    # 过滤掉没有文本或box为空的无效块
+    textBlocks = [i for i in textBlocks if i.get("text", False) and i.get("box")]
     # 判断角度
     rotation_rad = _estimateRotation(textBlocks)
     # 获取标准化bbox

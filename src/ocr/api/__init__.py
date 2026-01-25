@@ -9,6 +9,11 @@ OCR引擎注册和管理模块
 - PaddleOCR-VL: 视觉语言模型（109语言）
 - PP-StructureV3: 文档结构化
 - PP-ChatOCRv4: 智能信息抽取
+
+支持多种云API引擎：
+- 百度智能云OCR: 通用/高精度/表格/发票识别
+- 腾讯云OCR: 通用/高精度/表格/发票识别
+- 阿里云OCR: 通用/高精度/表格/发票识别
 """
 
 from umi_log import logger
@@ -26,33 +31,46 @@ def initBuiltInOcr():
     """
     初始化所有内置 OCR 引擎。
     注册 PP-OCRv5、PaddleOCR-VL、PP-StructureV3、PP-ChatOCRv4。
+    注册百度、腾讯、阿里云OCR引擎。
     """
     global ApiDict, AllDict
 
     # 注册所有引擎
     engines_registered = []
-    
+
     # 1. PP-OCRv5 - 标准识别
     if _register_ocrv5():
         engines_registered.append("pp_ocrv5")
-    
+
     # 2. PaddleOCR-VL - 视觉语言模型
     if _register_vl():
         engines_registered.append("paddle_vl")
-    
+
     # 3. PP-StructureV3 - 文档结构化
     if _register_structure():
         engines_registered.append("pp_structure")
-    
+
     # 4. PP-ChatOCRv4 - 智能抽取
     if _register_chat():
         engines_registered.append("pp_chat")
-    
+
+    # 5. 百度智能云OCR
+    if _register_baidu_ocr():
+        engines_registered.append("baidu_ocr")
+
+    # 6. 腾讯云OCR
+    if _register_tencent_ocr():
+        engines_registered.append("tencent_ocr")
+
+    # 7. 阿里云OCR
+    if _register_alibaba_ocr():
+        engines_registered.append("alibaba_ocr")
+
     # 保持向后兼容：注册paddleocr_native别名
     if "pp_ocrv5" in ApiDict:
         ApiDict["paddleocr_native"] = ApiDict["pp_ocrv5"]
         AllDict["paddleocr_native"] = AllDict["pp_ocrv5"]
-    
+
     if engines_registered:
         logger.info(f"已注册 OCR 引擎: {', '.join(engines_registered)}")
         return True
@@ -140,10 +158,10 @@ def _register_chat() -> bool:
     """注册 PP-ChatOCRv4 引擎"""
     try:
         from ..engines.paddle_chat import PaddleChatEngine
-        
+
         apiKey = "pp_chat"
         ApiDict[apiKey] = PaddleChatEngine
-        
+
         AllDict[apiKey] = {
             "api_class": PaddleChatEngine,
             "group": "chat",
@@ -153,12 +171,90 @@ def _register_chat() -> bool:
             "global_options": PaddleChatEngine.get_config_schema(),
             "local_options": {},
         }
-        
+
         logger.debug("PP-ChatOCRv4 引擎注册成功")
         return True
-        
+
     except ImportError as e:
         logger.warning(f"PP-ChatOCRv4 引擎注册失败: {e}")
+        return False
+
+
+def _register_baidu_ocr() -> bool:
+    """注册百度智能云OCR引擎"""
+    try:
+        from ..engines.baidu_ocr import BaiduOCREngine
+
+        apiKey = "baidu_ocr"
+        ApiDict[apiKey] = BaiduOCREngine
+
+        AllDict[apiKey] = {
+            "api_class": BaiduOCREngine,
+            "group": "ocr",
+            "label": "百度智能云OCR",
+            "description": "通用/高精度文字识别、表格/发票识别（需API Key）",
+            "requires_api_key": True,
+            "global_options": BaiduOCREngine.get_config_schema(),
+            "local_options": {},
+        }
+
+        logger.debug("百度智能云OCR 引擎注册成功")
+        return True
+
+    except ImportError as e:
+        logger.warning(f"百度智能云OCR 引擎注册失败: {e}")
+        return False
+
+
+def _register_tencent_ocr() -> bool:
+    """注册腾讯云OCR引擎"""
+    try:
+        from ..engines.tencent_ocr import TencentOCREngine
+
+        apiKey = "tencent_ocr"
+        ApiDict[apiKey] = TencentOCREngine
+
+        AllDict[apiKey] = {
+            "api_class": TencentOCREngine,
+            "group": "ocr",
+            "label": "腾讯云OCR",
+            "description": "通用/高精度文字识别、表格/发票识别（需API Key）",
+            "requires_api_key": True,
+            "global_options": TencentOCREngine.get_config_schema(),
+            "local_options": {},
+        }
+
+        logger.debug("腾讯云OCR 引擎注册成功")
+        return True
+
+    except ImportError as e:
+        logger.warning(f"腾讯云OCR 引擎注册失败: {e}")
+        return False
+
+
+def _register_alibaba_ocr() -> bool:
+    """注册阿里云OCR引擎"""
+    try:
+        from ..engines.alibaba_ocr import AlibabaOCREngine
+
+        apiKey = "alibaba_ocr"
+        ApiDict[apiKey] = AlibabaOCREngine
+
+        AllDict[apiKey] = {
+            "api_class": AlibabaOCREngine,
+            "group": "ocr",
+            "label": "阿里云OCR",
+            "description": "通用/高精度文字识别、表格/发票识别（需API Key）",
+            "requires_api_key": True,
+            "global_options": AlibabaOCREngine.get_config_schema(),
+            "local_options": {},
+        }
+
+        logger.debug("阿里云OCR 引擎注册成功")
+        return True
+
+    except ImportError as e:
+        logger.warning(f"阿里云OCR 引擎注册失败: {e}")
         return False
 
 

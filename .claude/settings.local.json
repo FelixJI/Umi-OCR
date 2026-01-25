@@ -28,7 +28,11 @@
       "Bash(taskkill:*)",
       "Bash(xargs:*)",
       "Bash(wmic:*)",
-      "Bash(start:*)"
-    ]
+      "Bash(start:*)",
+      "Bash(echo:*)",
+      "Edit"
+    ],
+    "deny": [],
+    "ask": []
   }
 }

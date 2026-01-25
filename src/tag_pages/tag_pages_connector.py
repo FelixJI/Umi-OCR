@@ -17,10 +17,11 @@ from .BatchDOC import BatchDOC
 from .ScreenshotOCR import ScreenshotOCR
 from .QRCode import QRCode
 from .TableOCR import TableOCR
+from .InvoiceOCR import InvoiceOCR
 from ..utils.call_func import CallFunc
 
 # 控制器类列表
-PageClass = [BatchOCR, ScreenshotOCR, QRCode, BatchDOC, TableOCR]
+PageClass = [BatchOCR, ScreenshotOCR, QRCode, BatchDOC, TableOCR, InvoiceOCR]
 
 
 TagPageConnObj = None  # 记录实例

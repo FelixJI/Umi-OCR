@@ -24,6 +24,57 @@ def MessageBox(msg, type_="error"):
         print(f"{info}: {msg}")
 
 
+def _showInstanceDialog():
+    """
+    显示实例选择对话框
+    返回: "use_existing" - 使用当前实例
+          "restart" - 强制重启
+          "cancel" - 取消操作
+    """
+    import platform
+    
+    if platform.system() != "Windows":
+        # 非 Windows 平台默认使用当前实例
+        return "use_existing"
+    
+    try:
+        # Windows MessageBox 参数
+        # MB_YESNOCANCEL = 0x00000003
+        # MB_ICONQUESTION = 0x00000020
+        # MB_DEFBUTTON1 = 0x00000000
+        # 返回值: IDYES=6, IDNO=7, IDCANCEL=2
+        
+        msg = (
+            "检测到 Umi-OCR 已在运行。\n\n"
+            "请选择操作：\n"
+            "  【是】 - 激活当前运行的实例\n"
+            "  【否】 - 关闭当前实例并重新启动\n"
+            "  【取消】 - 取消本次启动\n\n"
+            "Umi-OCR is already running.\n"
+            "Yes = Activate existing instance\n"
+            "No = Restart application\n"
+            "Cancel = Abort"
+        )
+        title = "Umi-OCR - 检测到已有实例运行"
+        
+        result = ctypes.windll.user32.MessageBoxW(
+            None, 
+            msg, 
+            title, 
+            0x00000003 | 0x00000020  # MB_YESNOCANCEL | MB_ICONQUESTION
+        )
+        
+        if result == 6:  # IDYES
+            return "use_existing"
+        elif result == 7:  # IDNO
+            return "restart"
+        else:  # IDCANCEL or other
+            return "cancel"
+    except Exception as e:
+        logger.warning(f"显示实例选择对话框失败: {e}")
+        return "use_existing"
+
+
 from ..utils import pre_configs
 from ..platform import Platform
 
@@ -165,6 +216,71 @@ def _sendCmd(argv):
         _clip(res)
 
 
+# 终止已运行的实例
+def _terminateExistingInstance():
+    """
+    终止已运行的实例
+    返回: True - 成功终止, False - 终止失败
+    """
+    recordPID = pre_configs.getValue("last_pid")
+    recordPTime = pre_configs.getValue("last_ptime")
+    
+    if not psutil.pid_exists(recordPID):
+        return True
+    
+    try:
+        process = psutil.Process(recordPID)
+        processTime = str(process.create_time())
+        
+        # 确认是同一个进程
+        if recordPTime != processTime:
+            return True
+        
+        # 先尝试发送退出命令
+        try:
+            _sendCmd(["--quit"])
+            # 等待进程退出
+            for _ in range(10):  # 最多等待 5 秒
+                time.sleep(0.5)
+                if not psutil.pid_exists(recordPID):
+                    logger.info(f"已通过命令正常关闭实例 PID: {recordPID}")
+                    return True
+                # 检查进程是否还是原来的
+                try:
+                    p = psutil.Process(recordPID)
+                    if str(p.create_time()) != recordPTime:
+                        return True
+                except psutil.NoSuchProcess:
+                    return True
+        except Exception as e:
+            logger.warning(f"发送退出命令失败: {e}")
+        
+        # 命令退出失败，强制终止
+        if psutil.pid_exists(recordPID):
+            try:
+                process = psutil.Process(recordPID)
+                if str(process.create_time()) == recordPTime:
+                    process.terminate()
+                    process.wait(timeout=3)
+                    logger.info(f"已强制终止实例 PID: {recordPID}")
+            except psutil.NoSuchProcess:
+                pass
+            except psutil.TimeoutExpired:
+                try:
+                    process.kill()
+                    logger.warning(f"已强制杀死实例 PID: {recordPID}")
+                except Exception:
+                    pass
+            except Exception as e:
+                logger.error(f"终止实例失败: {e}")
+                return False
+        
+        return True
+    except Exception as e:
+        logger.error(f"终止已运行实例时出错: {e}")
+        return False
+
+
 # 启动新进程，并发送指令
 def _newSend(argv):
     from umi_about import UmiAbout  # 项目信息
@@ -197,14 +313,46 @@ def initCmd():
         force = True
     # 检查，发现软件多开，则向已在运行的进程发送初始指令
     if _isMultiOpen():
-        # 如果没有参数（只是想打开程序），发送显示主窗口命令
-        if not argv and not force:
-            logger.info("检测到已有程序运行，显示主窗口")
-            _sendCmd(["--show"])
-        else:
-            # 有参数则发送参数
+        # 如果有命令行参数，直接发送给已有实例
+        if argv:
             _sendCmd(argv)
-        return False
+            return False
+        
+        # 无参数时（用户双击启动），显示对话框让用户选择
+        if not force:
+            choice = _showInstanceDialog()
+            
+            if choice == "use_existing":
+                # 激活已有实例
+                logger.info("用户选择使用当前实例")
+                _sendCmd(["--show"])
+                return False
+            elif choice == "restart":
+                # 强制重启：先终止已有实例
+                logger.info("用户选择重启应用")
+                if _terminateExistingInstance():
+                    # 等待一小段时间确保资源释放
+                    time.sleep(0.5)
+                    # 继续启动新实例
+                    nowPid = os.getpid()
+                    nowPTime = getPidTime(nowPid)
+                    pre_configs.setValue("last_pid", nowPid)
+                    pre_configs.setValue("last_ptime", nowPTime)
+                    return True
+                else:
+                    MessageBox(
+                        "无法关闭已运行的实例，请手动关闭后重试。\n"
+                        "Failed to close existing instance.",
+                        "error"
+                    )
+                    return False
+            else:  # cancel
+                logger.info("用户取消启动")
+                return False
+        else:
+            # --force 参数，静默显示已有实例
+            _sendCmd(["--show"])
+            return False
     # 未多开，则启动进程
     else:
         # 无参数或强制启动，则正常运行本进程，刷新pid和ptime

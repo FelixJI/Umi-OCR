@@ -11,6 +11,8 @@ Item {
     property int indexChangeNum: 0 // 下标变化次数
     property bool isMenuTop: true  // t时控制菜单在顶部，f时在底部
     property real menuHeight: size_.line * 2 // 菜单栏高度
+    property var firstLoader: null // 第一个组件的加载器
+    property var lastLoader: null // 最后一个组件的加载器
 
     onCurrentIndexChanged: indexChangeNum++
 
@@ -67,10 +69,18 @@ Item {
             model: tabsModel
 
             Item {
+                property var loaderItem: modelData.component
                 visible: SwipeView.isCurrentItem
                 Component.onCompleted: {
                     modelData.component.parent = this
                     modelData.component.visible = true
+                    // 设置第一个和最后一个加载器
+                    if(index === 0) {
+                        tabPanel.firstLoader = this
+                    }
+                    if(index === tabsModel.length - 1) {
+                        tabPanel.lastLoader = this
+                    }
                 }
             }
         }
