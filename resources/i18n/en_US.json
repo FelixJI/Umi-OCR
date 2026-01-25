@@ -1,0 +1,127 @@
+{
+  "language": "English",
+  "locale": "en_US",
+
+  "app": {
+    "name": "Umi-OCR",
+    "version": "2.0.0",
+    "description": "Free offline batch OCR tool"
+  },
+
+  "main_window": {
+    "title": "Umi-OCR",
+    "menu": {
+      "file": "&File",
+      "edit": "&Edit",
+      "view": "&View",
+      "tools": "&Tools",
+      "help": "&Help"
+    },
+    "sidebar": {
+      "screenshot_ocr": "Screenshot OCR",
+      "batch_ocr": "Batch Images",
+      "batch_doc": "Batch Documents",
+      "qrcode": "QR Code",
+      "task_manager": "Task Manager",
+      "settings": "Settings"
+    },
+    "statusbar": {
+      "ready": "Ready",
+      "running": "Running",
+      "paused": "Paused"
+    }
+  },
+
+  "screenshot_ocr": {
+    "title": "Screenshot OCR",
+    "description": "Capture screen region for text recognition",
+    "actions": {
+      "screenshot": "Screenshot",
+      "recognize": "Recognize",
+      "copy": "Copy",
+      "save": "Save"
+    }
+  },
+
+  "batch_ocr": {
+    "title": "Batch Image OCR",
+    "description": "Import multiple images for batch text recognition",
+    "actions": {
+      "add_files": "Add Files",
+      "add_folder": "Add Folder",
+      "remove": "Remove",
+      "clear": "Clear",
+      "start": "Start",
+      "stop": "Stop",
+      "export": "Export"
+    }
+  },
+
+  "batch_doc": {
+    "title": "Batch Document OCR",
+    "description": "Process PDF and other documents in batch",
+    "actions": {
+      "add_files": "Add Files",
+      "remove": "Remove",
+      "clear": "Clear",
+      "start": "Start",
+      "stop": "Stop",
+      "export": "Export"
+    }
+  },
+
+  "qrcode": {
+    "title": "QR Code",
+    "description": "QR code recognition and generation",
+    "actions": {
+      "recognize": "Recognize",
+      "generate": "Generate",
+      "copy": "Copy",
+      "save": "Save"
+    }
+  },
+
+  "task_manager": {
+    "title": "Task Manager",
+    "description": "View and manage all tasks",
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "paused": "Paused",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "clear_completed": "Clear Completed"
+    }
+  },
+
+  "settings": {
+    "title": "Settings",
+    "categories": {
+      "general": "General",
+      "ocr": "OCR Engine",
+      "hotkeys": "Hotkeys",
+      "appearance": "Appearance",
+      "advanced": "Advanced"
+    },
+    "actions": {
+      "save": "Save",
+      "reset": "Reset",
+      "cancel": "Cancel"
+    }
+  },
+
+  "messages": {
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "success": "Success",
+    "confirm": "Confirm"
+  }
+}

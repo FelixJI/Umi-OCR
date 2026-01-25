@@ -4,38 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="chore: 更新IDE配置和排除.venv目录，更新依赖，删除Linux和Windows7平台支持。">
+    <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Umi-OCR.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Umi-OCR_Rapid_v2.1.5.7z" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/.pre_settings" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/.settings" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/.settings" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/Help 帮助.txt" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/Help 帮助.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/image_provider.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/image_provider.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/screenshot_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/image_controller/screenshot_controller.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/tag_pages/ScreenshotOCR.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/tag_pages/ScreenshotOCR.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/py_src/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/py_src/utils/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Configs.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Configs/Configs.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/ImageManager/ScreenshotWindowComp.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/ImageManager/ScreenshotWindowComp.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Main.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Main.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageBox.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageBox.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimple.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimple.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimpleComp.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/MessageSimpleComp.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/PopupManager.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Popup_/PopupManager.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/TabBar_/TabButton_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/TabBar_/TabButton_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FileDialog_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FileDialog_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FilesTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/FilesTableView.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/HProgressBar.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/HProgressBar.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Icon_.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Icon_.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ImageViewer/ImageScale.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ImageViewer/ImageScale.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Loading.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/Loading.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ModalLayer.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ModalLayer.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ResultLayout/ResultsTableView.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/ResultLayout/ResultsTableView.qml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/TabPanel.qml" beforeDir="false" afterPath="$PROJECT_DIR$/UmiOCR-data/qt_res/qml/Widgets/TabPanel.qml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +32,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/FelixJI/Umi-OCR.git&quot;,
-    &quot;accountId&quot;: &quot;82c980ed-32c7-4db9-8a65-d27bad76c2ff&quot;
+    &quot;accountId&quot;: &quot;0cd8c651-f00d-4ccc-a6a5-0db55967f381&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
@@ -76,10 +48,11 @@
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;Python.run.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/felji/PycharmProjects/Umi-OCR&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;refactor/paddleocr-native&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/felji/PycharmProjects/Umi-OCR/UmiOCR-data/plugins/win_linux_PaddleOCR-json&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
@@ -87,6 +60,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\felji\PycharmProjects\Umi-OCR\UmiOCR-data\plugins\win_linux_PaddleOCR-json" />
       <recent name="C:\Users\felji\PycharmProjects\Umi-OCR" />
     </key>
   </component>
@@ -137,7 +111,39 @@
       <option name="project" value="LOCAL" />
       <updated>1769136106898</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="refactor(core): 优化截图功能，更新全局配置并移除插件系统&#10;&#10;- 在截图配置中新增遮罩层和自动窗口识别选项，提升截图体验&#10;- 改进截图窗口和截图管理器逻辑，支持多种截图模式与配置动态读取&#10;- 完善截图窗口的窗口激活和显示机制，增强窗口焦点控制&#10;- 调整全局配置加载流程，注销插件系统调用，改用内置OCR引擎&#10;- 改写主窗口关闭逻辑，支持最小化到托盘及确保托盘图标显示&#10;- 重构系统托盘组件，简化接口，确保托盘图标的显示和隐藏控制&#10;- 增加多个Bash命令支持，丰富本地环境配置&#10;- 更新IDE配置为Python 3.10，提高开发环境兼容性&#10;- 改进配置文件中var类型JSON序列化和反序列化逻辑，支持数组和对象存储&#10;- 简化TabBar组件的拖拽处理，增加日志输出便于调试和维护">
+      <option name="closed" value="true" />
+      <created>1769306484400</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769306484400</updated>
+    </task>
+    <task id="LOCAL-00005" summary="refactor(core): 优化截图功能，更新OCR引擎管理及配置界面&#10;&#10;- 注册多种内置OCR引擎：PP-OCRv5、PaddleOCR-VL、PP-StructureV3、PP-ChatOCRv4&#10;- 用内置引擎替代动态插件系统，简化OCR模块初始化逻辑&#10;- 优化MissionOCR任务管理器，支持多引擎切换及图像预处理器配置&#10;- 在OcrManager界面新增引擎分组及引擎说明功能，支持引擎选择和显示描述&#10;- 增加获取所有可用OCR引擎及当前引擎接口&#10;- 支持根据引擎类型动态读取和应用全局及局部配置&#10;- 更新PagesManager，新增表格识别和发票识别页面说明&#10;- 改进全局配置加载流程，改用内置OCR引擎，移除插件系统调用&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化及图标显示&#10;- 增加多个Bash命令支持，更新开发环境Python版本至3.10&#10;- 优化配置文件JSON序列化反序列化处理，简化TabBar拖拽处理并增加日志输出">
+      <option name="closed" value="true" />
+      <created>1769313096640</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1769313096640</updated>
+    </task>
+    <task id="LOCAL-00006" summary="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误">
+      <option name="closed" value="true" />
+      <created>1769318520043</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1769318520043</updated>
+    </task>
+    <task id="LOCAL-00007" summary="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误">
+      <option name="closed" value="true" />
+      <created>1769324695743</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1769324695743</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -170,10 +176,13 @@
     <MESSAGE value="新增运行环境-Windows" />
     <MESSAGE value="版本管理" />
     <MESSAGE value="chore: 更新IDE配置和排除.venv目录，更新依赖，删除Linux和Windows7平台支持。" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore: 更新IDE配置和排除.venv目录，更新依赖，删除Linux和Windows7平台支持。" />
+    <MESSAGE value="refactor(core): 优化截图功能，更新全局配置并移除插件系统&#10;&#10;- 在截图配置中新增遮罩层和自动窗口识别选项，提升截图体验&#10;- 改进截图窗口和截图管理器逻辑，支持多种截图模式与配置动态读取&#10;- 完善截图窗口的窗口激活和显示机制，增强窗口焦点控制&#10;- 调整全局配置加载流程，注销插件系统调用，改用内置OCR引擎&#10;- 改写主窗口关闭逻辑，支持最小化到托盘及确保托盘图标显示&#10;- 重构系统托盘组件，简化接口，确保托盘图标的显示和隐藏控制&#10;- 增加多个Bash命令支持，丰富本地环境配置&#10;- 更新IDE配置为Python 3.10，提高开发环境兼容性&#10;- 改进配置文件中var类型JSON序列化和反序列化逻辑，支持数组和对象存储&#10;- 简化TabBar组件的拖拽处理，增加日志输出便于调试和维护" />
+    <MESSAGE value="refactor(core): 优化截图功能，更新OCR引擎管理及配置界面&#10;&#10;- 注册多种内置OCR引擎：PP-OCRv5、PaddleOCR-VL、PP-StructureV3、PP-ChatOCRv4&#10;- 用内置引擎替代动态插件系统，简化OCR模块初始化逻辑&#10;- 优化MissionOCR任务管理器，支持多引擎切换及图像预处理器配置&#10;- 在OcrManager界面新增引擎分组及引擎说明功能，支持引擎选择和显示描述&#10;- 增加获取所有可用OCR引擎及当前引擎接口&#10;- 支持根据引擎类型动态读取和应用全局及局部配置&#10;- 更新PagesManager，新增表格识别和发票识别页面说明&#10;- 改进全局配置加载流程，改用内置OCR引擎，移除插件系统调用&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化及图标显示&#10;- 增加多个Bash命令支持，更新开发环境Python版本至3.10&#10;- 优化配置文件JSON序列化反序列化处理，简化TabBar拖拽处理并增加日志输出" />
+    <MESSAGE value="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Umi_OCR$run.coverage" NAME="run 覆盖结果" MODIFIED="1757469077451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data/py_src" />
-    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769149892107" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/UmiOCR-data" />
+    <SUITE FILE_PATH="coverage/Umi_OCR$main.coverage" NAME="main 覆盖结果" MODIFIED="1769321600961" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
