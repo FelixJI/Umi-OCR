@@ -1,0 +1,127 @@
+{
+  "language": "简体中文",
+  "locale": "zh_CN",
+
+  "app": {
+    "name": "Umi-OCR",
+    "version": "2.0.0",
+    "description": "免费离线的批量图片文字识别（OCR）工具"
+  },
+
+  "main_window": {
+    "title": "Umi-OCR",
+    "menu": {
+      "file": "文件(&F)",
+      "edit": "编辑(&E)",
+      "view": "视图(&V)",
+      "tools": "工具(&T)",
+      "help": "帮助(&H)"
+    },
+    "sidebar": {
+      "screenshot_ocr": "截图OCR",
+      "batch_ocr": "批量图片",
+      "batch_doc": "批量文档",
+      "qrcode": "二维码",
+      "task_manager": "任务管理",
+      "settings": "设置"
+    },
+    "statusbar": {
+      "ready": "就绪",
+      "running": "运行中",
+      "paused": "已暂停"
+    }
+  },
+
+  "screenshot_ocr": {
+    "title": "截图OCR",
+    "description": "截取屏幕区域进行文字识别",
+    "actions": {
+      "screenshot": "截图",
+      "recognize": "识别",
+      "copy": "复制",
+      "save": "保存"
+    }
+  },
+
+  "batch_ocr": {
+    "title": "批量图片OCR",
+    "description": "批量导入图片进行文字识别",
+    "actions": {
+      "add_files": "添加文件",
+      "add_folder": "添加文件夹",
+      "remove": "移除",
+      "clear": "清空",
+      "start": "开始识别",
+      "stop": "停止",
+      "export": "导出结果"
+    }
+  },
+
+  "batch_doc": {
+    "title": "批量文档OCR",
+    "description": "批量处理PDF等文档",
+    "actions": {
+      "add_files": "添加文件",
+      "remove": "移除",
+      "clear": "清空",
+      "start": "开始识别",
+      "stop": "停止",
+      "export": "导出结果"
+    }
+  },
+
+  "qrcode": {
+    "title": "二维码",
+    "description": "二维码识别与生成",
+    "actions": {
+      "recognize": "识别",
+      "generate": "生成",
+      "copy": "复制",
+      "save": "保存"
+    }
+  },
+
+  "task_manager": {
+    "title": "任务管理器",
+    "description": "查看和管理所有任务",
+    "status": {
+      "pending": "等待中",
+      "running": "执行中",
+      "paused": "已暂停",
+      "completed": "已完成",
+      "failed": "失败",
+      "cancelled": "已取消"
+    },
+    "actions": {
+      "pause": "暂停",
+      "resume": "恢复",
+      "cancel": "取消",
+      "delete": "删除",
+      "clear_completed": "清理已完成"
+    }
+  },
+
+  "settings": {
+    "title": "设置",
+    "categories": {
+      "general": "通用",
+      "ocr": "OCR引擎",
+      "hotkeys": "快捷键",
+      "appearance": "外观",
+      "advanced": "高级"
+    },
+    "actions": {
+      "save": "保存",
+      "reset": "重置",
+      "cancel": "取消"
+    }
+  },
+
+  "messages": {
+    "error": "错误",
+    "warning": "警告",
+    "info": "提示",
+    "success": "成功",
+    "confirm": "确认"
+  }
+}

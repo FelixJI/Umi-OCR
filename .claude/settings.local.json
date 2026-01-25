@@ -30,7 +30,8 @@
       "Bash(wmic:*)",
       "Bash(start:*)",
       "Bash(echo:*)",
-      "Edit"
+      "Edit",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

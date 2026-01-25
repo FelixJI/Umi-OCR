@@ -43,4 +43,25 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = []
+dev = [
+    # 测试框架
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-qt>=4.3.0",
+
+    # 代码质量工具
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+
+    # 类型提示
+    "types-Pillow>=10.0.0",
+]
+
+# 新架构新增依赖（将来使用）
+# 以下依赖将在后续阶段逐步添加：
+# - 阶段3（配置管理）: 不需要额外依赖
+# - 阶段18-19（云OCR）: requests>=2.31.0, cryptography>=41.0.0
+# - 阶段26（HTTP API）: fastapi>=0.109.0, uvicorn>=0.27.0
+# - 阶段27（CLI）: click>=8.1.0, rich>=13.7.0
+# - 阶段16（二维码）: qrcode>=7.4.0

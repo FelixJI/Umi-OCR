@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa834e1c-553a-4dba-b45f-549592ac74e0" name="更改" comment="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误">
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.pre_settings" beforeDir="false" afterPath="$PROJECT_DIR$/.pre_settings" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769318520043</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="refactor(core): 优化系统托盘和OCR引擎管理&#10;&#10;- 注册多种内置OCR引擎替代插件系统，简化初始化逻辑&#10;- 在OcrManager界面新增引擎分组和说明，支持多引擎切换&#10;- 更新PagesManager，新增表格和发票识别页面说明&#10;- 重构系统托盘组件及主窗口关闭逻辑，支持托盘最小化和图标显示&#10;- 改进全局配置加载流程，移除插件系统调用&#10;- 增加多个Bash命令支持，更新Python版本至3.10&#10;- 优化配置文件JSON序列化和反序列化，简化TabBar拖拽处理并增加日志输出&#10;- 修复SystemTrayConnector菜单项点击相关的属性访问错误">
+      <option name="closed" value="true" />
+      <created>1769324695743</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1769324695743</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
