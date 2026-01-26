@@ -31,7 +31,15 @@
       "Bash(start:*)",
       "Bash(echo:*)",
       "Edit",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(where:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(pip index:*)",
+      "Bash(.venv\\\\Scripts\\\\pip.exe:*)",
+      "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\pip.exe\":*)",
+      "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\python.exe\" -c \"from paddleocr import PaddleOCR; import PySide6; import pymupdf; print\\(''所有主要依赖已安装成功！''\\); import paddle; print\\(f''PaddlePaddle: {paddle.__version__}''\\)\")",
+      "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\python.exe\":*)",
+      "Bash(du:*)"
     ],
     "deny": [],
     "ask": []

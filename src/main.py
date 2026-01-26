@@ -67,6 +67,10 @@ def main():
     # 创建 QApplication 实例
     app = UmiApplication(sys.argv)
 
+    # 设置全局应用程序实例
+    from src.app import set_app_instance
+    set_app_instance(app)
+
     # 如果是 CLI 模式，处理命令行任务
     if args["cli_mode"]:
         from src.services.server.cli_handler import CliHandler
@@ -85,14 +89,27 @@ def main():
     # main_window.show()
 
     # 暂时显示一个空白窗口用于测试
-    from PySide6.QtWidgets import QWidget
-    test_window = QWidget()
+    from PySide6.QtWidgets import QLabel
+    test_window = QLabel()
     test_window.setWindowTitle("Umi-OCR - 重构中")
-    test_window.resize(800, 600)
+    test_window.resize(400, 200)
+    test_window.setText("Umi-OCR 重构进行中...\n\n阶段1: 项目骨架搭建 - 完成\n阶段2: 日志系统 - 完成\n阶段3: 配置管理系统 - 完成\n\n请查看控制台和日志文件")
+    test_window.setAlignment()
+    from PySide6.QtCore import Qt
+    test_window.setAlignment(Qt.AlignmentFlag.AlignCenter)
     test_window.show()
 
+    # 记录启动完成
+    app.logger.info("应用程序初始化完成，进入事件循环")
+
     # 进入事件循环
-    sys.exit(app.exec())
+    exit_code = app.exec()
+
+    # 退出前保存配置
+    app.logger.info("应用程序退出，保存配置")
+    app.config_manager.save()
+
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

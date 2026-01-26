@@ -46,14 +46,14 @@ class UmiApplication(QApplication):
         # 初始化路径
         self._init_paths()
 
-        # 初始化日志系统（在后续阶段实现）
-        # self._init_logger()
+        # 初始化日志系统（阶段2）
+        self._init_logger()
 
-        # 初始化配置管理器（在后续阶段实现）
-        # self._init_config()
+        # 初始化配置管理器（阶段3）
+        self._init_config()
 
-        # 初始化多语言支持（在后续阶段实现）
-        # self._init_i18n()
+        # 初始化多语言支持（阶段4）
+        self._init_i18n()
 
     def _setup_application_attributes(self):
         """设置应用程序的基本属性"""
@@ -115,39 +115,153 @@ class UmiApplication(QApplication):
 
     def _init_logger(self):
         """
-        初始化日志系统
+        初始化日志系统（阶段2已完成）
 
-        在阶段2实现此功能
+        初始化全局日志记录器，用于应用程序的日志输出。
         """
-        # TODO: 在阶段2实现
-        # from src.utils.logger import Logger
-        # self.logger = Logger.get_instance()
-        # self.logger.info("应用程序启动")
-        pass
+        from src.utils.logger import Logger
+
+        # 设置日志目录
+        Logger.LOGS_DIR = str(self.logs_dir)
+
+        # 获取日志记录器实例（单例）
+        self.logger = Logger.get_instance()
+
+        # 记录应用程序启动
+        self.logger.info("=" * 50)
+        self.logger.info("应用程序启动")
+        self.logger.info(f"版本: {self.applicationVersion()}")
+        self.logger.info(f"数据目录: {self.data_dir}")
+
+        # 安装 Qt 消息处理器，将 Qt 日志重定向到日志系统
+        from PySide6.QtCore import qInstallMessageHandler
+        qInstallMessageHandler(self.logger.get_qt_message_handler())
 
     def _init_config(self):
         """
-        初始化配置管理器
+        初始化配置管理器（阶段3已完成）
 
-        在阶段3实现此功能
+        加载应用程序配置，提供配置读写和变更通知功能。
         """
-        # TODO: 在阶段3实现
-        # from src.utils.config_manager import ConfigManager
-        # self.config_manager = ConfigManager.get_instance()
-        # self.config_manager.load()
-        pass
+        from src.utils.config_manager import ConfigManager
+
+        # 获取配置管理器实例（单例）
+        self.config_manager = ConfigManager.get_instance()
+
+        # 设置配置文件路径
+        self.config_manager.set_config_path(self.config_file)
+
+        # 加载配置文件（如果不存在会创建默认配置）
+        if self.config_manager.load():
+            self.logger.info(f"配置文件加载成功: {self.config_file}")
+        else:
+            self.logger.warning(f"使用默认配置，将创建新文件: {self.config_file}")
+
+        # 根据配置设置日志级别
+        log_level = self.config_manager.get("system.log_level", "info")
+        self.logger.set_file_log_level(log_level.upper())
+        self.logger.info(f"文件日志级别: {log_level}")
+
+        # 连接配置变更信号
+        self.config_manager.config_changed.connect(self._on_config_changed)
+        self.config_manager.config_saved.connect(self._on_config_saved)
+        self.config_manager.config_error.connect(self._on_config_error)
+
+    def _on_config_changed(self, key_path: str, old_value, new_value):
+        """
+        配置变更回调
+
+        Args:
+            key_path: 变化的配置路径
+            old_value: 旧值
+            new_value: 新值
+        """
+        self.logger.debug(f"配置变更: {key_path} = {new_value} (原值: {old_value})")
+
+    def _on_config_saved(self, file_path: str):
+        """
+        配置保存回调
+
+        Args:
+            file_path: 保存的文件路径
+        """
+        self.logger.info(f"配置已保存: {file_path}")
+
+    def _on_config_error(self, error_msg: str):
+        """
+        配置错误回调
+
+        Args:
+            error_msg: 错误信息
+        """
+        self.logger.error(f"配置错误: {error_msg}")
 
     def _init_i18n(self):
         """
-        初始化多语言支持
+        初始化多语言支持（阶段4）
 
-        在阶段4实现此功能
+        加载语言包，提供多语言切换功能。
         """
-        # TODO: 在阶段4实现
-        # from src.utils.i18n import I18nManager
-        # self.i18n = I18nManager.get_instance()
-        # self.i18n.load_language("zh_CN")
-        pass
+        from src.utils.i18n import I18nManager
+
+        # 获取语言管理器实例（单例）
+        self.i18n = I18nManager.get_instance()
+
+        # 设置语言包目录
+        i18n_dir = self.resources_dir / "i18n"
+        self.i18n.set_i18n_dir(i18n_dir)
+        self.logger.info(f"语言包目录: {i18n_dir}")
+
+        # 加载所有可用语言
+        self.i18n.load_all_languages()
+        available_languages = self.i18n.get_available_languages()
+        self.logger.info(f"可用语言: {', '.join(available_languages)}")
+
+        # 从配置中读取首选语言，或使用系统默认语言
+        preferred_language = self.config_manager.get("ui.language", "zh_CN")
+
+        # 尝试加载首选语言
+        if preferred_language in available_languages:
+            self.i18n.set_language(preferred_language)
+        else:
+            # 使用默认语言
+            self.i18n.set_language("zh_CN")
+            self.logger.warning(f"未找到首选语言 {preferred_language}，使用默认语言")
+
+        # 记录当前语言
+        current_lang = self.i18n.get_language()
+        lang_name = self.i18n.get_language_name()
+        self.logger.info(f"当前语言: {current_lang} ({lang_name})")
+
+        # 连接语言变更信号
+        self.i18n.language_changed.connect(self._on_language_changed)
+        self.i18n.load_error.connect(self._on_i18n_load_error)
+
+    def _on_language_changed(self, lang_code: str):
+        """
+        语言变更回调
+
+        Args:
+            lang_code: 新语言代码
+        """
+        lang_name = self.i18n.get_language_name(lang_code)
+        self.logger.info(f"语言已切换: {lang_code} ({lang_name})")
+
+        # 更新配置
+        self.config_manager.set("ui.language", lang_code)
+
+        # TODO: 在后续阶段中，通知所有 UI 组件更新文本
+        # 例如：self.ui.update_translations()
+
+    def _on_i18n_load_error(self, lang_code: str, error_msg: str):
+        """
+        语言包加载错误回调
+
+        Args:
+            lang_code: 语言代码
+            error_msg: 错误信息
+        """
+        self.logger.error(f"加载语言包失败 [{lang_code}]: {error_msg}")
 
     def get_resource_path(self, relative_path):
         """

@@ -1,0 +1,111 @@
+{
+    "version": "2.0.0",
+    "ocr": {
+        "engine_type": "paddle",
+        "paddle": {
+            "det_model_name": "ch_PP-OCRv4_det",
+            "rec_model_name": "ch_PP-OCRv4_rec",
+            "use_angle_cls": true,
+            "lang": "ch",
+            "use_gpu": false,
+            "cpu_threads": 4,
+            "enable_mkldnn": true,
+            "models_dir": ""
+        },
+        "baidu": {
+            "api_key": "",
+            "secret_key": "",
+            "endpoint": "",
+            "timeout": 30,
+            "max_retry": 3,
+            "token_cache_duration": 2592000
+        },
+        "tencent": {
+            "api_key": "",
+            "secret_key": "",
+            "endpoint": "",
+            "timeout": 30,
+            "max_retry": 3,
+            "secret_id": "",
+            "region": "ap-guangzhou"
+        },
+        "aliyun": {
+            "api_key": "",
+            "secret_key": "",
+            "endpoint": "",
+            "timeout": 30,
+            "max_retry": 3,
+            "access_key_id": "",
+            "region_id": "cn-shanghai"
+        },
+        "preprocessing": {
+            "enable_denoise": false,
+            "enable_binarization": false,
+            "enable_deskew": false,
+            "max_image_size": 0,
+            "min_image_size": 0,
+            "resize_factor": 1.0,
+            "rotate_angle": 0.0
+        },
+        "confidence_threshold": 0.5,
+        "merge_lines": true
+    },
+    "ui": {
+        "main_window": {
+            "width": 1000,
+            "height": 700,
+            "x": -1,
+            "y": -1,
+            "maximized": false,
+            "sidebar_width": 200,
+            "sidebar_visible": true
+        },
+        "theme": {
+            "mode": "light",
+            "accent_color": "#0078d4",
+            "font_family": "",
+            "font_size": 9
+        },
+        "language": "zh_CN",
+        "show_tray_icon": true,
+        "minimize_to_tray": false,
+        "close_to_tray": false
+    },
+    "hotkeys": {
+        "screenshot": "Ctrl+Shift+A",
+        "clipboard": "Ctrl+Shift+X",
+        "translate": "",
+        "batch": "",
+        "show_hide": ""
+    },
+    "export": {
+        "default_format": "txt",
+        "txt_line_break": "\n",
+        "txt_with_confidence": false,
+        "json_indent": 2,
+        "pdf_image_quality": 90,
+        "pdf_page_size": "a4",
+        "export_dir": "",
+        "auto_copy": true
+    },
+    "task": {
+        "max_workers": 4,
+        "queue_size": 100,
+        "max_retry": 2,
+        "retry_delay": 1.0,
+        "task_timeout": 300,
+        "progress_throttle": 0.1
+    },
+    "system": {
+        "log_level": "info",
+        "log_to_file": true,
+        "log_max_size": 10,
+        "log_backup_count": 5,
+        "startup_launch": false,
+        "check_update": true,
+        "http_server_enabled": false,
+        "http_server_port": 1224,
+        "http_server_host": "127.0.0.1"
+    },
+    "extra": {}
+}

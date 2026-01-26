@@ -4,43 +4,56 @@ version = "2.1.5"
 description = "免费、离线的批量OCR图片转文字工具"
 readme = "README.md"
 requires-python = ">=3.10"
-# 仅支持 Windows 10+
-
 dependencies = [
     # OCR Engine - PaddleOCR
     "paddlepaddle>=3.2.0",
     "paddleocr>=3.3.0",
-
     # PDF 处理
     "pymupdf>=1.26.0",
-
     # 字体子集
     "fonttools>=4.61.0",
-
     # 图像处理
     "pillow>=12.0.0",
-
     # 系统信息
     "psutil>=7.2.0",
-
     # 键鼠事件（替换 pynput，移除 six 依赖）
     "keyboard>=0.13.5",
-
     # UI 界面 (Qt6)
     "PySide6>=6.10.0",
-
     # 二维码解析
     "zxing-cpp>=2.3.0",
-
     # NumPy for PaddleOCR image processing
     "numpy>=1.24.0",
-
     # Optional: OpenCV for advanced image handling
     "opencv-python>=4.8.0",
-
     # Excel export support for table recognition
     "openpyxl>=3.1.0",
 ]
+
+[project.optional-dependencies]
+# 开发依赖
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-qt>=4.3.0",
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "types-Pillow>=10.0.0",
+]
+
+# GPU 支持（需要 NVIDIA GPU 和 CUDA 12.9）
+# 安装方式: pip install -e ".[gpu]"
+# 或手动安装: python -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu129/
+gpu = [
+    # GPU 版本需要手动从 PaddlePaddle 官方源安装
+    # 运行: python -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu129/
+    # 依赖会自动安装: nvidia-cuda-runtime-cu12, nvidia-cudnn-cu12, nvidia-cublas-cu12 等
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [dependency-groups]
 dev = [
@@ -58,7 +71,34 @@ dev = [
     "types-Pillow>=10.0.0",
 ]
 
+# =============================================================================
+# 安装说明
+# =============================================================================
+#
+# 1. CPU 版本（默认）:
+#    pip install -e .
+#
+# 2. GPU 版本（需要 NVIDIA GPU + CUDA 12.9）:
+#    先安装 CPU 版本: pip install -e .
+#    再安装 GPU 支持: python -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu129/
+#
+# 3. 开发环境:
+#    pip install -e ".[dev]"
+#
+# =============================================================================
+# CUDA 版本说明
+# =============================================================================
+# - cu129: CUDA 12.9 (最新，推荐)
+# - cu118: CUDA 11.8
+# - cu117: CUDA 11.7
+# - cu121: CUDA 12.1
+# - cu122: CUDA 12.2
+#
+# 其他 CUDA 版本安装命令（替换 URL 中的 cu129）:
+# python -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+# =============================================================================
 # 新架构新增依赖（将来使用）
+# =============================================================================
 # 以下依赖将在后续阶段逐步添加：
 # - 阶段3（配置管理）: 不需要额外依赖
 # - 阶段18-19（云OCR）: requests>=2.31.0, cryptography>=41.0.0
