@@ -73,6 +73,151 @@ class UmiApplication(QApplication):
         os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
         os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
 
+        # PaddleX 模型配置
+        self._init_paddlex_model_config()
+
+    def _init_paddlex_model_config(self):
+        """
+        初始化 PaddleX 模型配置
+
+        实现：
+        1. 模型源主备自动切换（BOS -> HuggingFace）
+        2. 下载超时配置
+        3. 模型缓存目录设置
+        """
+        import socket
+        import urllib.request
+        import threading
+
+        # 模型源配置（主备顺序）
+        self._model_sources = ["BOS", "HuggingFace"]
+        self._current_source_index = 0
+
+        # 下载超时设置（秒）
+        self._download_timeout = 30
+
+        # 模型缓存目录
+        if "PADDLE_PDX_MODEL_CACHE_DIR" not in os.environ:
+            app_data = Path.home() / ".umi-ocr" / "models"
+            os.environ["PADDLE_PDX_MODEL_CACHE_DIR"] = str(app_data)
+
+        # 用户可手动设置模型源
+        user_source = os.environ.get("PADDLE_PDX_MODEL_SOURCE")
+        if user_source and user_source.upper() in ["BOS", "HUGGINGFACE"]:
+            # 用户指定了模型源，添加到列表开头
+            user_source = user_source.upper()
+            if user_source != self._model_sources[0]:
+                self._model_sources.insert(0, user_source)
+                self._current_source_index = 0
+
+        # 检测网络并选择最佳模型源
+        self._select_best_model_source()
+
+        # 应用选中的模型源
+        self._apply_model_source()
+
+        # 设置下载超时
+        os.environ.setdefault("PADDLE_PDX_DOWNLOAD_TIMEOUT", str(self._download_timeout))
+
+        self.logger.info(f"PaddleX 模型源: {os.environ.get('PADDLE_PDX_MODEL_SOURCE')}")
+        self.logger.info(f"模型缓存目录: {os.environ.get('PADDLE_PDX_MODEL_CACHE_DIR')}")
+
+    def _select_best_model_source(self):
+        """
+        检测网络并选择最佳模型源
+
+        优先级：
+        1. BOS（百度云）- 国内访问快
+        2. HuggingFace - 国外访问快
+        """
+        # 可用的模型源及其健康检查地址
+        source_urls = {
+            "BOS": "https://paddle-model-ecology.bj.bcebos.com",
+            "HuggingFace": "https://huggingface.co",
+        }
+
+        # 按优先级检测
+        for i, source in enumerate(self._model_sources):
+            url = source_urls.get(source)
+            if url and self._check_url_accessible(url):
+                if i != self._current_source_index:
+                    self._current_source_index = i
+                    self.logger.info(f"选择模型源: {source} (网络检测通过)")
+                break
+        else:
+            # 所有源都不可达，使用第一个
+            self.logger.warning("无法连接任何模型源，使用默认配置")
+
+    def _check_url_accessible(self, url: str, timeout: int = 5) -> bool:
+        """
+        检查 URL 是否可访问
+
+        Args:
+            url: 要检查的 URL
+            timeout: 超时时间（秒）
+
+        Returns:
+            bool: URL 是否可访问
+        """
+        try:
+            socket.setdefaulttimeout(timeout)
+            req = urllib.request.Request(url, method="HEAD")
+            req.add_header("User-Agent", "Umi-OCR/2.0")
+            urllib.request.urlopen(req, timeout=timeout)
+            return True
+        except Exception:
+            return False
+
+    def _apply_model_source(self):
+        """
+        应用选中的模型源到环境变量
+        """
+        source = self._model_sources[self._current_source_index]
+        os.environ["PADDLE_PDX_MODEL_SOURCE"] = source
+
+    def switch_model_source(self, source: str = None) -> bool:
+        """
+        手动切换模型源
+
+        Args:
+            source: 要切换到的模型源 ("BOS" 或 "HuggingFace")，不指定则切换到备用源
+
+        Returns:
+            bool: 切换是否成功
+        """
+        if source:
+            # 指定模型源
+            source = source.upper()
+            if source not in self._model_sources:
+                self.logger.error(f"不支持的模型源: {source}")
+                return False
+            self._current_source_index = self._model_sources.index(source)
+        else:
+            # 切换到备用源
+            self._current_source_index = (self._current_source_index + 1) % len(self._model_sources)
+
+        self._apply_model_source()
+        self.logger.info(f"模型源已切换至: {self._model_sources[self._current_source_index]}")
+        return True
+
+    def get_current_model_source(self) -> str:
+        """
+        获取当前使用的模型源
+
+        Returns:
+            str: 当前模型源名称
+        """
+        return self._model_sources[self._current_source_index]
+
+    def get_available_sources(self) -> list:
+        """
+        获取可用的模型源列表
+
+        Returns:
+            list: 模型源列表
+        """
+        return self._model_sources.copy()
+
     def _init_paths(self):
         """
         初始化应用程序路径

@@ -10,6 +10,8 @@ Umi-OCR OCR 服务模块
 - OCRResult: 统一的 OCR 结果格式
 - OCRErrorCode: 错误码枚举
 - ConfigSchema: 配置 Schema 定义
+- PaddleOCREngine: PaddleOCR 本地引擎
+- ModelManager: 模型管理器
 
 Author: Umi-OCR Team
 Date: 2026-01-26
@@ -29,6 +31,21 @@ from .ocr_result import (
     TextBlockType,
     BoundingBox,
     BatchOCRResult
+)
+
+from .model_manager import (
+    PaddleModelManager,
+    ModelType,
+    ModelStatus,
+    ModelInfo,
+    ModelRepository,
+    get_model_manager
+)
+
+from .paddle_engine import (
+    PaddleOCREngine,
+    PaddleBatchOCREngine,
+    PaddleConfig
 )
 
 __all__ = [
@@ -51,4 +68,17 @@ __all__ = [
     "TextBlockType",
     "BoundingBox",
     "BatchOCRResult",
+
+    # PaddleOCR 引擎
+    "PaddleOCREngine",
+    "PaddleBatchOCREngine",
+    "PaddleConfig",
+
+    # 模型管理
+    "PaddleModelManager",
+    "ModelType",
+    "ModelStatus",
+    "ModelInfo",
+    "ModelRepository",
+    "get_model_manager",
 ]
