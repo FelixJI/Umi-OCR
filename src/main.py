@@ -73,31 +73,23 @@ def main():
 
     # 如果是 CLI 模式，处理命令行任务
     if args["cli_mode"]:
-        from src.services.server.cli_handler import CliHandler
-
-        cli_handler = CliHandler()
-        sys.exit(cli_handler.handle(
-            input_path=args["cli_input"],
-            output_path=args["cli_output"],
-            output_format=args["cli_format"]
-        ))
+        # TODO: CLI 处理器将在后续阶段实现（阶段27）
+        # from src.services.server.cli_handler import CliHandler
+        # cli_handler = CliHandler()
+        # sys.exit(cli_handler.handle(
+        #     input_path=args["cli_input"],
+        #     output_path=args["cli_output"],
+        #     output_format=args["cli_format"]
+        # ))
+        print("CLI 模式尚未实现（将在阶段27实现）")
+        sys.exit(1)
 
     # 否则启动 GUI
-    # TODO: 在后续阶段中创建主窗口
-    # from src.ui.main_window.main_window import MainWindow
-    # main_window = MainWindow()
-    # main_window.show()
+    # 阶段5: 主窗口框架 - 创建并显示主窗口
+    from src.ui.main_window.main_window import MainWindow
 
-    # 暂时显示一个空白窗口用于测试
-    from PySide6.QtWidgets import QLabel
-    test_window = QLabel()
-    test_window.setWindowTitle("Umi-OCR - 重构中")
-    test_window.resize(400, 200)
-    test_window.setText("Umi-OCR 重构进行中...\n\n阶段1: 项目骨架搭建 - 完成\n阶段2: 日志系统 - 完成\n阶段3: 配置管理系统 - 完成\n\n请查看控制台和日志文件")
-    test_window.setAlignment()
-    from PySide6.QtCore import Qt
-    test_window.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    test_window.show()
+    main_window = MainWindow()
+    main_window.show()
 
     # 记录启动完成
     app.logger.info("应用程序初始化完成，进入事件循环")
