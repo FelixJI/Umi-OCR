@@ -55,3 +55,6 @@ Thumbs.db
 .coverage
 htmlcov/
 .tox/
+
+# Claude Code
+.Claude/
