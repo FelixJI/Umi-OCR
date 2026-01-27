@@ -670,25 +670,36 @@ class EngineManager(QObject):
             priority=1
         )
 
-        # TODO: 云引擎将在第18-19阶段实现
-        # self.register_engine(
-        #     engine_type="baidu",
-        #     engine_class=BaiduOCREngine,
-        #     is_local=False,
-        #     priority=10
-        # )
-        # self.register_engine(
-        #     engine_type="tencent",
-        #     engine_class=TencentOCREngine,
-        #     is_local=False,
-        #     priority=11
-        # )
-        # self.register_engine(
-        #     engine_type="aliyun",
-        #     engine_class=AliyunOCREngine,
-        #     is_local=False,
-        #     priority=12
-        # )
+        # 注册云引擎（第18-19阶段实现）
+        # 百度云 OCR
+        from .cloud import BaiduOCREngine
+        self.register_engine(
+            engine_type="baidu_cloud",
+            engine_class=BaiduOCREngine,
+            factory=lambda config: BaiduOCREngine(config, qps_limit=10),
+            is_local=False,
+            priority=10
+        )
+
+        # 腾讯云 OCR
+        from .cloud import TencentOCREngine
+        self.register_engine(
+            engine_type="tencent_cloud",
+            engine_class=TencentOCREngine,
+            factory=lambda config: TencentOCREngine(config, qps_limit=10),
+            is_local=False,
+            priority=11
+        )
+
+        # 阿里云 OCR
+        from .cloud import AliyunOCREngine
+        self.register_engine(
+            engine_type="aliyun_cloud",
+            engine_class=AliyunOCREngine,
+            factory=lambda config: AliyunOCREngine(config, qps_limit=10),
+            is_local=False,
+            priority=12
+        )
 
         logger.info(f"已注册 {len(self._engine_registry)} 个引擎")
 
