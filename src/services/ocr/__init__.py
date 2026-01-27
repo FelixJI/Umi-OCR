@@ -48,6 +48,14 @@ from .paddle_engine import (
     PaddleConfig
 )
 
+from .engine_manager import (
+    EngineManager,
+    EngineInfo,
+    EngineState,
+    get_engine_manager,
+    set_config_manager
+)
+
 __all__ = [
     # 基础类
     "BaseOCREngine",
@@ -81,4 +89,11 @@ __all__ = [
     "ModelInfo",
     "ModelRepository",
     "get_model_manager",
+
+    # 引擎管理
+    "EngineManager",
+    "EngineInfo",
+    "EngineState",
+    "get_engine_manager",
+    "set_config_manager",
 ]

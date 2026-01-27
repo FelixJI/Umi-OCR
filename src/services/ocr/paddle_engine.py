@@ -527,6 +527,54 @@ class PaddleOCREngine(BaseOCREngine):
             return False
 
     # -------------------------------------------------------------------------
+    # 可用性检查
+    # -------------------------------------------------------------------------
+
+    def is_available(self) -> bool:
+        """
+        检查 PaddleOCR 引擎是否可用
+
+        检查项：
+        1. PaddlePaddle 是否已安装
+        2. 模型文件是否可用（通过 ModelManager 检查）
+        3. GPU 可选（如果配置了 GPU，检查是否可用）
+
+        Returns:
+            bool: 引擎是否可用
+        """
+        try:
+            # 检查 PaddlePaddle 是否安装
+            import paddle
+
+            # 检查 PaddleOCR 是否安装
+            from paddleocr import PaddleOCR
+
+            # 检查模型是否可用
+            model_manager = get_model_manager()
+            model_info = model_manager.get_model_info(self.paddle_config.lang)
+            if not model_info or model_info.status != ModelStatus.AVAILABLE:
+                logger.warning(f"PaddleOCR 模型不可用: {self.paddle_config.lang}")
+                return False
+
+            # 如果配置了 GPU，检查 GPU 是否可用
+            if self.paddle_config.device == "gpu":
+                if not paddle.device.is_compiled_with_cuda():
+                    logger.warning("PaddlePaddle 未编译 CUDA 支持，无法使用 GPU")
+                    return False
+                if paddle.device.cuda.device_count() == 0:
+                    logger.warning("未检测到 GPU 设备")
+                    return False
+
+            return True
+
+        except ImportError as e:
+            logger.error(f"PaddleOCR 依赖未安装: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"检查 PaddleOCR 可用性失败: {e}", exc_info=True)
+            return False
+
+    # -------------------------------------------------------------------------
     # 抽象方法实现
     # -------------------------------------------------------------------------
 

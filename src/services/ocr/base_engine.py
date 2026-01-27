@@ -423,6 +423,22 @@ class BaseOCREngine(QObject):
         pass
 
     @abstractmethod
+    def is_available(self) -> bool:
+        """
+        检查引擎是否可用
+
+        用于引擎管理器在初始化前检查引擎是否可以正常使用。
+        检查项包括：
+        - 依赖库是否已安装
+        - 模型文件是否存在
+        - 硬件要求是否满足（如GPU）
+
+        Returns:
+            bool: 引擎是否可用
+        """
+        pass
+
+    @abstractmethod
     def _do_recognize(self, image: Image.Image, **kwargs) -> OCRResult:
         """
         执行实际的 OCR 识别（子类实现）

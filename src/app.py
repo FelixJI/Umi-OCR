@@ -17,8 +17,9 @@ Date: 2025-01-25
 import sys
 import os
 from pathlib import Path
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtCore import Qt, QLocale, QTranslator
+
 
 
 class UmiApplication(QApplication):
@@ -52,8 +53,12 @@ class UmiApplication(QApplication):
         # 初始化配置管理器（阶段3）
         self._init_config()
 
+        # 初始化OCR依赖检查（新增）
+        self._check_ocr_dependencies()
+
         # 初始化多语言支持（阶段4）
         self._init_i18n()
+
 
     def _setup_application_attributes(self):
         """设置应用程序的基本属性"""
@@ -341,6 +346,54 @@ class UmiApplication(QApplication):
         """
         self.logger.error(f"配置错误: {error_msg}")
 
+    def _check_ocr_dependencies(self):
+        """
+        检查OCR依赖（新增）
+
+        检查PaddlePaddle和PaddleOCR是否已安装，
+        如果未安装，显示安装向导对话框。
+        """
+        try:
+            from src.utils.check_dependencies import check_ocr_dependencies, DependencyStatus
+            from src.ui.dialogs import OCREngineInstallDialog
+
+            # 检查依赖
+            dep_info = check_ocr_dependencies()
+
+            # 检查是否需要安装
+            needs_install = (
+                dep_info.paddlepaddle.status != DependencyStatus.INSTALLED or
+                dep_info.paddleocr.status != DependencyStatus.INSTALLED
+            )
+
+            if not needs_install:
+                self.logger.info("OCR依赖已安装，跳过安装向导")
+                return
+
+            self.logger.info("检测到OCR依赖缺失，显示安装向导")
+
+            # 显示安装向导对话框
+            from PySide6.QtWidgets import QDialog
+
+            install_dialog = OCREngineInstallDialog()
+            result = install_dialog.exec()
+
+            if result == QDialog.DialogCode.Rejected:
+                # 用户取消了安装
+                self.logger.warning("用户取消了OCR依赖安装")
+                # 可以选择是否继续启动（使用云OCR）
+                # 或者直接退出
+                # 这里选择继续启动，但只支持云OCR
+                pass
+
+        except ImportError as e:
+            # 如果无法导入依赖检测模块，说明依赖确实未安装
+            self.logger.warning(f"无法导入依赖检测模块: {e}，依赖可能未安装")
+        except Exception as e:
+            self.logger.error(f"OCR依赖检查失败: {e}", exc_info=True)
+            # 即使检查失败，也继续启动程序
+            pass
+
     def _init_i18n(self):
         """
         初始化多语言支持（阶段4）
@@ -381,6 +434,7 @@ class UmiApplication(QApplication):
         # 连接语言变更信号
         self.i18n.language_changed.connect(self._on_language_changed)
         self.i18n.load_error.connect(self._on_i18n_load_error)
+
 
     def _on_language_changed(self, lang_code: str):
         """
