@@ -12,6 +12,10 @@ Date: 2026-01-27
 import logging
 from typing import List, Dict, Any
 from pathlib import Path
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from .base_exporter import BaseExporter
 
@@ -24,12 +28,22 @@ class PDFExporter(BaseExporter):
     def __init__(self):
         """初始化PDF导出器"""
         logger.info("PDF导出器初始化完成")
+        # Register a font that supports Chinese if possible
+        # For now, standard fonts might not support Chinese well.
+        # Ideally we should bundle a font or use system font.
+        # This is a placeholder for font registration.
+        try:
+             # Try to load a common Windows font
+             pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttc'))
+             self.font_name = 'SimSun'
+        except:
+             self.font_name = 'Helvetica' # Fallback
 
     def export(
         self,
         data: List[Dict[str, Any]],
         output_path: str,
-        font_name: str = "Arial",
+        font_name: str = None,
         font_size: int = 12,
         margin: int = 50,
         **kwargs
@@ -49,12 +63,46 @@ class PDFExporter(BaseExporter):
             bool: 是否成功
         """
         try:
-            # TODO: 集成reportlab或其他PDF库
-            # 这里提供框架
+            c = canvas.Canvas(output_path, pagesize=A4)
+            width, height = A4
+            
+            used_font = font_name or self.font_name
+            try:
+                c.setFont(used_font, font_size)
+            except:
+                c.setFont("Helvetica", font_size)
 
-            logger.info(f"PDF导出: {output_path}")
+            y = height - margin
+            line_height = font_size * 1.5
 
-            # 占位实现
+            for item in data:
+                text = item.get("text", "")
+                # If there's an image, draw it (simplified)
+                # image_path = item.get("image_path")
+                # if image_path and Path(image_path).exists():
+                #     c.drawImage(image_path, margin, y - 200, width=400, preserveAspectRatio=True)
+                #     y -= 220
+                
+                # Draw text
+                lines = text.split('\n')
+                for line in lines:
+                    if y < margin:
+                        c.showPage()
+                        y = height - margin
+                        try:
+                            c.setFont(used_font, font_size)
+                        except:
+                            c.setFont("Helvetica", font_size)
+                    
+                    c.drawString(margin, y, line)
+                    y -= line_height
+                
+                # Add spacing between items
+                y -= line_height
+            
+            c.save()
+            logger.info(f"PDF导出成功: {output_path}")
+
             return True
 
         except Exception as e:

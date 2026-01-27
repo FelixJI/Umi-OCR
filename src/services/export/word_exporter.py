@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Umi-OCR Excel导出器
+Umi-OCR Word导出器
 
-将OCR结果导出为Excel格式。
+将OCR结果导出为Word格式。
 
 Author: Umi-OCR Team
 Date: 2026-01-27
@@ -12,19 +12,19 @@ Date: 2026-01-27
 import logging
 from typing import List, Dict, Any
 from pathlib import Path
-import openpyxl
+from docx import Document
 
 from .base_exporter import BaseExporter
 
 logger = logging.getLogger(__name__)
 
 
-class ExcelExporter(BaseExporter):
-    """Excel导出器"""
+class WordExporter(BaseExporter):
+    """Word导出器"""
 
     def __init__(self):
-        """初始化Excel导出器"""
-        logger.info("Excel导出器初始化完成")
+        """初始化Word导出器"""
+        logger.info("Word导出器初始化完成")
 
     def export(
         self,
@@ -33,7 +33,7 @@ class ExcelExporter(BaseExporter):
         **kwargs
     ) -> bool:
         """
-        导出为Excel
+        导出为Word
 
         Args:
             data: OCR结果列表
@@ -44,35 +44,31 @@ class ExcelExporter(BaseExporter):
             bool: 是否成功
         """
         try:
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = "OCR Results"
-            
-            # Headers
-            ws.append(["文件", "页码", "识别内容", "置信度"])
+            doc = Document()
             
             for item in data:
                 text = item.get("text", "")
                 title = item.get("title", "")
-                page = item.get("page", "")
-                confidence = item.get("confidence", 0.0)
                 
-                # Split text into lines if needed, or put in one cell
-                ws.append([title, page, text, confidence])
+                if title:
+                    doc.add_heading(title, level=1)
+                
+                doc.add_paragraph(text)
+                doc.add_page_break()
             
-            wb.save(output_path)
-            logger.info(f"Excel导出成功: {output_path}")
+            doc.save(output_path)
+            logger.info(f"Word导出成功: {output_path}")
 
             return True
 
         except Exception as e:
-            logger.error(f"Excel导出失败: {e}", exc_info=True)
+            logger.error(f"Word导出失败: {e}", exc_info=True)
             return False
 
     def get_file_extension(self) -> str:
         """获取文件扩展名"""
-        return ".xlsx"
+        return ".docx"
 
     def get_name(self) -> str:
         """获取导出器名称"""
-        return "Excel"
+        return "Word"

@@ -24,6 +24,11 @@ from src.ui.main_window.main_window import MainWindow
 from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
+from src.platform.win32.hotkey_manager import HotkeyManager
+from src.services.server.http_server import HTTPServer
+from PySide6.QtWidgets import QWidget
+from qasync import QEventLoop
+import asyncio
 
 
 class MainController(QObject):
@@ -69,8 +74,112 @@ class MainController(QObject):
 
         # 初始化主窗口
         self._init_main_window()
+        
+        # 初始化系统托盘 (阶段21)
+        self._init_tray()
+        
+        # 初始化全局快捷键 (阶段22)
+        self._init_hotkeys()
+        
+        # 初始化悬浮工具栏 (阶段24)
+        self._init_floating_bar()
+        
+        # 初始化 HTTP 服务 (阶段26)
+        self._init_http_server()
 
         self.logger.info("主窗口控制器初始化完成")
+
+    def _init_http_server(self):
+        """初始化 HTTP 服务"""
+        # 检查是否启用
+        if not self.config_manager.get("system.http_server_enabled", False):
+            return
+            
+        self.http_server = HTTPServer()
+        
+        # 使用 qasync 将 asyncio 集成到 Qt 事件循环
+        # 注意：这需要在 main.py 中正确设置 loop
+        try:
+            loop = asyncio.get_event_loop()
+            asyncio.ensure_future(self.http_server.start(), loop=loop)
+        except Exception as e:
+            self.logger.error(f"无法启动 HTTP 服务: {e}")
+
+    def _init_floating_bar(self):
+        """初始化悬浮工具栏"""
+        from src.ui.floating_bar.floating_bar import FloatingBar
+        self.floating_bar = FloatingBar()
+        
+        # 连接信号
+        self.floating_bar.screenshot_clicked.connect(self.handle_screenshot_ocr)
+        self.floating_bar.clipboard_ocr_clicked.connect(self.handle_clipboard_ocr)
+        self.floating_bar.batch_ocr_clicked.connect(self.handle_batch_ocr)
+        self.floating_bar.settings_clicked.connect(self.handle_settings)
+        
+        # 初始状态
+        # TODO: 从配置读取模式
+        # self.floating_bar.set_mode(FloatingBarMode.ALWAYS_VISIBLE)
+
+    def _init_hotkeys(self):
+        """初始化全局快捷键"""
+        self.hotkey_manager = HotkeyManager(self)
+        self.hotkey_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+        self.hotkey_manager.start()
+        
+        # 初始注册
+        self._update_hotkeys_registration()
+        
+        # 监听配置变更
+        self.config_manager.config_changed.connect(self._on_config_changed_hotkey)
+        
+    def _update_hotkeys_registration(self):
+        """更新热键注册"""
+        # Screenshot
+        key = self.config_manager.get("hotkeys.screenshot", "")
+        if key: self.hotkey_manager.register_hotkey("screenshot", key)
+        else: self.hotkey_manager.unregister_hotkey("screenshot")
+            
+        # Clipboard
+        key = self.config_manager.get("hotkeys.clipboard", "")
+        if key: self.hotkey_manager.register_hotkey("clipboard", key)
+        else: self.hotkey_manager.unregister_hotkey("clipboard")
+        
+        # Show/Hide
+        key = self.config_manager.get("hotkeys.show_hide", "")
+        if key: self.hotkey_manager.register_hotkey("show_hide", key)
+        else: self.hotkey_manager.unregister_hotkey("show_hide")
+
+    def _on_config_changed_hotkey(self, key_path, old, new):
+        """配置变更处理"""
+        if key_path.startswith("hotkeys."):
+            self._update_hotkeys_registration()
+
+    def _on_hotkey_triggered(self, action_name):
+        """热键触发处理"""
+        self.logger.info(f"热键触发: {action_name}")
+        if action_name == "screenshot":
+            self.handle_screenshot_ocr()
+        elif action_name == "clipboard":
+            self.handle_clipboard_ocr()
+        elif action_name == "show_hide":
+            if self.main_window and self.main_window.isVisible():
+                self.hide_window()
+            else:
+                self.show_window()
+                if self.main_window:
+                    self.main_window.activateWindow()
+
+    def _init_tray(self):
+        """初始化系统托盘"""
+        from src.utils.tray_manager import TrayManager
+        self.tray_manager = TrayManager(self)
+        
+        # 连接托盘信号
+        self.tray_manager.show_window_requested.connect(self.show_window)
+        self.tray_manager.screenshot_requested.connect(self.handle_screenshot_ocr)
+        self.tray_manager.clipboard_ocr_requested.connect(self.handle_clipboard_ocr)
+        self.tray_manager.pause_all_requested.connect(self.handle_pause_all)
+        self.tray_manager.quit_requested.connect(self.handle_exit_from_tray)
 
     def _init_main_window(self):
         """初始化主窗口"""
@@ -199,9 +308,32 @@ class MainController(QObject):
         # 切换到任务管理器页面
         if self.main_window:
             self.main_window.switch_to_page(4)
+            
+    def _init_main_window(self):
+        """初始化主窗口"""
+        # 创建主窗口
+        self.main_window = MainWindow()
+        
+        # 初始化任务管理器界面 (嵌入到主窗口页面堆栈)
+        from src.ui.task_manager.task_manager import TaskManagerView
+        self.task_manager_view = TaskManagerView()
+        
+        # 将任务管理器界面添加到主窗口的 page_task_manager
+        # 注意：这里假设 MainWindow 已经加载了 ui 并且有一个名为 page_task_manager 的页面
+        # 我们需要获取那个页面并设置布局
+        page_task = self.main_window.ui.findChild(QWidget, "page_task_manager")
+        if page_task:
+            layout = page_task.layout()
+            if not layout:
+                from PySide6.QtWidgets import QVBoxLayout
+                layout = QVBoxLayout(page_task)
+                layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self.task_manager_view)
 
-    # 设置
-    def handle_settings(self):
+        # 连接主窗口信号
+        self._connect_window_signals()
+
+        self.logger.debug("主窗口创建完成")
         """处理设置命令"""
         self.logger.debug("执行设置命令")
         # 切换到设置页面
@@ -231,6 +363,27 @@ class MainController(QObject):
         """处理导出命令"""
         self.logger.debug("执行导出命令")
         # TODO: 在后续阶段实现导出功能
+
+    # 剪贴板 OCR
+    def handle_clipboard_ocr(self):
+        """处理剪贴板 OCR 命令"""
+        self.logger.debug("执行剪贴板 OCR 命令")
+        # TODO: 在后续阶段集成剪贴板 OCR 逻辑
+        # 暂时只做日志记录
+        self.show_status_message("正在读取剪贴板...")
+        
+    # 暂停/恢复所有任务
+    def handle_pause_all(self):
+        """处理暂停/恢复所有任务命令"""
+        self.logger.debug("执行暂停/恢复所有任务命令")
+        # TODO: 调用 TaskManager
+        pass
+        
+    def handle_exit_from_tray(self):
+        """处理托盘退出命令"""
+        self.logger.info("托盘请求退出")
+        self.config_manager.save()
+        self.app_exit_requested.emit()
 
     # 退出应用
     def handle_exit(self):
@@ -273,13 +426,20 @@ class MainController(QObject):
 
     def _on_window_closing(self):
         """窗口关闭事件处理"""
-        self.logger.info("主窗口关闭请求")
-
-        # 保存配置
-        self.config_manager.save()
-
-        # 发送退出信号
-        self.app_exit_requested.emit()
+        # 检查是否最小化到托盘
+        minimize_to_tray = self.config_manager.get("ui.minimize_to_tray", False)
+        
+        if minimize_to_tray:
+            self.logger.info("主窗口关闭请求 -> 最小化到托盘")
+            self.hide_window()
+            if self.tray_manager:
+                self.tray_manager.show_notification("Umi-OCR", "程序已最小化到托盘运行")
+        else:
+            self.logger.info("主窗口关闭请求 -> 退出程序")
+            # 保存配置
+            self.config_manager.save()
+            # 发送退出信号
+            self.app_exit_requested.emit()
 
     # -------------------------------------------------------------------------
     # 公共方法

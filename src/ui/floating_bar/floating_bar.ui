@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FloatingBar</class>
+ <widget class="QWidget" name="FloatingBar">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>50</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>悬浮工具栏</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#FloatingBar {
+	background-color: rgba(255, 255, 255, 240);
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+QPushButton {
+	border: none;
+	border-radius: 4px;
+	padding: 5px;
+}
+QPushButton:hover {
+	background-color: #f0f0f0;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
+   <item>
+    <widget class="QPushButton" name="btn_screenshot">
+     <property name="toolTip">
+      <string>截图 OCR</string>
+     </property>
+     <property name="text">
+      <string>📷</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_clipboard">
+     <property name="toolTip">
+      <string>剪贴板 OCR</string>
+     </property>
+     <property name="text">
+      <string>📋</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_batch">
+     <property name="toolTip">
+      <string>批量 OCR</string>
+     </property>
+     <property name="text">
+      <string>📂</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_settings">
+     <property name="toolTip">
+      <string>设置</string>
+     </property>
+     <property name="text">
+      <string>⚙️</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="lbl_grip">
+     <property name="text">
+      <string>⠿</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="cursor">
+      <cursorShape>SizeAllCursor</cursorShape>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

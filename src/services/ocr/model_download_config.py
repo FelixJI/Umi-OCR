@@ -31,7 +31,8 @@ class ModelCategory(str, Enum):
     TABLE_CELLS = "table_cells"
     TABLE_CLASSIFICATION = "table_classification"
     FORMULA_RECOGNITION = "formula_recognition"
-    DOC_VLM = "doc_vlm"  # 文档视觉语言模型
+    DOC_VLM = "doc_vlm"  # PP-DocBee文档理解模型
+    OCR_VL = "ocr_vl"    # PaddleOCR-VL文档解析模型
 
 
 @dataclass
@@ -58,7 +59,7 @@ class ModelPreset:
 
 
 # ============================================================================
-# 核心OCR模型 - 仅服务端模型
+# 核心OCR模型 - PP-OCRv5 (已移除v4过时模型)
 # ============================================================================
 
 # 文本检测模型
@@ -68,18 +69,18 @@ TEXT_DETECTION_MODELS = {
         display_name="PP-OCRv5 服务端检测模型",
         category=ModelCategory.TEXT_DETECTION,
         size_mb=101.0,
-        description="高精度中文检测模型，支持中英文、多语种文本检测",
+        description="最新高精度检测模型，Hmean 83.8%，支持109种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_det_infer.tar",
-        language="ch"
+        language="multilingual"
     ),
-    "ppocrv4_server_det": ModelInfo(
-        name="PP-OCRv4_server_det",
-        display_name="PP-OCRv4 服务端检测模型",
+    "ppocrv5_mobile_det": ModelInfo(
+        name="PP-OCRv5_mobile_det",
+        display_name="PP-OCRv5 移动端检测模型",
         category=ModelCategory.TEXT_DETECTION,
-        size_mb=109.0,
-        description="高精度中文检测模型，支持中英文、多语种文本检测",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv4_server_det_infer.tar",
-        language="ch"
+        size_mb=4.7,
+        description="轻量检测模型，适合端侧部署，Hmean 79.0%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_det_infer.tar",
+        language="multilingual"
     ),
 }
 
@@ -90,45 +91,117 @@ TEXT_RECOGNITION_MODELS = {
         display_name="PP-OCRv5 服务端识别模型",
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=81.0,
-        description="高精度中文识别模型，支持中英文、数字识别",
+        description="单模型支持简中/繁中/英/日/拼音，精度86.38%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_rec_infer.tar",
-        language="ch"
+        language="multilingual"
     ),
-    "ppocrv4_server_rec": ModelInfo(
-        name="PP-OCRv4_server_rec",
-        display_name="PP-OCRv4 服务端识别模型",
+    "ppocrv5_mobile_rec": ModelInfo(
+        name="PP-OCRv5_mobile_rec",
+        display_name="PP-OCRv5 移动端识别模型",
         category=ModelCategory.TEXT_RECOGNITION,
-        size_mb=173.0,
-        description="高精度中文识别模型，支持中英文、数字识别",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv4_server_rec_infer.tar",
-        language="ch"
+        size_mb=16.0,
+        description="轻量识别模型，精度81.29%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_rec_infer.tar",
+        language="multilingual"
     ),
-    "ppocrv4_server_rec_doc": ModelInfo(
-        name="PP-OCRv4_server_rec_doc",
-        display_name="PP-OCRv4 文档识别模型",
+}
+
+# ============================================================================
+# 多语言V5识别模型 - 可选下载项
+# ============================================================================
+
+MULTILANGUAGE_RECOGNITION_MODELS = {
+    # 语言组模型
+    "cyrillic_ppocrv5_rec": ModelInfo(
+        name="cyrillic_PP-OCRv5_mobile_rec",
+        display_name="西里尔字母识别模型",
         category=ModelCategory.TEXT_RECOGNITION,
-        size_mb=182.0,
-        description="高精度文档识别模型，支持15000+字符和生僻字识别",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv4_server_rec_doc_infer.tar",
-        language="ch"
+        size_mb=8.0,
+        description="支持俄语、乌克兰语、白俄罗斯语等20+种语言",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/cyrillic_PP-OCRv5_mobile_rec_infer.tar",
+        language="cyrillic"
     ),
-    "ch_svtrv2_rec": ModelInfo(
-        name="ch_SVTRv2_rec",
-        display_name="SVTRv2 中文识别模型",
+    "latin_ppocrv5_rec": ModelInfo(
+        name="latin_PP-OCRv5_mobile_rec",
+        display_name="拉丁语系识别模型",
         category=ModelCategory.TEXT_RECOGNITION,
-        size_mb=80.5,
-        description="基于SVTRv2架构的中文识别模型",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/ch_SVTRv2_rec_infer.tar",
-        language="ch"
+        size_mb=8.0,
+        description="支持法文、德文、西语、37+种语言",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/latin_PP-OCRv5_mobile_rec_infer.tar",
+        language="latin"
     ),
-    "ch_repsvtr_rec": ModelInfo(
-        name="ch_RepSVTR_rec",
-        display_name="RepSVTR 中文识别模型",
+    "arabic_ppocrv5_rec": ModelInfo(
+        name="arabic_PP-OCRv5_mobile_rec",
+        display_name="阿拉伯语系识别模型",
         category=ModelCategory.TEXT_RECOGNITION,
-        size_mb=48.8,
-        description="基于RepSVTR架构的中文识别模型，轻量高效",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/ch_RepSVTR_rec_infer.tar",
-        language="ch"
+        size_mb=8.0,
+        description="支持阿拉伯语、波斯语、20+种语言",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/arabic_PP-OCRv5_mobile_rec_infer.tar",
+        language="arabic"
+    ),
+    "devanagari_ppocrv5_rec": ModelInfo(
+        name="devanagari_PP-OCRv5_mobile_rec",
+        display_name="天城文识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="支持印地语、马拉地语、10+种语言",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/devanagari_PP-OCRv5_mobile_rec_infer.tar",
+        language="devanagari"
+    ),
+    # 语言专用模型
+    "korean_ppocrv5_rec": ModelInfo(
+        name="korean_PP-OCRv5_mobile_rec",
+        display_name="韩语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="韩语专用优化模型",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/korean_PP-OCRv5_mobile_rec_infer.tar",
+        language="korean"
+    ),
+    "japan_ppocrv5_rec": ModelInfo(
+        name="japan_PP-OCRv5_mobile_rec",
+        display_name="日语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="日语专用优化模型",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/japan_PP-OCRv5_mobile_rec_infer.tar",
+        language="japan"
+    ),
+    "th_ppocrv5_rec": ModelInfo(
+        name="th_PP-OCRv5_mobile_rec",
+        display_name="泰语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="泰语专用，精度82.68%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/th_PP-OCRv5_mobile_rec_infer.tar",
+        language="th"
+    ),
+    "el_ppocrv5_rec": ModelInfo(
+        name="el_PP-OCRv5_mobile_rec",
+        display_name="希腊语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="希腊语专用，精度89.28%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/el_PP-OCRv5_mobile_rec_infer.tar",
+        language="el"
+    ),
+    "ta_ppocrv5_rec": ModelInfo(
+        name="ta_PP-OCRv5_mobile_rec",
+        display_name="泰米尔语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="泰米尔语专用，精度94.2%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/ta_PP-OCRv5_mobile_rec_infer.tar",
+        language="ta"
+    ),
+    "te_ppocrv5_rec": ModelInfo(
+        name="te_PP-OCRv5_mobile_rec",
+        display_name="泰卢固语识别模型",
+        category=ModelCategory.TEXT_RECOGNITION,
+        size_mb=8.0,
+        description="泰卢固语专用，精度87.65%",
+        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/te_PP-OCRv5_mobile_rec_infer.tar",
+        language="te"
     ),
 }
 
@@ -432,30 +505,43 @@ FORMULA_RECOGNITION_MODELS = {
 # 文档视觉语言模型 (Doc VLM)
 # ============================================================================
 
+# ============================================================================
+# PaddleOCR-VL 文档解析模型 (2025年10月新发布，SOTA)
+# 这是与PP-DocBee不同的模型，专为文档解析设计
+# ============================================================================
+
+OCR_VL_MODELS = {
+    "paddleocr_vl_0_9b": ModelInfo(
+        name="PaddleOCR-VL-0.9B",
+        display_name="PaddleOCR-VL 0.9B 文档解析模型",
+        category=ModelCategory.OCR_VL,
+        size_mb=1800.0,
+        description="超紧凑0.9B参数VLM，SOTA文档解析，支持109种语言，擅长文本/表格/公式/图表识别",
+        download_url="https://huggingface.co/PaddlePaddle/PaddleOCR-VL/resolve/main/paddleocr_vl_0.9b_infer.tar",
+        language="multilingual"
+    ),
+}
+
+# ============================================================================
+# PP-DocBee 文档理解模型 (用于文档问答，与PaddleOCR-VL不同)
+# ============================================================================
+
 DOC_VLM_MODELS = {
     "pp_docbee2_3b": ModelInfo(
         name="PP-DocBee2-3B",
-        display_name="PP-DocBee2-3B 文档VLM模型",
+        display_name="PP-DocBee2-3B 文档理解模型",
         category=ModelCategory.DOC_VLM,
-        size_mb=7600.0,  # 约7.6GB
-        description="3B参数文档视觉语言模型，支持文档理解、问答、内容提取等多模态任务",
+        size_mb=7600.0,
+        description="3B参数文档理解模型，支持文档问答，精度提升11.4%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBee2-3B_infer.tar",
     ),
     "pp_docbee_2b": ModelInfo(
         name="PP-DocBee-2B",
-        display_name="PP-DocBee-2B 文档VLM模型",
+        display_name="PP-DocBee-2B 文档理解模型",
         category=ModelCategory.DOC_VLM,
-        size_mb=4200.0,  # 4.2GB
-        description="2B参数文档视觉语言模型，支持文档理解、问答、内容提取",
+        size_mb=4200.0,
+        description="2B参数文档理解模型，支持文档问答、内容提取",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBee-2B_infer.tar",
-    ),
-    "pp_docbee_7b": ModelInfo(
-        name="PP-DocBee-7B",
-        display_name="PP-DocBee-7B 文档VLM模型",
-        category=ModelCategory.DOC_VLM,
-        size_mb=15800.0,  # 15.8GB
-        description="7B参数文档视觉语言模型，高精度文档理解，支持复杂文档分析",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBee-7B_infer.tar",
     ),
 }
 
@@ -466,6 +552,7 @@ DOC_VLM_MODELS = {
 ALL_MODELS = {
     **TEXT_DETECTION_MODELS,
     **TEXT_RECOGNITION_MODELS,
+    **MULTILANGUAGE_RECOGNITION_MODELS,  # 多语言V5可选下载
     **ORIENTATION_MODELS,
     **DOC_UNWARPING_MODELS,
     **LAYOUT_DETECTION_MODELS,
@@ -478,7 +565,8 @@ ALL_MODELS = {
     **TABLE_CELLS_MODELS,
     **TABLE_CLASSIFICATION_MODELS,
     **FORMULA_RECOGNITION_MODELS,
-    **DOC_VLM_MODELS,
+    **OCR_VL_MODELS,   # PaddleOCR-VL文档解析
+    **DOC_VLM_MODELS,  # PP-DocBee文档问答
 }
 
 # ============================================================================
@@ -550,11 +638,22 @@ MODEL_PRESETS = {
         total_size_mb=1078.2,  # 486.2 + 592
         recommended_for="学术论文、教材、试卷等含公式的文档"
     ),
-    # 层级6: 智能文档 - 公式OCR + Doc VLM
+    # 层级6: 文档解析 - PaddleOCR-VL SOTA模型
+    "ocr_vl": ModelPreset(
+        id="ocr_vl",
+        name="文档解析",
+        description="PaddleOCR-VL 0.9B SOTA模型，端到端文档解析，支持文本/表格/公式/图表",
+        models=[
+            "paddleocr_vl_0_9b",  # 0.9B参数，SOTA文档解析
+        ],
+        total_size_mb=1800.0,
+        recommended_for="端到端文档解析、复杂文档处理、多语言109种语言支持"
+    ),
+    # 层级7: 智能文档 - 公式OCR + Doc VLM
     "smart_doc": ModelPreset(
         id="smart_doc",
-        name="智能文档",
-        description="公式OCR + Doc VLM文档视觉语言模型，支持文档理解、问答、内容提取",
+        name="智能问答",
+        description="公式OCR + PP-DocBee文档问答模型，支持文档理解、问答、内容提取",
         models=[
             "ppocrv5_server_det", "ppocrv5_server_rec",
             "pp_lcnet_doc_ori", "uvdoc",
@@ -567,7 +666,7 @@ MODEL_PRESETS = {
         total_size_mb=8678.2,  # 1078.2 + 7600
         recommended_for="需要文档理解、多模态问答、内容提取的智能文档场景"
     ),
-    # 层级7: 全功能 - 智能文档 + 高精度表格模型
+    # 层级8: 全功能 - 智能文档 + 高精度表格模型
     "full_ocr": ModelPreset(
         id="full_ocr",
         name="全功能",
@@ -707,6 +806,11 @@ class ModelDownloadConfig:
             "total_size_mb": 1078.2,
             "description": "公式识别OCR"
         },
+        "ocr_vl": {
+            "models": ["paddleocr_vl_0_9b"],
+            "total_size_mb": 1800.0,
+            "description": "PaddleOCR-VL 0.9B SOTA文档解析，端到端多模态"
+        },
         "smart": {
             "models": [
                 "ppocrv5_server_det", "ppocrv5_server_rec",
@@ -717,7 +821,7 @@ class ModelDownloadConfig:
                 "pp_docbee2_3b",
             ],
             "total_size_mb": 8678.2,
-            "description": "智能文档，包含Doc VLM文档理解"
+            "description": "智能问答，包含PP-DocBee文档问答"
         },
         "full": {
             "models": [

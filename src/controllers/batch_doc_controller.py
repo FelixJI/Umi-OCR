@@ -15,12 +15,15 @@ Date: 2026-01-27
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from PySide6.QtCore import QObject, Signal
 
 from services.pdf.pdf_parser import PDFParser, PDFInfo
 from services.task.task_manager import TaskManager
+from services.export.pdf_exporter import PDFExporter
+from services.export.word_exporter import WordExporter
+from services.export.excel_exporter import ExcelExporter
 from utils.logger import get_logger
 
 logger = get_logger()
@@ -48,6 +51,7 @@ class BatchDocController(QObject):
 
         self._pdf_parser = PDFParser()
         self._task_manager = TaskManager.instance()
+        self._submitted_groups: Set[str] = set()
 
         # 连接信号
         self._connect_signals()
@@ -87,6 +91,8 @@ class BatchDocController(QObject):
             title=title,
             priority=priority
         )
+        
+        self._submitted_groups.add(group_id)
 
         # 发送信号
         self.tasks_submitted.emit(group_id)
@@ -120,14 +126,16 @@ class BatchDocController(QObject):
         暂停批量OCR
         """
         logger.info("暂停批量文档OCR")
-        # TODO: 实现暂停逻辑
+        for group_id in self._submitted_groups:
+            self._task_manager.pause_group(group_id)
 
     def resume_ocr(self) -> None:
         """
         恢复批量OCR
         """
         logger.info("恢复批量文档OCR")
-        # TODO: 实现恢复逻辑
+        for group_id in self._submitted_groups:
+            self._task_manager.resume_group(group_id)
 
     def process_pdfs(self, pdf_paths: List[str]) -> str:
         """
@@ -150,7 +158,7 @@ class BatchDocController(QObject):
             output_path: 输出路径
         """
         logger.info(f"导出为可搜索PDF: {group_id}")
-        # TODO: 实现导出逻辑，需要调用导出服务
+        self._export_result(group_id, output_path, PDFExporter())
 
     def export_as_word(self, group_id: str, output_path: str) -> None:
         """
@@ -161,7 +169,7 @@ class BatchDocController(QObject):
             output_path: 输出路径
         """
         logger.info(f"导出为Word: {group_id}")
-        # TODO: 实现导出逻辑，需要调用导出服务
+        self._export_result(group_id, output_path, WordExporter())
 
     def export_as_excel(self, group_id: str, output_path: str) -> None:
         """
@@ -172,7 +180,49 @@ class BatchDocController(QObject):
             output_path: 输出路径
         """
         logger.info(f"导出为Excel: {group_id}")
-        # TODO: 实现导出逻辑，需要调用导出服务
+        self._export_result(group_id, output_path, ExcelExporter())
+        
+    def _export_result(self, group_id: str, output_path: str, exporter) -> None:
+        """
+        通用导出逻辑
+        """
+        group = self._task_manager.get_group(group_id)
+        if not group:
+            logger.error(f"导出失败，任务组不存在: {group_id}")
+            return
+            
+        # 收集结果
+        data = []
+        # 对于嵌套任务组，需要递归收集
+        for child in group.sub_groups:
+            # 每个 child 是一个 PDF 文件
+            # 收集其下所有 Page 的结果
+            pdf_text = ""
+            pdf_title = child.title
+            
+            # 假设结果存储在 Task 对象中，或者我们需要从某处获取结果
+            # 目前 TaskManager 只有 task_completed 信号
+            # 我们需要一种方式获取已完成任务的结果
+            # TaskGroup 应该有 results? TaskGroup 没有 results 字段，Task 有 result 字段
+            # TaskWorker 将结果存入 Task.result
+            
+            # 遍历子组的所有任务
+            for task in child.get_all_tasks():
+                if task.result:
+                    # 假设 result 是 OCRResult 对象或字典
+                    # 这里需要根据实际 result 结构适配
+                    # 假设 result.text 是文本
+                    if hasattr(task.result, 'text'):
+                        pdf_text += task.result.text + "\n"
+                    elif isinstance(task.result, dict):
+                        pdf_text += task.result.get('text', '') + "\n"
+            
+            data.append({
+                "title": pdf_title,
+                "text": pdf_text
+            })
+            
+        exporter.export(data, output_path)
 
     def _on_group_progress(self, group_id: str, progress: float) -> None:
         """任务组进度更新"""

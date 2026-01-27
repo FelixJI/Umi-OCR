@@ -19,6 +19,7 @@ from PySide6.QtCore import QObject, Signal
 from .task_model import Task, TaskGroup, TaskType, TaskStatus, CancelMode
 from .task_queue import TaskQueue
 from .task_worker import TaskWorker, WorkerManager
+from ..pdf.pdf_parser import PDFParser
 
 
 logger = logging.getLogger(__name__)
@@ -231,8 +232,14 @@ class TaskManager(QObject):
             priority=priority
         )
 
+        parser = PDFParser()
+
         # 为每个 PDF 创建子任务组
         for pdf_path in pdf_paths:
+            # 解析 PDF 获取页数
+            pdf_info = parser.parse_pdf(pdf_path)
+            total_pages = pdf_info.total_pages if pdf_info else 0
+            
             # 创建子任务组
             pdf_group = TaskGroup(
                 id=str(uuid.uuid4()),
@@ -241,17 +248,30 @@ class TaskManager(QObject):
                 max_concurrency=1  # PDF 任务串行执行
             )
 
-            # TODO: 这里应该解析 PDF 页数，为每页创建任务
-            # 暂时创建一个示例任务
-            task = Task(
-                id=str(uuid.uuid4()),
-                task_type=TaskType.PDF_PARSE,
-                input_data={
-                    "pdf_path": pdf_path,
-                    "page_number": 1
-                }
-            )
-            pdf_group.add_task(task)
+            if total_pages > 0:
+                for i in range(1, total_pages + 1):
+                    task = Task(
+                        id=str(uuid.uuid4()),
+                        task_type=TaskType.PDF_PARSE,
+                        input_data={
+                            "pdf_path": pdf_path,
+                            "page_number": i
+                        }
+                    )
+                    pdf_group.add_task(task)
+            else:
+                # 解析失败，创建一个失败任务或记录日志
+                logger.warning(f"无法解析 PDF 页数: {pdf_path}")
+                # 可以添加一个占位任务来报告错误
+                task = Task(
+                    id=str(uuid.uuid4()),
+                    task_type=TaskType.PDF_PARSE,
+                    input_data={
+                        "pdf_path": pdf_path,
+                        "page_number": 1
+                    }
+                )
+                pdf_group.add_task(task)
 
             # 添加到根任务组
             root_group.add_group(pdf_group)

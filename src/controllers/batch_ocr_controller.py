@@ -54,6 +54,7 @@ class BatchOcrController(QObject):
 
         # 待处理文件集合
         self._pending_files: Set[str] = set()
+        self._submitted_groups: Set[str] = set()
 
         # 连接信号
         self._connect_signals()
@@ -94,6 +95,8 @@ class BatchOcrController(QObject):
             title=title,
             priority=priority
         )
+        
+        self._submitted_groups.add(group_id)
 
         # 发送信号
         self.tasks_submitted.emit(group_id)
@@ -156,8 +159,8 @@ class BatchOcrController(QObject):
         取消所有任务组
         """
         logger.info("暂停批量OCR")
-        # 注意：这里需要实现暂停逻辑，暂时留空
-        # TODO: 实现暂停所有任务组的逻辑
+        for group_id in self._submitted_groups:
+            self._task_manager.pause_group(group_id)
 
     def resume_ocr(self) -> None:
         """
@@ -166,8 +169,8 @@ class BatchOcrController(QObject):
         恢复所有暂停的任务组
         """
         logger.info("恢复批量OCR")
-        # 注意：这里需要实现恢复逻辑，暂时留空
-        # TODO: 实现恢复所有任务组的逻辑
+        for group_id in self._submitted_groups:
+            self._task_manager.resume_group(group_id)
 
     def cancel_batch(self, group_id: str) -> None:
         """

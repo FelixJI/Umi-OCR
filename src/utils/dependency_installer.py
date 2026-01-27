@@ -77,7 +77,7 @@ class MirrorSource:
         return cmd
 
 
-# 默认镜像源列表（按优先级排序）
+# 默认镜像源列表（用于PaddleOCR等普通包）
 DEFAULT_MIRRORS = [
     # 清华大学镜像（国内首选）
     MirrorSource(
@@ -115,6 +115,18 @@ DEFAULT_MIRRORS = [
         is_official=True
     ),
 ]
+
+# PaddlePaddle官方源（必须使用官方源安装PaddlePaddle）
+# 参考: https://www.paddlepaddle.org.cn/install/quick
+PADDLE_OFFICIAL_SOURCES = {
+    "cpu": "https://www.paddlepaddle.org.cn/packages/stable/cpu/",
+    "gpu_cu118": "https://www.paddlepaddle.org.cn/packages/stable/cu118/",
+    "gpu_cu126": "https://www.paddlepaddle.org.cn/packages/stable/cu126/",
+}
+
+# PaddlePaddle版本号
+PADDLEPADDLE_VERSION = "3.3.0"
+PADDLEOCR_VERSION = "3.3.0"
 
 
 # =============================================================================
@@ -262,40 +274,44 @@ class InstallWorker(QThread):
             if self._is_cancelled:
                 raise InterruptedError("安装已被用户取消")
 
-    def _get_packages_to_install(self) -> List[Dict[str, str]]:
+    def _get_packages_to_install(self) -> List[Dict[str, any]]:
         """
         获取需要安装的包
 
-        Args:
-            config: 安装配置
-
         Returns:
-            List[Dict]: 包列表（包含名称和版本要求）
+            List[Dict]: 包列表（包含名称、版本、源地址等信息）
         """
         packages = []
 
-        # 根据安装选项确定PaddlePaddle版本
+        # PaddlePaddle - 必须使用官方源安装
         if self.config.option == InstallOption.GPU:
-            # GPU版本
-            paddle_version = ">=3.3.0"  # GPU版本要求
+            # GPU版本 - 使用paddlepaddle-gpu包名和飞桨官方GPU源
+            # 默认使用CUDA 11.8源（兼容性更好），后续可根据检测到的CUDA版本选择
+            packages.append({
+                "name": "paddlepaddle-gpu",
+                "version": f"=={PADDLEPADDLE_VERSION}",
+                "source": PADDLE_OFFICIAL_SOURCES["gpu_cu118"],
+                "use_official_source": True,  # 标记使用官方源
+            })
         else:
-            # CPU版本
-            paddle_version = ">=3.2.0"
+            # CPU版本 - 使用paddlepaddle包名和飞桨官方CPU源
+            packages.append({
+                "name": "paddlepaddle",
+                "version": f"=={PADDLEPADDLE_VERSION}",
+                "source": PADDLE_OFFICIAL_SOURCES["cpu"],
+                "use_official_source": True,
+            })
 
-        packages.append({
-            "name": "paddlepaddle",
-            "version": paddle_version
-        })
-
-        # PaddleOCR
+        # PaddleOCR - 可使用国内镜像源
         packages.append({
             "name": "paddleocr",
-            "version": ">=3.3.0"
+            "version": f">={PADDLEOCR_VERSION}",
+            "use_official_source": False,
         })
 
         return packages
 
-    def _install_from_mirror(self, mirror: MirrorSource, packages: List[Dict[str, str]]) -> bool:
+    def _install_from_mirror(self, mirror: MirrorSource, packages: List[Dict[str, any]]) -> bool:
         """
         从指定镜像安装包
 
@@ -312,7 +328,13 @@ class InstallWorker(QThread):
                 self._check_cancelled()
 
                 # 构建安装命令
-                cmd = mirror.get_pip_command()
+                if package.get("use_official_source"):
+                    # 使用PaddlePaddle官方源
+                    cmd = [sys.executable, "-m", "pip", "install"]
+                    cmd.extend(["-i", package["source"]])
+                else:
+                    # 使用普通镜像源
+                    cmd = mirror.get_pip_command()
 
                 # 添加包名和版本
                 package_name = f"{package['name']}{package['version']}"
@@ -328,18 +350,20 @@ class InstallWorker(QThread):
                 # 添加其他选项
                 cmd.extend([
                     "--upgrade",          # 升级已安装的包
-                    "--default-timeout=100",  # 默认超时
                 ])
+
+                # 获取源名称用于显示
+                source_name = "飞桨官方源" if package.get("use_official_source") else mirror.name
 
                 logger.info(f"安装命令: {' '.join(cmd)}")
 
                 # 发射进度
                 progress = InstallProgress(
                     status=InstallStatus.INSTALLING,
-                    message=f"正在安装 {package['name']}...",
+                    message=f"正在安装 {package['name']} ({source_name})...",
                     current_step=i + 1,
                     total_steps=len(packages),
-                    mirror_name=mirror.name
+                    mirror_name=source_name
                 )
                 self.progress.emit(progress)
 
@@ -357,6 +381,9 @@ class InstallWorker(QThread):
                 if result.returncode != 0:
                     error_msg = result.stderr or result.stdout or "未知错误"
                     logger.error(f"安装 {package['name']} 失败: {error_msg}")
+                    # 如果是官方源安装失败，直接返回失败（不切换镜像）
+                    if package.get("use_official_source"):
+                        return False
                     return False
 
                 # 安装成功

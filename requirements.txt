@@ -1,0 +1,14 @@
+PySide6>=6.0.0
+Pillow>=9.0.0
+PyMuPDF>=1.20.0
+qrcode[pil]>=7.0.0
+pyzbar>=0.1.9
+reportlab>=3.6.0
+python-docx>=0.8.11
+openpyxl>=3.0.0
+# PaddlePaddle 和 PaddleOCR 通过应用内安装器按需安装
+# CPU版: paddlepaddle==3.3.0 (飞桨官方源)
+# GPU版: paddlepaddle-gpu==3.3.0 (飞桨官方源)
+# paddleocr>=3.3.0
+# opencv-python is usually a dependency of paddleocr, but listing it is good
+opencv-python>=4.6.0

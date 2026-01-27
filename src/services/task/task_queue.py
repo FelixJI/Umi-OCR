@@ -119,26 +119,34 @@ class TaskQueue(QObject):
             Optional[Task]: 任务对象（无待执行任务返回 None）
         """
         with self._lock:
+            temp_popped = []
+            found_task = None
+            
             while self._heap:
                 # 获取最高优先级任务组
-                _, _, group = self._heap[0]
+                item = self._heap[0]
+                _, _, group = item
 
                 # 检查是否暂停
                 if group.id in self._paused_groups:
-                    # 跳过已暂停的任务组
-                    heapq.heappop(self._heap)
+                    # 暂时弹出已暂停的任务组
+                    temp_popped.append(heapq.heappop(self._heap))
                     continue
 
                 # 查找第一个 PENDING 状态的 Task
                 task = self._find_next_pending_task(group)
                 if task:
-                    return task
+                    found_task = task
+                    break
 
-                # 没有待执行任务，从堆中移除
+                # 没有待执行任务，从堆中移除 (永久移除，因为该组已无待执行任务)
                 heapq.heappop(self._heap)
 
-            # 队列为空
-            return None
+            # 将暂时弹出的暂停组放回堆中
+            for item in temp_popped:
+                heapq.heappush(self._heap, item)
+                
+            return found_task
 
     def _find_next_pending_task(self, group: TaskGroup) -> Optional[Task]:
         """

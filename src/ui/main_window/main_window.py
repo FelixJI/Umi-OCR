@@ -20,7 +20,7 @@ from typing import Optional
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QListWidget, QStackedWidget,
-    QLabel, QMessageBox, QStatusBar, QToolBar
+    QLabel, QMessageBox, QStatusBar, QToolBar, QVBoxLayout
 )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QSize
@@ -29,6 +29,7 @@ from PySide6.QtUiTools import QUiLoader
 from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
+from src.ui.settings.settings import SettingsWindow
 
 
 class MainWindow(QMainWindow):
@@ -164,6 +165,13 @@ class MainWindow(QMainWindow):
 
         # 设置窗口标题
         self.setWindowTitle(self.i18n.translate("main_window.title"))
+        
+        # 初始化设置页面
+        if self.pageSettings:
+            layout = QVBoxLayout(self.pageSettings)
+            layout.setContentsMargins(0, 0, 0, 0)
+            self.settingsWindow = SettingsWindow()
+            layout.addWidget(self.settingsWindow)
 
     # -------------------------------------------------------------------------
     # 侧边栏导航

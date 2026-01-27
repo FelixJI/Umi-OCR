@@ -18,6 +18,7 @@ import logging
 from dataclasses import dataclass
 from typing import List, Optional
 from pathlib import Path
+import fitz  # PyMuPDF
 
 logger = logging.getLogger(__name__)
 
@@ -69,16 +70,30 @@ class PDFParser:
                 logger.error(f"PDF文件不存在: {file_path}")
                 return None
 
-            # TODO: 集成pdf2image或类似库
-            # 这里提供框架,实际实现需要PDF处理库
+            doc = fitz.open(file_path)
+            total_pages = len(doc)
+            title = doc.metadata.get("title", "")
+            
+            pages = []
+            for i in range(total_pages):
+                page = doc.load_page(i)
+                rect = page.rect
+                pages.append(PDFPage(
+                    page_number=i + 1,
+                    width=int(rect.width),
+                    height=int(rect.height)
+                ))
+            
+            doc.close()
 
-            logger.info(f"解析PDF: {file_path}")
+            logger.info(f"解析PDF成功: {file_path}, 共 {total_pages} 页")
 
-            # 创建PDF信息(占位实现)
+            # 创建PDF信息
             pdf_info = PDFInfo(
                 file_path=file_path,
-                total_pages=1,  # 占位
-                pages=[PDFPage(page_number=0, width=100, height=100)]
+                total_pages=total_pages,
+                title=title,
+                pages=pages
             )
 
             return pdf_info
@@ -99,7 +114,7 @@ class PDFParser:
 
         Args:
             file_path: PDF文件路径
-            page_number: 页码
+            page_number: 页码 (从1开始)
             dpi: DPI
             output_dir: 输出目录
 
@@ -107,11 +122,32 @@ class PDFParser:
             Optional[str]: 图像文件路径
         """
         try:
-            # TODO: 集成pdf2image
-            logger.info(f"提取PDF页面: {file_path}, 页码: {page_number}")
+            doc = fitz.open(file_path)
+            if page_number < 1 or page_number > len(doc):
+                logger.error(f"页码超出范围: {page_number}")
+                return None
+            
+            page = doc.load_page(page_number - 1)
+            zoom = dpi / 72.0
+            mat = fitz.Matrix(zoom, zoom)
+            pix = page.get_pixmap(matrix=mat)
+            
+            if output_dir:
+                out_path = Path(output_dir)
+            else:
+                out_path = Path(file_path).parent / "extracted_images"
+            
+            out_path.mkdir(parents=True, exist_ok=True)
+            
+            image_filename = f"{Path(file_path).stem}_page_{page_number}.png"
+            image_path = out_path / image_filename
+            
+            pix.save(str(image_path))
+            doc.close()
+            
+            logger.info(f"提取PDF页面成功: {image_path}")
 
-            # 占位实现
-            return None
+            return str(image_path)
 
         except Exception as e:
             logger.error(f"页面提取失败: {e}", exc_info=True)

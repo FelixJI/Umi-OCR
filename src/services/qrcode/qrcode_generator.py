@@ -16,6 +16,8 @@ Date: 2026-01-27
 import logging
 from typing import Optional
 from pathlib import Path
+import qrcode
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,13 @@ class QRCodeGenerator:
 
     # 纠错等级
     ERROR_CORRECTION_LEVELS = ["L", "M", "Q", "H"]
+    
+    _ERROR_MAPPING = {
+        "L": qrcode.constants.ERROR_CORRECT_L,
+        "M": qrcode.constants.ERROR_CORRECT_M,
+        "Q": qrcode.constants.ERROR_CORRECT_Q,
+        "H": qrcode.constants.ERROR_CORRECT_H,
+    }
 
     def __init__(self):
         """初始化二维码生成器"""
@@ -66,10 +75,18 @@ class QRCodeGenerator:
         """
         logger.info(f"生成二维码: {code_type}, 数据: {data[:50]}...")
 
-        # TODO: 集成qrcode或其他二维码库
-        # 这里提供框架
+        if code_type == "QR_CODE":
+            if self.generate_qr_code(data, output_path, error_correction, size):
+                if output_path:
+                    with open(output_path, "rb") as f:
+                        return f.read()
+                return None # Should return bytes if output_path is None, but generate_qr_code saves to file.
+                            # I will modify generate_qr_code to return image object or bytes later.
+                            # For now, let's stick to saving to file if path is provided.
+        else:
+            logger.warning(f"暂不支持生成码型: {code_type}")
+            return None
 
-        # 占位实现
         return None
 
     def generate_qr_code(
@@ -93,11 +110,30 @@ class QRCodeGenerator:
         """
         try:
             # 确保输出目录存在
-            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+            if output_path:
+                Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-            # TODO: 生成QR码
-            logger.info(f"QR码生成: {output_path}")
+            ec_level = self._ERROR_MAPPING.get(error_correction, qrcode.constants.ERROR_CORRECT_M)
+            
+            qr = qrcode.QRCode(
+                version=None, # Auto
+                error_correction=ec_level,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
 
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Resize if needed (box_size controls size, but we can resize final image)
+            if size > 0:
+                img = img.resize((size, size), Image.Resampling.LANCZOS)
+
+            if output_path:
+                img.save(output_path)
+                logger.info(f"QR码生成成功: {output_path}")
+            
             return True
 
         except Exception as e:
