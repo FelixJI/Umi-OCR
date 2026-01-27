@@ -28,16 +28,16 @@ class PDFExporter(BaseExporter):
     def __init__(self):
         """初始化PDF导出器"""
         logger.info("PDF导出器初始化完成")
-        # Register a font that supports Chinese if possible
-        # For now, standard fonts might not support Chinese well.
-        # Ideally we should bundle a font or use system font.
-        # This is a placeholder for font registration.
+        # 注册支持中文的字体（如果可能）
+        # 目前标准字体可能不很好地支持中文。
+        # 理想情况下，我们应该捆绑一个字体或使用系统字体。
+        # 这是字体注册的占位符。
         try:
-             # Try to load a common Windows font
+             # 尝试加载常用的 Windows 字体
              pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttc'))
              self.font_name = 'SimSun'
         except:
-             self.font_name = 'Helvetica' # Fallback
+             self.font_name = 'Helvetica' # 回退字体
 
     def export(
         self,
@@ -49,10 +49,10 @@ class PDFExporter(BaseExporter):
         **kwargs
     ) -> bool:
         """
-        导出为PDF
+        导出为 PDF
 
         Args:
-            data: OCR结果列表
+            data: OCR 结果列表
             output_path: 输出文件路径
             font_name: 字体名称
             font_size: 字体大小
@@ -77,13 +77,13 @@ class PDFExporter(BaseExporter):
 
             for item in data:
                 text = item.get("text", "")
-                # If there's an image, draw it (simplified)
+                # 如果有图片，则绘制图片（简化版）
                 # image_path = item.get("image_path")
                 # if image_path and Path(image_path).exists():
                 #     c.drawImage(image_path, margin, y - 200, width=400, preserveAspectRatio=True)
                 #     y -= 220
                 
-                # Draw text
+                # 绘制文本
                 lines = text.split('\n')
                 for line in lines:
                     if y < margin:
@@ -97,7 +97,7 @@ class PDFExporter(BaseExporter):
                     c.drawString(margin, y, line)
                     y -= line_height
                 
-                # Add spacing between items
+                # 项目之间添加间距
                 y -= line_height
             
             c.save()

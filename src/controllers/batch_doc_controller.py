@@ -62,7 +62,7 @@ class BatchDocController(QObject):
         """连接任务管理器信号"""
         self._task_manager.group_progress.connect(self._on_group_progress)
         self._task_manager.group_completed.connect(self._on_group_completed)
-        self._task_manager.group_failed.connect(self._on_group_failed)
+        self._task_manager.group_paused.connect(self._on_group_paused)
 
     def submit_pdf_batch(
         self,
@@ -234,7 +234,16 @@ class BatchDocController(QObject):
         logger.info(f"任务组完成: {group_id}")
         self.tasks_completed.emit(group_id)
 
-    def _on_group_failed(self, group_id: str, error: str) -> None:
-        """任务组失败"""
-        logger.error(f"任务组失败: {group_id}, {error}")
-        self.tasks_failed.emit(group_id, error)
+    def _on_group_paused(self, group_id: str, reason: str) -> None:
+        """
+        任务组暂停（包括失败）
+
+        Args:
+            group_id: 任务组ID
+            reason: 暂停原因（"user" 或 "failure"）
+        """
+        if reason == "failure":
+            logger.error(f"任务组失败: {group_id}")
+            self.tasks_failed.emit(group_id, "任务执行失败")
+        else:
+            logger.info(f"任务组暂停: {group_id}, 原因: {reason}")

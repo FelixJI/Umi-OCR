@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Umi-OCR 主窗口
@@ -30,6 +30,11 @@ from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
 from src.ui.settings.settings import SettingsWindow
+from src.ui.screenshot_ocr.screenshot_ocr import ScreenshotOCRView
+from src.ui.batch_ocr.batch_ocr import BatchOCRView
+from src.ui.batch_doc.batch_doc import BatchDocView
+from src.ui.qrcode.qrcode import QRCodeView
+from src.ui.task_manager.task_manager import TaskManagerView
 
 
 class MainWindow(QMainWindow):
@@ -104,6 +109,23 @@ class MainWindow(QMainWindow):
             if not self.ui:
                 raise RuntimeError("UI 加载失败")
 
+            # 调试：检查加载的UI对象类型和子对象
+            self.logger.debug(f"Loaded UI type: {type(self.ui).__name__}")
+            self.logger.debug(f"Loaded UI objectName: {self.ui.objectName()}")
+
+            # 查找所有子对象
+            def find_all_children(widget, depth=0):
+                indent = "  " * depth
+                result = []
+                result.append(f"{indent}{widget.objectName()} ({type(widget).__name__})")
+                for child in widget.findChildren(QWidget):
+                    if child.parent() == widget:
+                        result.extend(find_all_children(child, depth + 1))
+                return result
+
+            children = find_all_children(self.ui)
+            self.logger.debug(f"UI children:\n" + "\n".join(children[:20]))  # 只显示前20个
+
             # 将 UI 的内容设置为中心部件
             central_widget = self.ui.findChild(QWidget, "centralWidget")
             if central_widget:
@@ -125,22 +147,40 @@ class MainWindow(QMainWindow):
 
     def _import_ui_elements(self):
         """从 UI 对象导入常用元素到实例属性"""
-        # 侧边栏
+        # 侧边栏 - 从UI对象中查找，注意类型是QListWidget不是QWidget
         self.sidebarListWidget = self.ui.findChild(QListWidget, "sidebarListWidget")
 
-        # 内容区域
-        self.contentStackedWidget = self.ui.findChild(QStackedWidget, "contentStackedWidget")
+        # 内容区域 - 从self（MainWindow）中查找，因为我们已经设置了centralWidget
+        self.contentStackedWidget = self.findChild(QStackedWidget, "contentStackedWidget")
+
+        # 调试：检查contentStackedWidget
+        if self.contentStackedWidget:
+            self.logger.debug(f"contentStackedWidget found, count: {self.contentStackedWidget.count()}")
+            for i in range(self.contentStackedWidget.count()):
+                widget = self.contentStackedWidget.widget(i)
+                self.logger.debug(f"  Page {i}: {widget.objectName()} (type: {type(widget).__name__})")
+        else:
+            self.logger.error("contentStackedWidget not found!")
 
         # 状态栏（使用不同的名称避免与 statusBar() 方法冲突）
         self.statusBarWidget = self.ui.findChild(QStatusBar, "statusBar")
 
-        # 各个页面
-        self.pageScreenshotOcr = self.ui.findChild(QWidget, "pageScreenshotOcr")
-        self.pageBatchOcr = self.ui.findChild(QWidget, "pageBatchOcr")
-        self.pageBatchDoc = self.ui.findChild(QWidget, "pageBatchDoc")
-        self.pageQrcode = self.ui.findChild(QWidget, "pageQrcode")
-        self.pageTaskManager = self.ui.findChild(QWidget, "pageTaskManager")
-        self.pageSettings = self.ui.findChild(QWidget, "pageSettings")
+        # 各个页面 - 从contentStackedWidget中查找
+        if self.contentStackedWidget:
+            self.pageScreenshotOcr = self.contentStackedWidget.findChild(QWidget, "pageScreenshotOcr")
+            self.pageBatchOcr = self.contentStackedWidget.findChild(QWidget, "pageBatchOcr")
+            self.pageBatchDoc = self.contentStackedWidget.findChild(QWidget, "pageBatchDoc")
+            self.pageQrcode = self.contentStackedWidget.findChild(QWidget, "pageQrcode")
+            self.pageTaskManager = self.contentStackedWidget.findChild(QWidget, "pageTaskManager")
+            self.pageSettings = self.contentStackedWidget.findChild(QWidget, "pageSettings")
+        else:
+            # 如果找不到contentStackedWidget，设置为None
+            self.pageScreenshotOcr = None
+            self.pageBatchOcr = None
+            self.pageBatchDoc = None
+            self.pageQrcode = None
+            self.pageTaskManager = None
+            self.pageSettings = None
 
         # 动作（菜单项）
         self.actionOpenFile = self.ui.findChild(QAction, "actionOpenFile")
@@ -165,13 +205,68 @@ class MainWindow(QMainWindow):
 
         # 设置窗口标题
         self.setWindowTitle(self.i18n.translate("main_window.title"))
-        
+
+        # 调试：检查页面容器是否被找到
+        self.logger.debug(f"pageScreenshotOcr: {self.pageScreenshotOcr is not None}")
+        self.logger.debug(f"pageBatchOcr: {self.pageBatchOcr is not None}")
+        self.logger.debug(f"pageBatchDoc: {self.pageBatchDoc is not None}")
+        self.logger.debug(f"pageQrcode: {self.pageQrcode is not None}")
+        self.logger.debug(f"pageTaskManager: {self.pageTaskManager is not None}")
+        self.logger.debug(f"pageSettings: {self.pageSettings is not None}")
+
+        # 初始化各功能页面视图
+        if self.pageScreenshotOcr:
+            try:
+                self.screenshotView = ScreenshotOCRView()
+                self._set_page_widget(self.pageScreenshotOcr, self.screenshotView)
+                self.logger.debug("截图OCR视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"截图OCR视图初始化失败: {e}", exc_info=True)
+
+        if self.pageBatchOcr:
+            try:
+                self.batchOcrView = BatchOCRView()
+                self._set_page_widget(self.pageBatchOcr, self.batchOcrView)
+                self.logger.debug("批量OCR视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"批量OCR视图初始化失败: {e}", exc_info=True)
+
+        if self.pageBatchDoc:
+            try:
+                self.batchDocView = BatchDocView()
+                self._set_page_widget(self.pageBatchDoc, self.batchDocView)
+                self.logger.debug("批量文档视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"批量文档视图初始化失败: {e}", exc_info=True)
+
+        if self.pageQrcode:
+            try:
+                self.qrcodeView = QRCodeView()
+                self._set_page_widget(self.pageQrcode, self.qrcodeView)
+                self.logger.debug("二维码视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"二维码视图初始化失败: {e}", exc_info=True)
+
+        if self.pageTaskManager:
+            try:
+                self.taskManagerView = TaskManagerView()
+                self._set_page_widget(self.pageTaskManager, self.taskManagerView)
+                self.logger.debug("任务管理视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"任务管理视图初始化失败: {e}", exc_info=True)
+
         # 初始化设置页面
         if self.pageSettings:
-            layout = QVBoxLayout(self.pageSettings)
-            layout.setContentsMargins(0, 0, 0, 0)
-            self.settingsWindow = SettingsWindow()
-            layout.addWidget(self.settingsWindow)
+            try:
+                self.settingsWindow = SettingsWindow()
+                self._set_page_widget(self.pageSettings, self.settingsWindow)
+                self.logger.debug("设置视图初始化成功")
+            except Exception as e:
+                self.logger.error(f"设置视图初始化失败: {e}", exc_info=True)
+
+        # 默认显示第一页，确保右侧不为空
+        if self.contentStackedWidget and self.contentStackedWidget.count() > 0:
+            self.contentStackedWidget.setCurrentIndex(0)
 
     # -------------------------------------------------------------------------
     # 侧边栏导航
@@ -181,7 +276,11 @@ class MainWindow(QMainWindow):
         """连接信号和槽"""
         # 侧边栏点击事件
         if self.sidebarListWidget:
-            self.sidebarListWidget.currentRowChanged.connect(self._on_sidebar_item_clicked)
+            # 使用 itemClicked 信号而不是 currentRowChanged
+            # 因为 focusPolicy 设置为 NoFocus 可能导致 currentRowChanged 不触发
+            self.sidebarListWidget.itemClicked.connect(self._on_sidebar_item_clicked)
+            # 同时保留 currentRowChanged 信号以处理编程式切换
+            self.sidebarListWidget.currentRowChanged.connect(self._on_sidebar_row_changed)
 
         # 菜单动作事件
         if self.actionToggleSidebar:
@@ -205,30 +304,69 @@ class MainWindow(QMainWindow):
         if self.actionTaskManager:
             self.actionTaskManager.triggered.connect(lambda: self.switch_to_page(4))  # 任务管理页面
 
+        if self.actionScreenshot:
+            self.actionScreenshot.triggered.connect(self._on_action_screenshot)
+
         # 连接语言变更信号
         self.i18n.language_changed.connect(self._apply_translations)
 
         # 连接配置变更信号
         self.config_manager.config_changed.connect(self._on_config_changed)
 
-    def _on_sidebar_item_clicked(self, index: int):
+    def _on_action_screenshot(self):
+        """菜单/工具栏触发截图页面与动作"""
+        self.switch_to_page(0)
+        try:
+            # 触发视图开始截图（视图内部连接控制器）
+            if hasattr(self, "screenshotView"):
+                # 使用视图的按钮逻辑以复用现有行为
+                self.screenshotView._on_start_capture()
+        except Exception as e:
+            self.logger.error(f"触发截图失败: {e}", exc_info=True)
+    
+    def _set_page_widget(self, page_container: QWidget, widget: QWidget):
+        """将页面容器中的占位内容替换为实际视图"""
+        layout = page_container.layout()
+        if layout is None:
+            layout = QVBoxLayout(page_container)
+            layout.setContentsMargins(0, 0, 0, 0)
+        else:
+            # 清空现有项
+            while layout.count():
+                item = layout.takeAt(0)
+                w = item.widget()
+                if w is not None:
+                    w.deleteLater()
+        layout.addWidget(widget)
+        self.logger.debug(f"已将 {type(widget).__name__} 添加到 {page_container.objectName()}，layout.count(): {layout.count()}")
+
+    def _on_sidebar_item_clicked(self, item):
         """
         侧边栏项点击事件处理
 
         Args:
-            index: 点击的项的索引
+            item: 点击的 QListWidgetItem
         """
-        if self.contentStackedWidget and 0 <= index < self.contentStackedWidget.count():
+        # 获取点击项的索引
+        row = self.sidebarListWidget.row(item)
+        self.logger.debug(f"侧边栏点击，行号: {row}")
+
+        if self.contentStackedWidget and 0 <= row < self.contentStackedWidget.count():
             # 切换页面
-            self.contentStackedWidget.setCurrentIndex(index)
+            self.contentStackedWidget.setCurrentIndex(row)
+            self.logger.debug(f"QStackedWidget 当前索引: {self.contentStackedWidget.currentIndex()}")
+            current_widget = self.contentStackedWidget.currentWidget()
+            self.logger.debug(f"QStackedWidget 当前 widget: {current_widget.objectName() if current_widget else 'None'}")
 
             # 发送页面切换信号
-            self.page_changed.emit(index)
+            self.page_changed.emit(row)
 
             # 更新状态栏
-            self._update_status_bar_for_page(index)
+            self._update_status_bar_for_page(row)
 
-            self.logger.debug(f"切换到页面: {index}")
+            self.logger.debug(f"切换到页面: {row}")
+        else:
+            self.logger.error(f"无效的页面索引: {row}, contentStackedWidget.count(): {self.contentStackedWidget.count() if self.contentStackedWidget else 'None'}")
 
     def switch_to_page(self, page_index: int):
         """
@@ -239,6 +377,10 @@ class MainWindow(QMainWindow):
         """
         if self.sidebarListWidget and 0 <= page_index < self.sidebarListWidget.count():
             self.sidebarListWidget.setCurrentRow(page_index)
+            # 触发点击事件以确保页面切换
+            item = self.sidebarListWidget.item(page_index)
+            if item:
+                self._on_sidebar_item_clicked(item)
         elif self.contentStackedWidget and 0 <= page_index < self.contentStackedWidget.count():
             self.contentStackedWidget.setCurrentIndex(page_index)
 

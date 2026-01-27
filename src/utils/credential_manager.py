@@ -15,7 +15,7 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Callable
 import logging
 
 from PySide6.QtCore import QObject, Signal

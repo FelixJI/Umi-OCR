@@ -41,22 +41,22 @@ class UmiApplication(QApplication):
         # 设置应用程序属性
         self._setup_application_attributes()
 
-        # 启用高 DPI 缩放
-        self._setup_high_dpi()
-
         # 初始化路径
         self._init_paths()
 
-        # 初始化日志系统（阶段2）
+        # 初始化日志系统
         self._init_logger()
 
-        # 初始化配置管理器（阶段3）
+        # 启用高 DPI 缩放
+        self._setup_high_dpi()
+
+        # 初始化配置管理器
         self._init_config()
 
-        # 初始化OCR依赖检查（新增）
+        # 初始化 OCR 依赖检查
         self._check_ocr_dependencies()
 
-        # 初始化多语言支持（阶段4）
+        # 初始化多语言支持
         self._init_i18n()
 
 

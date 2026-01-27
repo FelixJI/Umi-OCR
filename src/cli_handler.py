@@ -53,7 +53,7 @@ class CliHandler:
             logger.info("\n操作已取消")
             return 0
         except Exception as e:
-            logger.error(f"Error: {e}")
+            logger.error(f"错误: {e}")
             return 1
         finally:
             # 清理

@@ -55,16 +55,16 @@ class MirrorSource:
 
     def get_pip_command(self) -> List[str]:
         """
-        获取pip安装命令
+        获取 pip 安装命令
 
         Returns:
-            List[str]: pip命令列表
+            List[str]: pip 命令列表
         """
         cmd = [sys.executable, "-m", "pip", "install"]
 
         # 添加镜像源
         if self.is_official:
-            # 官方源，不指定-i参数
+            # 官方源，不指定 -i 参数
             pass
         else:
             # 国内镜像源
@@ -77,7 +77,7 @@ class MirrorSource:
         return cmd
 
 
-# 默认镜像源列表（用于PaddleOCR等普通包）
+# 默认镜像源列表（用于 PaddleOCR 等普通包）
 DEFAULT_MIRRORS = [
     # 清华大学镜像（国内首选）
     MirrorSource(

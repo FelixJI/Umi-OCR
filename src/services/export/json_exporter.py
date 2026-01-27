@@ -34,20 +34,20 @@ class JSONExporter(BaseExporter):
         **kwargs
     ) -> bool:
         """
-        导出为JSON
+        导出为 JSON
 
         Args:
-            data: OCR结果列表
+            data: OCR 结果列表
             output_path: 输出文件路径
             indent: 缩进空格数
-            ensure_ascii: 是否确保ASCII
+            ensure_ascii: 是否确保 ASCII
             **kwargs: 额外参数
 
         Returns:
             bool: 是否成功
         """
         try:
-            # 序列化JSON
+            # 序列化 JSON
             json_content = json.dumps(
                 data,
                 indent=indent,
@@ -59,7 +59,7 @@ class JSONExporter(BaseExporter):
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(json_content)
 
-            logger.info(f"JSON导出成功: {output_path}")
+            logger.info(f"JSON 导出成功: {output_path}")
             return True
 
         except Exception as e:

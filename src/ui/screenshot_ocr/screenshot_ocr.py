@@ -11,8 +11,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEd
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
-from controllers.screenshot_controller import ScreenshotController
-from utils.logger import get_logger
+from src.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -27,8 +26,13 @@ class ScreenshotOCRView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # 初始化控制器
-        self._controller = ScreenshotController()
+        # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
+        try:
+            from controllers.screenshot_controller import ScreenshotController
+            self._controller = ScreenshotController()
+        except ModuleNotFoundError as e:
+            logger.warning(f"截图控制器加载失败，部分功能不可用: {e}")
+            self._controller = None
 
         # 创建UI
         self._setup_ui()
@@ -88,14 +92,16 @@ class ScreenshotOCRView(QWidget):
 
     def _connect_signals(self):
         """连接控制器信号"""
-        self._controller.capture_started.connect(self._on_capture_started)
-        self._controller.capture_cancelled.connect(self._on_capture_cancelled)
-        self._controller.ocr_result_ready.connect(self._on_ocr_result)
-        self._controller.ocr_failed.connect(self._on_ocr_failed)
+        if self._controller:
+            self._controller.capture_started.connect(self._on_capture_started)
+            self._controller.capture_cancelled.connect(self._on_capture_cancelled)
+            self._controller.ocr_result_ready.connect(self._on_ocr_result)
+            self._controller.ocr_failed.connect(self._on_ocr_failed)
 
     def _on_start_capture(self):
         """开始截图"""
-        self._controller.start_capture()
+        if self._controller:
+            self._controller.start_capture()
 
     def _on_capture_started(self):
         """截图开始"""

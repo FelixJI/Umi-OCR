@@ -95,7 +95,6 @@
 ### 环境要求
 
 - Python 3.10+
-- uv 包管理器（推荐）
 
 ### 安装步骤
 
@@ -105,24 +104,27 @@
    cd Umi-OCR
    ```
 
-2. **安装 uv（如果尚未安装）**
+2. **创建虚拟环境并安装依赖**
    ```bash
-   # Windows (PowerShell)
-   irm https://astral.sh/uv/install.ps1 | iex
+   python -m venv .venv
+   .venv\Scripts\activate    # Windows
+   # macOS/Linux: source .venv/bin/activate
 
-   # Linux/macOS
-   curl -LsSf https://astral.sh/uv/install.sh | sh
+   pip install -e .           # 基础依赖
+   # 或安装 CPU 版 OCR 引擎（推荐）
+   pip install -e ".[cpu]"
+   # 开发环境工具（可选）
+   pip install -e ".[dev]"
    ```
 
-3. **创建虚拟环境并安装依赖**
+3. **运行项目**
    ```bash
-   uv sync
+   python main.py                 # GUI
+   python main.py --help          # 查看 CLI 用法
+   python main.py --image x.png   # CLI OCR 示例
+   python main.py --server        # 启动 HTTP 服务
    ```
 
-4. **运行项目**
-   ```bash
-   uv run python src/main.py
-   ```
 
 ### 构建可执行文件（可选）
 
@@ -364,7 +366,6 @@ Umi-OCR v2 由一系列灵活好用的**标签页**组成。您可按照自己�
 Umi-OCR
 ├─ Umi-OCR.exe
 ├─ src **
-│  ├─ main.py (入口)
 │  ├─ app.py
 │  ├─ controllers (控制器)
 │  ├─ services (业务逻辑)

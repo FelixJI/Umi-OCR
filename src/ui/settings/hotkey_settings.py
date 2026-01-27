@@ -7,8 +7,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent, QKeySequence
 
-from utils.config_manager import ConfigManager
-from controllers.settings_controller import SettingsController
+from src.utils.config_manager import ConfigManager
+from src.controllers.settings_controller import SettingsController
 
 class HotkeyRecorder(QLineEdit):
     hotkeyChanged = Signal(str)

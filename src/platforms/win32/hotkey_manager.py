@@ -1,4 +1,4 @@
-# src/platform/win32/hotkey_manager.py
+# src/platforms/win32/hotkey_manager.py
 
 import ctypes
 from ctypes import wintypes

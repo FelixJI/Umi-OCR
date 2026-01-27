@@ -24,7 +24,7 @@ from src.ui.main_window.main_window import MainWindow
 from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
-from src.platform.win32.hotkey_manager import HotkeyManager
+from src.platforms.win32.hotkey_manager import HotkeyManager
 from src.services.server.http_server import HTTPServer
 from PySide6.QtWidgets import QWidget
 from qasync import QEventLoop

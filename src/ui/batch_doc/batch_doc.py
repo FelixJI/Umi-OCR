@@ -11,8 +11,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
                             QPushButton, QLabel, QProgressBar, QTextEdit, QFileDialog)
 from PySide6.QtCore import Qt
 
-from controllers.batch_doc_controller import BatchDocController
-from utils.logger import get_logger
+from src.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -25,8 +24,13 @@ class BatchDocView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # 初始化控制器
-        self._controller = BatchDocController()
+        # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
+        try:
+            from controllers.batch_doc_controller import BatchDocController
+            self._controller = BatchDocController()
+        except ModuleNotFoundError as e:
+            logger.warning(f"批量文档控制器加载失败，部分功能不可用: {e}")
+            self._controller = None
 
         # 待处理文档列表
         self._pending_docs = []
@@ -117,10 +121,11 @@ class BatchDocView(QWidget):
 
     def _connect_signals(self):
         """连接控制器信号"""
-        self._controller.tasks_submitted.connect(self._on_tasks_submitted)
-        self._controller.progress_updated.connect(self._on_progress_updated)
-        self._controller.tasks_completed.connect(self._on_tasks_completed)
-        self._controller.tasks_failed.connect(self._on_tasks_failed)
+        if self._controller:
+            self._controller.tasks_submitted.connect(self._on_tasks_submitted)
+            self._controller.progress_updated.connect(self._on_progress_updated)
+            self._controller.tasks_completed.connect(self._on_tasks_completed)
+            self._controller.tasks_failed.connect(self._on_tasks_failed)
 
     def _on_add_docs(self):
         """添加文档对话框"""
@@ -150,11 +155,12 @@ class BatchDocView(QWidget):
         if not self._pending_docs:
             logger.warning("没有待处理的文档")
             return
-
+        if not self._controller:
+            logger.warning("批量文档控制器不可用，可能缺少可选依赖（如 reportlab）")
+            return
         self.btn_start.setEnabled(False)
         self.btn_pause.setEnabled(True)
         self.btn_cancel.setEnabled(True)
-
         group_id = self._controller.process_pdfs(self._pending_docs.copy())
         logger.info(f"已提交任务组: {group_id}")
 
@@ -162,18 +168,21 @@ class BatchDocView(QWidget):
         """暂停/恢复"""
         if self.btn_pause.text() == "暂停":
             # 暂停
-            self._controller.pause_ocr()
+            if self._controller:
+                self._controller.pause_ocr()
             self.btn_pause.setText("继续")
             logger.info("批量文档OCR已暂停")
         else:
             # 继续
-            self._controller.resume_ocr()
+            if self._controller:
+                self._controller.resume_ocr()
             self.btn_pause.setText("暂停")
             logger.info("批量文档OCR已恢复")
 
     def _on_cancel(self):
         """取消任务"""
-        self._controller.cancel_batch()
+        if self._controller:
+            self._controller.cancel_batch()
         logger.info("批量文档OCR已取消")
 
     def _on_export_pdf(self):

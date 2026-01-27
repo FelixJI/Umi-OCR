@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QGroupBox, QFormLayout, QLineEdit, 
     QPushButton, QHBoxLayout, QScrollArea, QMessageBox
 )
-from controllers.settings_controller import SettingsController
+from src.controllers.settings_controller import SettingsController
 
 class CloudSettingsPanel(QWidget):
     def __init__(self, parent=None):

@@ -15,8 +15,8 @@ from PySide6.QtWidgets import QWidget, QListWidget, QStackedWidget, QMessageBox,
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import Qt
 
-from controllers.settings_controller import SettingsController
-from utils.logger import get_logger
+from src.controllers.settings_controller import SettingsController
+from src.utils.logger import get_logger
 
 logger = get_logger()
 

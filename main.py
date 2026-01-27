@@ -1,31 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Umi-OCR Windows Runtime Environment Initialization Entry Point
+Umi-OCR Windows 运行时环境初始化入口
 """
 
 import os
 import sys
 import json
+import argparse
 import site
 import subprocess
 from pathlib import Path
 
-# Configuration paths
+# 配置路径
 PROJECT_ROOT = Path(__file__).parent
 SOURCE_DIR = PROJECT_ROOT / "src"
 RESOURCES_DIR = PROJECT_ROOT / "resources"
 DATA_DIR = PROJECT_ROOT / "UmiOCR-data"
 
-# Configuration file paths (kept in UmiOCR-data for now)
+# 配置文件路径（目前保留在 UmiOCR-data 中）
 ABOUT_FILE = DATA_DIR / "about.json"
 SETTINGS_FILE = DATA_DIR / ".settings"
 THEMES_FILE = DATA_DIR / "themes.json"
 
 
 def MessageBox(msg, type_="error"):
-    """Display message box for errors (Windows only)"""
-    info = "Umi-OCR Message"
+    """显示错误消息框（仅限 Windows）"""
+    info = "Umi-OCR 消息"
     if type_ == "error":
         info = "【错误】 Umi-OCR Error"
     elif type_ == "warning":
@@ -49,19 +50,19 @@ def MessageBox(msg, type_="error"):
 
 
 def initRuntimeEnvironment():
-    """Initialize runtime environment"""
-    # Set working directory
+    """初始化运行时环境"""
+    # 设置工作目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
-    # Add Python search paths
+    # 添加 Python 搜索路径
     paths_to_add = [".", "src", "src/imports", "site-packages"]
     for n in paths_to_add:
         path = os.path.abspath(os.path.join(script_dir, n))
         if os.path.exists(path):
             site.addsitedir(path)
 
-    # Set QML import paths
+    # 设置 QML 导入路径
     try:
         import PySide6
 
@@ -74,52 +75,64 @@ def initRuntimeEnvironment():
     except Exception:
         pass
 
-    # Log setup - moved to src/run.py to avoid duplicate handler installation
+    # 日志设置 - 已移至 src/run.py 以避免重复安装处理器
     pass
 
-    # OpenGL sharing (Qt6 handles this automatically)
+    # OpenGL 共享（Qt6 自动处理）
     from PySide6.QtCore import Qt
     from PySide6.QtGui import QGuiApplication
 
     try:
-        # Qt6 handles OpenGL context sharing automatically
-        # High DPI scaling is also handled automatically in Qt6
+        # Qt6 自动处理 OpenGL 上下文共享
+        # Qt6 自动处理高 DPI 缩放
         pass
     except Exception:
         pass
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Umi-OCR: 开源 OCR 软件")
+    parser.add_argument("--headless", action="store_true", help="以无界面模式运行")
+    parser.add_argument("--server", action="store_true", help="启动 HTTP 服务器")
+    parser.add_argument("--image", nargs="+", help="要执行 OCR 的图像路径")
+    parser.add_argument("--output", help="输出文件路径（默认：标准输出）")
+    parser.add_argument("--format", choices=["txt", "json"], default="txt", help="输出格式")
+    parser.add_argument("--debug", action="store_true", help="启用调试日志")
+    return parser.parse_args()
+
+
 def main():
-    """Main entry point"""
     try:
-        # Initialize runtime environment
         initRuntimeEnvironment()
-
-        # Get PYSTAND environment variable, or use current script path
-        app_path = os.environ.get("PYSTAND", "")
-        if not app_path:
-            # Use the current script path when not running from PyStand
-            app_path = os.path.abspath(__file__)
-
-        # Import and start main program
-        from src.run import main
-
-        main(app_path=app_path, engineAddImportPath="")
-
+        args = parse_args()
+        is_gui = not args.headless
+        if not is_gui:
+            os.environ["QT_QPA_PLATFORM"] = "offscreen"
+        from src.app import UmiApplication, set_app_instance
+        app = UmiApplication(sys.argv)
+        set_app_instance(app)
+        if args.image or args.server:
+            from src.cli_handler import CliHandler
+            handler = CliHandler(args)
+            exit_code = handler.run()
+            sys.exit(exit_code)
+        else:
+            from src.ui.main_window.main_window import MainWindow
+            main_window = MainWindow()
+            main_window.show()
+            app.logger.info("应用程序初始化完成，进入事件循环")
+            exit_code = app.exec()
+            app.logger.info("应用程序退出，保存配置")
+            app.config_manager.save()
+            sys.exit(exit_code)
     except Exception as e:
-        # Try to import logger for error reporting
         try:
-            from src.imports.umi_log import logger
+            from src.utils.logger import logger
         except Exception:
             logger = None
-
         if logger:
-            logger.critical(
-                f"Failed to startup main program!", exc_info=True, stack_info=True
-            )
-        msg = f"Failed to startup main program!\n{e}"
-        MessageBox(msg)
-
+            logger.critical("主程序启动失败！", exc_info=True, stack_info=True)
+        MessageBox(f"主程序启动失败！\n{e}")
         sys.exit(1)
 
 

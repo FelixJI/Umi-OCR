@@ -12,8 +12,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget, Q
                             QLabel, QProgressBar, QComboBox, QTextEdit, QFileDialog, QAbstractItemView)
 from PySide6.QtCore import Qt, QSize
 
-from controllers.batch_ocr_controller import BatchOcrController
-from utils.logger import get_logger
+from src.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -29,7 +28,12 @@ class BatchOCRView(QWidget):
         super().__init__(parent)
 
         # 初始化控制器
-        self._controller = BatchOcrController()
+        try:
+            from controllers.batch_ocr_controller import BatchOcrController
+            self._controller = BatchOcrController()
+        except ModuleNotFoundError as e:
+            logger.warning(f"批量图片控制器加载失败，部分功能不可用: {e}")
+            self._controller = None
 
         # 待处理文件列表
         self._pending_files = []
@@ -116,10 +120,11 @@ class BatchOCRView(QWidget):
 
     def _connect_signals(self):
         """连接控制器信号"""
-        self._controller.tasks_submitted.connect(self._on_tasks_submitted)
-        self._controller.progress_updated.connect(self._on_progress_updated)
-        self._controller.tasks_completed.connect(self._on_tasks_completed)
-        self._controller.tasks_failed.connect(self._on_tasks_failed)
+        if self._controller:
+            self._controller.tasks_submitted.connect(self._on_tasks_submitted)
+            self._controller.progress_updated.connect(self._on_progress_updated)
+            self._controller.tasks_completed.connect(self._on_tasks_completed)
+            self._controller.tasks_failed.connect(self._on_tasks_failed)
 
     def _on_add_files(self):
         """添加文件对话框"""
@@ -154,8 +159,9 @@ class BatchOCRView(QWidget):
         self.btn_start.setEnabled(False)
         self.btn_pause.setEnabled(True)
 
-        group_id = self._controller.submit_batch_ocr(self._pending_files.copy())
-        logger.info(f"已提交任务组: {group_id}")
+        if self._controller:
+            group_id = self._controller.submit_batch_ocr(self._pending_files.copy())
+            logger.info(f"已提交任务组: {group_id}")
 
     def _on_pause(self):
         """暂停/恢复"""

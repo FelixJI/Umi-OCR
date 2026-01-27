@@ -3187,7 +3187,7 @@ class HotkeyManager(QObject):
 **交付物**: 可自定义的全局快捷键
 
 **关键文件**:
-- `src/platform/win32/hotkey_manager.py`
+- `src/platforms/win32/hotkey_manager.py`
 - `src/ui/settings/hotkey_settings.py`
 
 **验证方式**:

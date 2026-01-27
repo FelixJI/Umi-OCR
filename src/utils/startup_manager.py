@@ -1,4 +1,10 @@
-# src/utils/startup_manager.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Umi-OCR 开机自启管理器
+
+通过 Windows 注册表实现开机自启功能。
+"""
 
 import sys
 import winreg
@@ -15,7 +21,7 @@ class StartupManager:
     
     @classmethod
     def is_enabled(cls) -> bool:
-        """检查是否已启用"""
+        """检查是否已启用开机自启"""
         try:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, cls.REGISTRY_KEY, 0, winreg.KEY_READ)
             value, _ = winreg.QueryValueEx(key, cls.APP_NAME)

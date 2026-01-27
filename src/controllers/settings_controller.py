@@ -14,9 +14,12 @@ from typing import Dict, Any, List
 
 from PySide6.QtCore import QObject, Signal
 
-from utils.config_manager import ConfigManager
-from utils.credential_manager import CredentialManager
-from services.ocr.engine_manager import EngineManager
+from src.utils.config_manager import ConfigManager, get_config_manager
+from src.utils.credential_manager import CredentialManager
+
+# 创建凭证管理器实例
+global_credential_manager = CredentialManager()
+from src.services.ocr.engine_manager import EngineManager
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,7 @@ class SettingsController(QObject):
     
     def __init__(self):
         super().__init__()
-        self._config_manager = ConfigManager.instance()
+        self._config_manager = get_config_manager()
         self._engine_manager = EngineManager
         
         # Connect to config manager signal if available
@@ -57,7 +60,7 @@ class SettingsController(QObject):
             # Filter out empty values? Or just save what is provided.
             credentials = kwargs
             
-            CredentialManager.save(provider, credentials)
+            global_credential_manager.save(provider, credentials)
             logger.info(f"保存云服务凭证成功: {provider}")
             return True
         except Exception as e:
@@ -66,7 +69,7 @@ class SettingsController(QObject):
             
     def load_cloud_credentials(self, provider: str) -> Dict[str, str]:
         """加载云服务凭证"""
-        return CredentialManager.load(provider) or {}
+        return global_credential_manager.load(provider) or {}
         
     def validate_cloud_config(self, provider: str) -> bool:
         """

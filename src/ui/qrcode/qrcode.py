@@ -11,8 +11,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTextEdit,
                             QLabel, QComboBox, QPushButton, QFileDialog)
 from PySide6.QtCore import Qt
 
-from controllers.qrcode_controller import QRCodeController
-from utils.logger import get_logger
+from src.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -25,8 +24,13 @@ class QRCodeView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # 初始化控制器
-        self._controller = QRCodeController()
+        # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
+        try:
+            from controllers.qrcode_controller import QRCodeController
+            self._controller = QRCodeController()
+        except ModuleNotFoundError as e:
+            logger.warning(f"二维码控制器加载失败，部分功能不可用: {e}")
+            self._controller = None
 
         # 创建UI
         self._setup_ui()
@@ -165,12 +169,13 @@ class QRCodeView(QWidget):
 
     def _connect_signals(self):
         """连接控制器信号"""
-        self._controller.scan_started.connect(self._on_scan_started)
-        self._controller.scan_completed.connect(self._on_scan_completed)
-        self._controller.scan_failed.connect(self._on_scan_failed)
-        self._controller.generate_started.connect(self._on_generate_started)
-        self._controller.generate_completed.connect(self._on_generate_completed)
-        self._controller.generate_failed.connect(self._on_generate_failed)
+        if self._controller:
+            self._controller.scan_started.connect(self._on_scan_started)
+            self._controller.scan_completed.connect(self._on_scan_completed)
+            self._controller.scan_failed.connect(self._on_scan_failed)
+            self._controller.generate_started.connect(self._on_generate_started)
+            self._controller.generate_completed.connect(self._on_generate_completed)
+            self._controller.generate_failed.connect(self._on_generate_failed)
 
     def _on_load_image(self):
         """加载图片"""
@@ -186,7 +191,8 @@ class QRCodeView(QWidget):
         if file_path:
             logger.info(f"加载图片: {file_path}")
             # 通过控制器扫码
-            self._controller.scan_qr_code(file_path)
+            if self._controller:
+                self._controller.scan_qr_code(file_path)
 
     def _on_generate(self):
         """生成二维码"""
@@ -200,7 +206,8 @@ class QRCodeView(QWidget):
         correction = self._get_correction_level()
 
         # 通过控制器生成
-        self._controller.generate_qr_code(data, code_type=code_type, correction=correction)
+        if self._controller:
+            self._controller.generate_qr_code(data, code_type=code_type, correction=correction)
 
     def _on_clear(self):
         """清空输入"""

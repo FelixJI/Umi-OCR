@@ -89,7 +89,7 @@ class GPUDetector:
     def __init__(self):
         """初始化GPU检测器"""
         self._gpu_info_list: List[GPUInfo] = []
-        self._platform = sys_platform.system()
+        self._platform = platform.system()
 
     def detect_all(self) -> List[GPUInfo]:
         """

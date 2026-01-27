@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QScrollArea, QWidget, QFrame, QTextEdit,
     QMessageBox, QFileDialog
 )
-from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtCore import Qt, QTimer, Slot, Signal
 from PySide6.QtGui import QFont, QPixmap, QIcon
 
 from src.utils.check_dependencies import (

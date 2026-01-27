@@ -46,9 +46,9 @@ class ExcelExporter(BaseExporter):
         try:
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.title = "OCR Results"
+            ws.title = "OCR 识别结果"
             
-            # Headers
+            # 表头
             ws.append(["文件", "页码", "识别内容", "置信度"])
             
             for item in data:
@@ -57,7 +57,7 @@ class ExcelExporter(BaseExporter):
                 page = item.get("page", "")
                 confidence = item.get("confidence", 0.0)
                 
-                # Split text into lines if needed, or put in one cell
+                # 如果需要，可以将文本拆分为多行，或者放在一个单元格中
                 ws.append([title, page, text, confidence])
             
             wb.save(output_path)

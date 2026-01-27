@@ -33,10 +33,10 @@ class WordExporter(BaseExporter):
         **kwargs
     ) -> bool:
         """
-        导出为Word
+        导出为 Word
 
         Args:
-            data: OCR结果列表
+            data: OCR 结果列表
             output_path: 输出文件路径
             **kwargs: 额外参数
 
@@ -57,7 +57,7 @@ class WordExporter(BaseExporter):
                 doc.add_page_break()
             
             doc.save(output_path)
-            logger.info(f"Word导出成功: {output_path}")
+            logger.info(f"Word 导出成功: {output_path}")
 
             return True
 

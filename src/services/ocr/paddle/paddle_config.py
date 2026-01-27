@@ -63,7 +63,7 @@ class PaddleConfig:
     contrast_factor: float = 1.5              # 对比度因子
     sharpness_factor: float = 1.5             # 锐度因子
     denoise_strength: float = 0.5             # 降噪强度
-    max_image_size: int = 0                   # 最大图片尺寸（0表示不限制)
+    max_image_size: int = 0                   # 最大图片尺寸（0 表示不限制)
 
     # ========== 表格识别配置 ==========
     table_structure_model: str = "slanet_plus"  # 表格结构模型: slanet, slanet_plus, slanext_wired, slanext_wireless
