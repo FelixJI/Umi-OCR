@@ -151,16 +151,88 @@ class GPUDetector:
     def _detect_windows(self) -> None:
         """检测Windows平台的GPU"""
         try:
-            # 方法1: 使用wmic命令检测GPU
+            # 方法1: 优先使用nvidia-smi检测NVIDIA GPU（更准确）
+            nvidia_detected = self._detect_nvidia_cuda_primary()
+
+            # 方法2: 使用wmic命令检测所有GPU（包括非NVIDIA）
             self._detect_windows_wmic()
 
-            # 方法2: 如果检测到NVIDIA GPU，尝试获取CUDA信息
-            nvidia_gpu = self.detect_nvidia_gpu()
-            if nvidia_gpu:
-                self._detect_nvidia_cuda()
+            # 方法3: 如果wmic没有检测到NVIDIA GPU但nvidia-smi成功了，补充nvidia-smi的信息
+            if not any(g.vendor == GPUVendor.NVIDIA for g in self._gpu_info_list):
+                if nvidia_detected:
+                    logger.info("wmic未检测到NVIDIA GPU，但nvidia-smi检测到了，使用nvidia-smi数据")
 
         except Exception as e:
             logger.error(f"Windows GPU检测失败: {e}", exc_info=True)
+
+    def _detect_nvidia_cuda_primary(self) -> bool:
+        """
+        使用nvidia-smi作为主要检测方法（优先于wmic）
+
+        Returns:
+            bool: 是否检测到NVIDIA GPU
+        """
+        try:
+            # 修复：cuda_version不是有效的查询字段，已移除
+            result = subprocess.run(
+                [
+                    "nvidia-smi",
+                    "--query-gpu=name,driver_version,memory.total",
+                    "--format=csv,noheader",
+                ],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="ignore",
+                timeout=10,
+            )
+
+            if result.returncode == 0:
+                lines = result.stdout.strip().split("\n")
+                nvidia_count = 0
+
+                for line in lines:
+                    parts = [p.strip() for p in line.split(",")]
+                    if len(parts) >= 3:
+                        name = parts[0]
+                        driver_version = parts[1]
+                        memory_str = parts[2]
+
+                        # 解析显存
+                        try:
+                            memory_mb = int(memory_str.split()[0])
+                        except (ValueError, IndexError):
+                            memory_mb = 0
+
+                        # 创建GPU信息
+                        gpu_info = GPUInfo(
+                            vendor=GPUVendor.NVIDIA,
+                            name=name,
+                            memory_mb=memory_mb,
+                            cuda_support=True,
+                            cuda_version=None,  # 无法直接从nvidia-smi获取
+                            driver_version=driver_version,
+                            is_available=True,
+                        )
+                        gpu_info.recommendation = self._generate_recommendation(gpu_info)
+
+                        self._gpu_info_list.append(gpu_info)
+                        nvidia_count += 1
+
+                        logger.info(
+                            f"nvidia-smi检测到: {name}, 驱动: {driver_version}, 显存: {memory_mb}MB"
+                        )
+
+                return nvidia_count > 0
+
+        except subprocess.TimeoutExpired:
+            logger.warning("nvidia-smi命令超时")
+        except FileNotFoundError:
+            logger.info("未找到nvidia-smi命令")
+        except Exception as e:
+            logger.warning(f"nvidia-smi检测失败: {e}")
+
+        return False
 
     def _detect_windows_wmic(self) -> None:
         """使用wmic命令检测Windows GPU"""
@@ -179,96 +251,82 @@ class GPUDetector:
                 logger.warning("wmic命令执行失败")
                 return
 
+            # 记录原始输出用于调试
+            logger.debug(f"wmic输出:\n{result.stdout}")
+
             # 解析输出
             lines = result.stdout.strip().split("\n")
+
+            # 识别列顺序（第一行是表头）
+            header_line = lines[0] if lines else ""
+            headers = [h.strip() for h in header_line.split("  ") if h.strip()]
+
+            # 确定列索引
+            name_idx = headers.index("Name") if "Name" in headers else -1
+            memory_idx = headers.index("AdapterRAM") if "AdapterRAM" in headers else -1
+
+            # 如果无法从表头识别，使用默认顺序
+            if name_idx == -1 or memory_idx == -1:
+                name_idx, memory_idx = 1, 0  # 默认：name在第2列，memory在第1列
+
+            logger.debug(f"检测到列顺序: name_idx={name_idx}, memory_idx={memory_idx}")
+
+            # 解析数据行
             for line in lines[1:]:  # 跳过表头
                 parts = [p.strip() for p in line.split("  ") if p.strip()]
+
                 if len(parts) >= 2:
-                    name = parts[0]
-                    try:
-                        # 内存值可能是"xxxx bytes"
-                        memory_str = parts[1].replace(" bytes", "").replace(",", "")
-                        memory_mb = int(int(memory_str) / (1024 * 1024))
-                    except (ValueError, IndexError):
-                        memory_mb = 0
+                    # 修复：根据实际列索引获取数据
+                    if name_idx < len(parts) and memory_idx < len(parts):
+                        name = parts[name_idx]
+                        memory_str = parts[memory_idx]
 
-                    # 识别厂商
-                    vendor = self._identify_vendor(name)
+                        logger.debug(f"解析GPU: name='{name}', memory='{memory_str}'")
 
-                    # 创建GPU信息
-                    gpu_info = GPUInfo(
-                        vendor=vendor, name=name, memory_mb=memory_mb, is_available=True
-                    )
+                        try:
+                            # 内存值是字节数，需要转换为MB
+                            memory_bytes = int(memory_str)
+                            memory_mb = memory_bytes // (1024 * 1024)
+                        except (ValueError, IndexError):
+                            logger.warning(f"无法解析显存值: {memory_str}")
+                            memory_mb = 0
 
-                    # 生成建议
-                    gpu_info.recommendation = self._generate_recommendation(gpu_info)
+                        # 识别厂商
+                        vendor = self._identify_vendor(name)
 
-                    self._gpu_info_list.append(gpu_info)
+                        # 修复：检查是否已经存在相同名称的GPU（避免重复）
+                        gpu_exists = any(
+                            g.name.lower() == name.lower() for g in self._gpu_info_list
+                        )
+
+                        if gpu_exists:
+                            logger.debug(f"GPU '{name}' 已存在，跳过wmic数据")
+                            continue
+
+                        logger.info(
+                            f"检测到GPU: {name}, 厂商: {vendor.value}, 显存: {memory_mb}MB"
+                        )
+
+                        # 创建GPU信息
+                        gpu_info = GPUInfo(
+                            vendor=vendor, name=name, memory_mb=memory_mb, is_available=True
+                        )
+
+                        # 生成建议
+                        gpu_info.recommendation = self._generate_recommendation(gpu_info)
+
+                        self._gpu_info_list.append(gpu_info)
 
         except subprocess.TimeoutExpired:
             logger.warning("wmic命令超时")
         except Exception as e:
-            logger.warning(f"wmic GPU检测失败: {e}")
+            logger.warning(f"wmic GPU检测失败: {e}", exc_info=True)
 
     def _detect_nvidia_cuda(self) -> None:
-        """检测NVIDIA CUDA支持"""
-        try:
-            # 方法1: 使用nvidia-smi命令
-            result = subprocess.run(
-                [
-                    "nvidia-smi",
-                    "--query-gpu=name,driver_version,cuda_version,memory.total",
-                    "--format=csv,noheader",
-                ],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="ignore",
-                timeout=10,
-            )
-
-            if result.returncode == 0:
-                # 解析nvidia-smi输出
-                lines = result.stdout.strip().split("\n")
-                for line in lines:
-                    parts = [p.strip() for p in line.split(",")]
-                    if len(parts) >= 4:
-                        name = parts[0]
-                        driver_version = parts[1]
-                        cuda_version = parts[2]
-                        memory_str = parts[3]
-
-                        # 解析显存（如 "4096 MiB"）
-                        try:
-                            memory_mb = int(memory_str.split()[0])
-                        except (ValueError, IndexError):
-                            memory_mb = 0
-
-                        # 查找对应的GPU并更新信息
-                        for gpu_info in self._gpu_info_list:
-                            if gpu_info.vendor == GPUVendor.NVIDIA:
-                                gpu_info.cuda_support = True
-                                gpu_info.cuda_version = cuda_version
-                                gpu_info.driver_version = driver_version
-                                if memory_mb > gpu_info.memory_mb:
-                                    gpu_info.memory_mb = memory_mb
-
-                                # 更新建议
-                                gpu_info.recommendation = self._generate_recommendation(
-                                    gpu_info
-                                )
-
-                        logger.info(
-                            f"检测到NVIDIA GPU: {name}, CUDA {cuda_version}, {memory_mb}MB"
-                        )
-                        return
-
-        except subprocess.TimeoutExpired:
-            logger.warning("nvidia-smi命令超时")
-        except FileNotFoundError:
-            logger.info("未安装nvidia-smi，无法检测CUDA信息")
-        except Exception as e:
-            logger.warning(f"nvidia-smi CUDA检测失败: {e}")
+        """检测NVIDIA CUDA支持（已废弃，保留用于兼容）"""
+        # 这个方法已被_detect_nvidia_cuda_primary替代
+        # 保留空实现以避免破坏现有调用
+        pass
 
     def _detect_linux(self) -> None:
         """检测Linux平台的GPU"""
@@ -473,26 +531,30 @@ class GPUDetector:
         if gpu_info.vendor == GPUVendor.NVIDIA:
             if gpu_info.memory_mb >= 2048:  # 至少2GB显存
                 if gpu_info.cuda_support:
-                    return "推荐安装GPU版本（支持CUDA加速）"
+                    # 检测到CUDA，明确推荐
+                    return "推荐安装GPU版本（已检测到CUDA支持）"
                 else:
-                    return "建议安装CUDA驱动后再使用GPU版本"
+                    # 有NVIDIA GPU但未检测到CUDA
+                    # 不应该直接判定为不可用，而是建议用户尝试
+                    return "推荐安装GPU版本（检测到NVIDIA GPU，支持CUDA加速）"
             else:
-                return "建议使用CPU版本（显存不足）"
+                # 显存不足2GB
+                return "建议使用CPU版本（显存不足，需要至少2GB显存）"
 
         # AMD GPU
         elif gpu_info.vendor == GPUVendor.AMD:
             if gpu_info.memory_mb >= 4096:  # 至少4GB显存
-                return "AMD GPU暂不支持（NVIDIA GPU推荐）"
+                return "AMD GPU暂不支持，建议使用CPU版本或NVIDIA GPU"
             else:
                 return "建议使用CPU版本（显存不足）"
 
         # Intel GPU
         elif gpu_info.vendor == GPUVendor.INTEL:
-            return "Intel GPU暂不支持（NVIDIA GPU推荐）"
+            return "Intel集成显卡暂不支持，建议使用CPU版本"
 
         # 未知厂商
         else:
-            return "建议使用CPU版本（不支持的GPU）"
+            return "建议使用CPU版本（未识别的GPU厂商）"
 
     def get_summary(self) -> Dict:
         """

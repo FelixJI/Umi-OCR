@@ -70,6 +70,9 @@ class ScreenshotController(QObject):
         # 临时文件
         self._temp_file: Optional[Path] = None
 
+        # OCR模式
+        self._ocr_mode = "text"  # 默认文本模式
+
         # 连接信号
         self._connect_signals()
 
@@ -81,6 +84,12 @@ class ScreenshotController(QObject):
         self._selector.region_selected.connect(self._on_region_selected)
         # 选区取消
         self._selector.selection_cancelled.connect(self._on_selection_cancelled)
+        # 保存请求
+        self._selector.save_requested.connect(self._on_save_requested)
+        # 复制请求
+        self._selector.copy_requested.connect(self._on_copy_requested)
+        # 模式切换
+        self._selector.mode_changed.connect(self._on_mode_changed)
 
         # 监听任务管理器信号
         self._task_manager.task_completed.connect(self._on_task_completed)
@@ -110,10 +119,10 @@ class ScreenshotController(QObject):
         """
         logger.info(f"选区完成: {rect}")
 
-        # 截取图像
-        image = self._screen_capture.capture_region(rect)
+        # 从背景图像中截取选区（避免截取到覆盖层窗口）
+        image = self._selector.capture_selection_from_background()
 
-        if image.isNull():
+        if not image or image.isNull():
             logger.error("截图失败")
             self._selector.stop()
             return
@@ -142,36 +151,80 @@ class ScreenshotController(QObject):
     def _on_save_requested(self, rect: QRect) -> None:
         """保存截图"""
         logger.info(f"保存请求: {rect}")
-        image = self._screen_capture.capture_region(rect)
+
+        # 从背景图像中截取选区（避免截取到覆盖层窗口）
+        image = self._selector.capture_selection_from_background()
         self._selector.stop()
-        if image.isNull():
+
+        if not image or image.isNull():
+            logger.error("截取失败")
             return
-        
+
         from PySide6.QtWidgets import QFileDialog
-        
-        file_path, _ = QFileDialog.getSaveFileName(
-            None, "保存截图", "", "Images (*.png *.jpg *.bmp)"
+
+        # 定义格式过滤器，让用户选择格式
+        format_filters = {
+            "PNG 图像 (*.png)": "png",
+            "JPEG 图像 (*.jpg *.jpeg)": "jpg",
+            "BMP 图像 (*.bmp)": "bmp",
+        }
+
+        # 组合所有格式为一个过滤器字符串
+        all_filters = ";;".join(format_filters.keys())
+
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            None,
+            "保存截图",
+            "",
+            all_filters
         )
+
         if file_path:
-            image.save(file_path)
-            logger.info(f"截图已保存: {file_path}")
-        
+            # 根据用户选择的过滤器确定格式
+            file_format = "png"  # 默认格式
+            for filter_text, format_name in format_filters.items():
+                if selected_filter == filter_text:
+                    file_format = format_name
+                    break
+
+            # 如果文件名没有扩展名，添加对应的扩展名
+            if not file_path.endswith(f".{file_format}") and not file_path.endswith(f".{file_format.upper()}"):
+                # 处理 jpeg 特殊情况
+                if file_format == "jpg":
+                    if not file_path.endswith(".jpeg") and not file_path.endswith(".JPEG"):
+                        file_path += f".{file_format}"
+                else:
+                    file_path += f".{file_format}"
+
+            # 保存图像
+            quality = 95  # JPEG质量
+            if file_format == "jpg":
+                image.save(file_path, "JPEG", quality)
+            else:
+                image.save(file_path)
+
+            logger.info(f"截图已保存: {file_path} (格式: {file_format})")
+
         # 视为完成/取消流程
         self.capture_cancelled.emit()
 
     def _on_copy_requested(self, rect: QRect) -> None:
         """复制截图"""
         logger.info(f"复制请求: {rect}")
-        image = self._screen_capture.capture_region(rect)
+
+        # 从背景图像中截取选区（避免截取到覆盖层窗口）
+        image = self._selector.capture_selection_from_background()
         self._selector.stop()
-        if image.isNull():
+
+        if not image or image.isNull():
+            logger.error("截取失败")
             return
-            
+
         from PySide6.QtWidgets import QApplication
         clipboard = QApplication.clipboard()
         clipboard.setPixmap(image)
-        logger.info("截图已复制到剪贴板")
-        
+        logger.info(f"截图已复制到剪贴板 (尺寸: {image.width()}x{image.height()})")
+
         # 视为完成/取消流程
         self.capture_cancelled.emit()
 

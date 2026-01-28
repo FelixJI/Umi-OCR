@@ -42,7 +42,9 @@
       "Bash(du:*)",
       "Bash(git add:*)",
       "Bash(iconv:*)",
-      "Bash(.venvScriptspython.exe -m pip list)"
+      "Bash(.venvScriptspython.exe -m pip list)",
+      "Bash(py -3.13 -m pip install:*)",
+      "Bash(nvidia-smi:*)"
     ],
     "deny": [],
     "ask": []

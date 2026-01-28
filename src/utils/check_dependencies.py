@@ -22,6 +22,9 @@ from enum import Enum
 # 避免循环导入
 if TYPE_CHECKING:
     from .gpu_detector import GPUDetector, GPUVendor
+else:
+    # 运行时需要导入GPUVendor用于类型检查
+    from .gpu_detector import GPUVendor
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +113,7 @@ class DependencyChecker:
     """
 
     # 要求的PaddlePaddle版本
-    REQUIRED_PADDLE_VERSION = ">=3.2.0"
+    REQUIRED_PADDLE_VERSION = ">=3.3.0"
     # 要求的PaddleOCR版本
     REQUIRED_PADDLEOCR_VERSION = ">=3.3.0"
 
@@ -246,14 +249,21 @@ class DependencyChecker:
             self._gpu_info_list = gpu_detector.detect_all()
 
             if self._gpu_info_list:
-                # 有GPU，检查是否有NVIDIA GPU
+                # 检查是否有NVIDIA GPU
                 nvidia_gpu = gpu_detector.detect_nvidia_gpu()
                 if nvidia_gpu:
-                    self._gpu_available = nvidia_gpu.cuda_support
+                    # 修复：只要有NVIDIA GPU，就认为GPU可用
+                    # cuda_support字段仅表示是否成功检测到CUDA版本
+                    # 不应作为GPU是否可用的唯一判断标准
+                    self._gpu_available = True
                     self._gpu_count = len(
                         [g for g in self._gpu_info_list if g.vendor == GPUVendor.NVIDIA]
                     )
-                    logger.info(f"检测到GPU: {self._gpu_count}个NVIDIA设备")
+                    logger.info(
+                        f"检测到 {self._gpu_count} 个NVIDIA GPU: {nvidia_gpu.name}, "
+                        f"显存: {nvidia_gpu.memory_mb}MB, "
+                        f"CUDA支持: {'是' if nvidia_gpu.cuda_support else '未检测到'}"
+                    )
 
                     # 获取显存最大的GPU信息
                     best_gpu = gpu_detector.get_best_gpu()

@@ -48,6 +48,7 @@ class SettingsWindow(QObject):
             self.sidebar.clear()
             self.sidebar.addItem("常规设置")
             self.sidebar.addItem("OCR 引擎")
+            self.sidebar.addItem("模型管理")
             self.sidebar.addItem("云服务")
             self.sidebar.setCurrentRow(0)
 
@@ -75,6 +76,24 @@ class SettingsWindow(QObject):
         self.ocr_panel = OcrSettingsPanel(
             self.ui.page_ocr_engine, controller=self.controller
         )
+
+        # Initialize Model Download Settings Panel
+        from .model_download_settings import ModelDownloadSettingsPanel
+
+        self.model_panel = ModelDownloadSettingsPanel(
+            self.ui.page_model, controller=self.controller
+        )
+
+        # Add to page_model layout
+        page_model = self.ui.page_model
+        if page_model:
+            layout = page_model.layout()
+            if layout:
+                # Index 0 is label, insert after it
+                layout.insertWidget(1, self.model_panel)
+            else:
+                layout = QVBoxLayout(page_model)
+                layout.addWidget(self.model_panel)
 
         # Initialize General Settings (Startup, etc.)
         self._init_general_settings()

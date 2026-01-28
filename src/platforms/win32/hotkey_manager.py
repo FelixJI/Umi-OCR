@@ -1,6 +1,7 @@
 # src/platforms/win32/hotkey_manager.py
 
 import ctypes
+import ctypes.wintypes
 import logging
 from typing import Dict, Tuple
 
@@ -96,11 +97,15 @@ class WinEventFilter(QAbstractNativeEventFilter):
         self.manager = manager
 
     def nativeEventFilter(self, eventType, message):
-        if eventType == "windows_generic_MSG":
-            msg = ctypes.wintypes.MSG.from_address(int(message))
-            if msg.message == WM_HOTKEY:
-                hotkey_id = msg.wParam
-                self.manager._on_hotkey_triggered(hotkey_id)
+        try:
+            if eventType == "windows_generic_MSG":
+                msg = ctypes.wintypes.MSG.from_address(int(message))
+                if msg.message == WM_HOTKEY:
+                    hotkey_id = msg.wParam
+                    self.manager._on_hotkey_triggered(hotkey_id)
+        except (AttributeError, OSError, ValueError) as e:
+            # 防止 ctypes.wintypes 访问失败导致连续错误
+            logger.debug(f"事件过滤器错误（已忽略）: {e}")
         return False, 0
 
 

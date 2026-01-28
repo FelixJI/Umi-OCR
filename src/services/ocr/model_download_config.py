@@ -45,7 +45,6 @@ class ModelInfo:
     category: ModelCategory  # 模型类别
     size_mb: float  # 模型大小(MB)
     description: str  # 模型描述
-    download_url: str  # 下载URL
     language: str = "ch"  # 语言: ch(中文), en(英文), multilingual(多语言)
 
 
@@ -73,7 +72,6 @@ TEXT_DETECTION_MODELS = {
         category=ModelCategory.TEXT_DETECTION,
         size_mb=101.0,
         description="最新高精度检测模型，Hmean 83.8%，支持109种语言",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_det_infer.tar",
         language="multilingual",
     ),
     "ppocrv5_mobile_det": ModelInfo(
@@ -82,7 +80,6 @@ TEXT_DETECTION_MODELS = {
         category=ModelCategory.TEXT_DETECTION,
         size_mb=4.7,
         description="轻量检测模型，适合端侧部署，Hmean 79.0%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_det_infer.tar",
         language="multilingual",
     ),
 }
@@ -95,7 +92,6 @@ TEXT_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=81.0,
         description="单模型支持简中/繁中/英/日/拼音，精度86.38%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_rec_infer.tar",
         language="multilingual",
     ),
     "ppocrv5_mobile_rec": ModelInfo(
@@ -104,7 +100,6 @@ TEXT_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=16.0,
         description="轻量识别模型，精度81.29%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_rec_infer.tar",
         language="multilingual",
     ),
 }
@@ -121,7 +116,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="支持俄语、乌克兰语、白俄罗斯语等20+种语言",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/cyrillic_PP-OCRv5_mobile_rec_infer.tar",
         language="cyrillic",
     ),
     "latin_ppocrv5_rec": ModelInfo(
@@ -130,7 +124,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="支持法文、德文、西语、37+种语言",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/latin_PP-OCRv5_mobile_rec_infer.tar",
         language="latin",
     ),
     "arabic_ppocrv5_rec": ModelInfo(
@@ -139,7 +132,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="支持阿拉伯语、波斯语、20+种语言",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/arabic_PP-OCRv5_mobile_rec_infer.tar",
         language="arabic",
     ),
     "devanagari_ppocrv5_rec": ModelInfo(
@@ -148,7 +140,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="支持印地语、马拉地语、10+种语言",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/devanagari_PP-OCRv5_mobile_rec_infer.tar",
         language="devanagari",
     ),
     # 语言专用模型
@@ -158,7 +149,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="韩语专用优化模型",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/korean_PP-OCRv5_mobile_rec_infer.tar",
         language="korean",
     ),
     "japan_ppocrv5_rec": ModelInfo(
@@ -167,7 +157,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="日语专用优化模型",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/japan_PP-OCRv5_mobile_rec_infer.tar",
         language="japan",
     ),
     "th_ppocrv5_rec": ModelInfo(
@@ -176,7 +165,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="泰语专用，精度82.68%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/th_PP-OCRv5_mobile_rec_infer.tar",
         language="th",
     ),
     "el_ppocrv5_rec": ModelInfo(
@@ -185,7 +173,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="希腊语专用，精度89.28%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/el_PP-OCRv5_mobile_rec_infer.tar",
         language="el",
     ),
     "ta_ppocrv5_rec": ModelInfo(
@@ -194,7 +181,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="泰米尔语专用，精度94.2%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/ta_PP-OCRv5_mobile_rec_infer.tar",
         language="ta",
     ),
     "te_ppocrv5_rec": ModelInfo(
@@ -203,7 +189,6 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         category=ModelCategory.TEXT_RECOGNITION,
         size_mb=8.0,
         description="泰卢固语专用，精度87.65%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/te_PP-OCRv5_mobile_rec_infer.tar",
         language="te",
     ),
 }
@@ -216,7 +201,6 @@ ORIENTATION_MODELS = {
         category=ModelCategory.DOC_ORIENTATION,
         size_mb=7.0,
         description="文档图像方向分类，支持0°/90°/180°/270°旋转校正",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_doc_ori_infer.tar",
     ),
     "pp_lcnet_textline_ori": ModelInfo(
         name="PP-LCNet_x1_0_textline_ori",
@@ -224,7 +208,6 @@ ORIENTATION_MODELS = {
         category=ModelCategory.TEXT_ORIENTATION,
         size_mb=7.0,
         description="文本行方向分类，检测水平/垂直文本",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_doc_ori_infer.tar",
     ),
 }
 
@@ -236,7 +219,6 @@ DOC_UNWARPING_MODELS = {
         category=ModelCategory.DOC_UNWARPING,
         size_mb=30.3,
         description="弯曲文档图像矫正，用于处理透视变换和曲面文档",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/UVDoc_infer.tar",
     ),
 }
 
@@ -252,7 +234,6 @@ LAYOUT_DETECTION_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=126.0,
         description="最新高精度版面分析，支持20类区域：文档标题、段落标题、文本、页码、摘要、目录、参考文献、脚注、页眉、页脚、算法、公式、公式编号、图像、表格、图和表标题、印章、图表、侧栏文本和参考文献内容",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocLayout_plus-L_infer.tar",
     ),
     "pp_doclayout_l": ModelInfo(
         name="PP-DocLayout-L",
@@ -260,7 +241,6 @@ LAYOUT_DETECTION_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=123.8,
         description="高精度版面分析，支持23类区域：文档标题、段落标题、文本、页码、摘要、目录、参考文献、脚注、页眉、页脚、算法、公式、公式编号、图像、图表标题、表格、表格标题、印章、图表标题、图表、页眉图像、页脚图像、侧栏文本",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocLayout-L_infer.tar",
     ),
     "pp_doclayout_m": ModelInfo(
         name="PP-DocLayout-M",
@@ -268,7 +248,6 @@ LAYOUT_DETECTION_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=22.6,
         description="中等精度版面分析，平衡速度与精度",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocLayout-M_infer.tar",
     ),
     "pp_doclayout_s": ModelInfo(
         name="PP-DocLayout-S",
@@ -276,7 +255,6 @@ LAYOUT_DETECTION_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=4.8,
         description="轻量版面分析，快速处理",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocLayout-S_infer.tar",
     ),
 }
 
@@ -288,7 +266,6 @@ LAYOUT_BLOCK_MODELS = {
         category=ModelCategory.LAYOUT_BLOCK,
         size_mb=123.9,
         description="文档子区域检测，能检测多栏报纸、杂志的每个子文章文本区域",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBlockLayout_infer.tar",
     ),
 }
 
@@ -300,7 +277,6 @@ LAYOUT_TABLE_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=7.4,
         description="专门用于检测文档中的表格区域，中英文表格通用",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet_layout_1x_table_infer.tar",
     ),
 }
 
@@ -312,7 +288,6 @@ LAYOUT_EN_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=7.4,
         description="英文文档版面检测，识别文字、标题、表格、图片、列表5类区域",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet_layout_1x_infer.tar",
     ),
 }
 
@@ -324,7 +299,6 @@ LAYOUT_3CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=4.8,
         description="轻量3类版面检测，识别表格、图像、印章",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet-S_layout_3cls_infer.tar",
     ),
     "picodet_l_layout_3cls": ModelInfo(
         name="PicoDet-L_layout_3cls",
@@ -332,7 +306,6 @@ LAYOUT_3CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=22.6,
         description="标准3类版面检测，识别表格、图像、印章",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet-L_layout_3cls_infer.tar",
     ),
     "rt_detr_h_layout_3cls": ModelInfo(
         name="RT-DETR-H_layout_3cls",
@@ -340,7 +313,6 @@ LAYOUT_3CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=470.1,
         description="高精度3类版面检测，识别表格、图像、印章，mAP达95.8%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/RT-DETR-H_layout_3cls_infer.tar",
     ),
 }
 
@@ -352,7 +324,6 @@ LAYOUT_17CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=4.8,
         description="轻量17类版面检测，识别段落标题、图片、文本、数字、摘要、内容、图表标题、公式、表格、表格标题、参考文献、文档标题、脚注、页眉、算法、页脚、印章",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet-S_layout_17cls_infer.tar",
     ),
     "picodet_l_layout_17cls": ModelInfo(
         name="PicoDet-L_layout_17cls",
@@ -360,7 +331,6 @@ LAYOUT_17CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=22.6,
         description="标准17类版面检测",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PicoDet-L_layout_17cls_infer.tar",
     ),
     "rt_detr_h_layout_17cls": ModelInfo(
         name="RT-DETR-H_layout_17cls",
@@ -368,7 +338,6 @@ LAYOUT_17CLS_MODELS = {
         category=ModelCategory.LAYOUT_DETECTION,
         size_mb=470.2,
         description="高精度17类版面检测，mAP达98.3%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/RT-DETR-H_layout_17cls_infer.tar",
     ),
 }
 
@@ -383,7 +352,6 @@ TABLE_STRUCTURE_MODELS = {
         category=ModelCategory.TABLE_STRUCTURE,
         size_mb=6.9,
         description="表格结构识别，预测表格单元格坐标和结构",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/SLANet_infer.tar",
     ),
     "slanet_plus": ModelInfo(
         name="SLANet_plus",
@@ -391,7 +359,6 @@ TABLE_STRUCTURE_MODELS = {
         category=ModelCategory.TABLE_STRUCTURE,
         size_mb=6.9,
         description="增强版表格结构识别，提升复杂表格处理能力",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/SLANet_plus_infer.tar",
     ),
     "slanext_wired": ModelInfo(
         name="SLANeXt_wired",
@@ -399,7 +366,6 @@ TABLE_STRUCTURE_MODELS = {
         category=ModelCategory.TABLE_STRUCTURE,
         size_mb=351.0,
         description="高精度有线表格结构识别，基于SLANeXt架构",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/SLANeXt_wired_infer.tar",
     ),
     "slanext_wireless": ModelInfo(
         name="SLANeXt_wireless",
@@ -407,7 +373,6 @@ TABLE_STRUCTURE_MODELS = {
         category=ModelCategory.TABLE_STRUCTURE,
         size_mb=351.0,
         description="高精度无线表格结构识别，基于SLANeXt架构",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/SLANeXt_wireless_infer.tar",
     ),
 }
 
@@ -418,7 +383,6 @@ TABLE_CELLS_MODELS = {
         category=ModelCategory.TABLE_CELLS,
         size_mb=124.0,
         description="高精度有线表格单元格检测",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/RT-DETR-L_wired_table_cell_det_infer.tar",
     ),
     "rt_detr_l_wireless_table_cell": ModelInfo(
         name="RT-DETR-L_wireless_table_cell_det",
@@ -426,7 +390,6 @@ TABLE_CELLS_MODELS = {
         category=ModelCategory.TABLE_CELLS,
         size_mb=124.0,
         description="高精度无线表格单元格检测",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/RT-DETR-L_wireless_table_cell_det_infer.tar",
     ),
 }
 
@@ -437,7 +400,6 @@ TABLE_CLASSIFICATION_MODELS = {
         category=ModelCategory.TABLE_CLASSIFICATION,
         size_mb=6.6,
         description="表格类型分类，识别有线表格/无线表格",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_table_cls_infer.tar",
     ),
 }
 
@@ -452,7 +414,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=99.0,
         description="基于LaTeX-OCR的公式识别模型",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/LaTeX_OCR_rec_infer.tar",
     ),
     "pp_formulanet_s": ModelInfo(
         name="PP-FormulaNet-S",
@@ -460,7 +421,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=224.0,
         description="轻量公式识别模型，支持中英文LaTeX公式识别",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-FormulaNet-S_infer.tar",
     ),
     "pp_formulanet_plus_s": ModelInfo(
         name="PP-FormulaNet_plus-S",
@@ -468,7 +428,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=248.0,
         description="增强版轻量公式识别，中文BLEU达53.32%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-FormulaNet_plus-S_infer.tar",
     ),
     "pp_formulanet_plus_m": ModelInfo(
         name="PP-FormulaNet_plus-M",
@@ -476,7 +435,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=592.0,
         description="中量公式识别模型，中文BLEU达89.76%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-FormulaNet_plus-M_infer.tar",
     ),
     "pp_formulanet_plus_l": ModelInfo(
         name="PP-FormulaNet_plus-L",
@@ -484,7 +442,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=698.0,
         description="高精度公式识别模型，支持复杂数学公式，中文BLEU达90.64%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-FormulaNet_plus-L_infer.tar",
     ),
     "pp_formulanet_l": ModelInfo(
         name="PP-FormulaNet-L",
@@ -492,7 +449,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=695.0,
         description="高精度公式识别模型",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-FormulaNet-L_infer.tar",
     ),
     "unimernet": ModelInfo(
         name="UniMERNet",
@@ -500,7 +456,6 @@ FORMULA_RECOGNITION_MODELS = {
         category=ModelCategory.FORMULA_RECOGNITION,
         size_mb=1530.0,
         description="超大规模通用公式识别模型，支持复杂数学公式，英文BLEU达85.91%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/UniMERNet_infer.tar",
     ),
 }
 
@@ -520,7 +475,6 @@ OCR_VL_MODELS = {
         category=ModelCategory.OCR_VL,
         size_mb=1800.0,
         description="超紧凑0.9B参数VLM，SOTA文档解析，支持109种语言，擅长文本/表格/公式/图表识别",
-        download_url="https://huggingface.co/PaddlePaddle/PaddleOCR-VL/resolve/main/paddleocr_vl_0.9b_infer.tar",
         language="multilingual",
     ),
 }
@@ -536,7 +490,6 @@ DOC_VLM_MODELS = {
         category=ModelCategory.DOC_VLM,
         size_mb=7600.0,
         description="3B参数文档理解模型，支持文档问答，精度提升11.4%",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBee2-3B_infer.tar",
     ),
     "pp_docbee_2b": ModelInfo(
         name="PP-DocBee-2B",
@@ -544,7 +497,6 @@ DOC_VLM_MODELS = {
         category=ModelCategory.DOC_VLM,
         size_mb=4200.0,
         description="2B参数文档理解模型，支持文档问答、内容提取",
-        download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-DocBee-2B_infer.tar",
     ),
 }
 
@@ -660,7 +612,7 @@ MODEL_PRESETS = {
     "ocr_vl": ModelPreset(
         id="ocr_vl",
         name="文档解析",
-        description="PaddleOCR-VL 0.9B SOTA模型，端到端文档解析，支持文本/表格/公式/图表",
+        description="PaddleOCR-VL 0.9B SOTA模型，端到端文档解析，支持文本/表格/公式/图表识别",
         models=[
             "paddleocr_vl_0_9b",  # 0.9B参数，SOTA文档解析
         ],

@@ -1,0 +1,17 @@
+{
+  "ppocrv5_mobile_det": {
+    "name": "ppocrv5_mobile_det",
+    "type": "detection",
+    "version": "v5",
+    "language": "multilingual",
+    "url": "https://mirrors.tuna.tsinghua.edu.cn/paddle/models/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_det_infer.tar",
+    "size": 0,
+    "md5": null,
+    "local_path": null,
+    "status": "downloading",
+    "last_used": null,
+    "download_time": null,
+    "required": true,
+    "enabled": true
+  }
+}

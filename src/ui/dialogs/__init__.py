@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QTextEdit,
     QMessageBox,
+    QComboBox,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QFont
@@ -48,6 +49,8 @@ from src.utils.dependency_installer import (
     get_installer,
     InstallConfig,
     InstallProgress,
+    DEFAULT_MIRRORS,
+    MirrorSource,
 )
 
 logger = logging.getLogger(__name__)
@@ -141,7 +144,7 @@ class OCREngineInstallDialog(QDialog):
         title_label.setFont(QFont("Arial", 16, QFont.Bold))
 
         desc_label = QLabel(
-            "Umi-OCR需要安装OCR引擎才能正常工作。\n" "我们为您检测了最适合的安装方案。"
+            "Umi-OCR需要安装OCR引擎才能正常工作。\n我们为您检测了最适合的安装方案。"
         )
         desc_label.setWordWrap(True)
         desc_label.setStyleSheet("color: #666;")
@@ -328,31 +331,97 @@ class OCREngineInstallDialog(QDialog):
 
         # CPU版本选项
         cpu_radio = QRadioButton("CPU版本（推荐）")
-        cpu_radio.setDescription(
-            "适合大多数用户\n" "下载大小: 约 200MB\n" "速度: 较慢，但稳定"
-        )
+        cpu_desc = QLabel("适合大多数用户\n下载大小: 约 200MB\n速度: 较慢，但稳定")
+        cpu_desc.setStyleSheet("margin-left: 20px; color: #666; font-size: 11px;")
+        cpu_desc.setWordWrap(True)
         cpu_radio.setChecked(True)  # 默认选中
         self._option_group.addButton(cpu_radio, 0)
         option_group.layout().addWidget(cpu_radio)
+        option_group.layout().addWidget(cpu_desc)
 
         # GPU版本选项（如果有NVIDIA GPU）
         if self._dep_info.gpu_available:
             gpu_radio = QRadioButton("GPU版本（需要NVIDIA显卡）")
-            gpu_radio.setDescription(
-                "使用GPU加速，速度快\n"
-                "下载大小: 约 1-2GB\n"
-                "要求: NVIDIA显卡 + CUDA驱动"
+            gpu_desc = QLabel(
+                "使用GPU加速，速度快\n下载大小: 约 1-2GB\n要求: NVIDIA显卡 + CUDA驱动"
             )
+            gpu_desc.setStyleSheet("margin-left: 20px; color: #666; font-size: 11px;")
+            gpu_desc.setWordWrap(True)
             self._option_group.addButton(gpu_radio, 1)
             option_group.layout().addWidget(gpu_radio)
+            option_group.layout().addWidget(gpu_desc)
 
         # 跳过选项
         skip_radio = QRadioButton("跳过安装（仅使用云OCR）")
-        skip_radio.setDescription("稍后手动安装\n" "或仅使用在线OCR服务")
+        skip_desc = QLabel("稍后手动安装\n或仅使用在线OCR服务")
+        skip_desc.setStyleSheet("margin-left: 20px; color: #666; font-size: 11px;")
+        skip_desc.setWordWrap(True)
         self._option_group.addButton(skip_radio, 2)
         option_group.layout().addWidget(skip_radio)
+        option_group.layout().addWidget(skip_desc)
 
         self._content_layout.addWidget(option_group)
+
+        # 镜像源选择
+        self._show_mirror_options()
+
+    def _show_mirror_options(self):
+        """显示镜像源选择选项"""
+        # 创建分组框
+        mirror_group = self._create_group_box("🌐 镜像源选择")
+
+        # 说明文字
+        mirror_desc = QLabel("选择下载源，推荐使用国内镜像源以获得更快的下载速度")
+        mirror_desc.setStyleSheet("margin-left: 10px; color: #666; font-size: 11px;")
+        mirror_desc.setWordWrap(True)
+        mirror_group.layout().addWidget(mirror_desc)
+
+        # 创建下拉框
+        self._mirror_combo = QComboBox()
+        self._mirror_combo.setStyleSheet("""
+            QComboBox {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background-color: white;
+            }
+            QComboBox:hover {
+                border: 1px solid #0078d4;
+            }
+        """)
+
+        # 添加镜像源选项
+        for mirror in DEFAULT_MIRRORS:
+            self._mirror_combo.addItem(mirror.name, mirror)
+
+        # 默认选中清华镜像（第一个）
+        self._mirror_combo.setCurrentIndex(0)
+
+        mirror_group.layout().addWidget(self._mirror_combo)
+
+        # 添加镜像源说明
+        self._mirror_desc_label = QLabel(DEFAULT_MIRRORS[0].url)
+        self._mirror_desc_label.setStyleSheet(
+            "margin-left: 10px; color: #999; font-size: 10px; font-family: monospace;"
+        )
+        self._mirror_desc_label.setWordWrap(True)
+        mirror_group.layout().addWidget(self._mirror_desc_label)
+
+        # 连接信号
+        self._mirror_combo.currentIndexChanged.connect(self._on_mirror_changed)
+
+        self._content_layout.addWidget(mirror_group)
+
+    def _on_mirror_changed(self, index: int):
+        """
+        镜像源改变事件
+
+        Args:
+            index: 选择的索引
+        """
+        mirror = self._mirror_combo.itemData(index)
+        if mirror:
+            self._mirror_desc_label.setText(mirror.url)
 
     def _create_group_box(self, title: str) -> QFrame:
         """
@@ -465,8 +534,11 @@ class OCREngineInstallDialog(QDialog):
         # 显示安装界面
         self._show_install_interface()
 
+        # 获取用户选择的镜像源
+        selected_mirror = self._mirror_combo.itemData(self._mirror_combo.currentIndex())
+
         # 创建安装配置
-        config = InstallConfig(option=option)
+        config = InstallConfig(option=option, selected_mirror=selected_mirror)
 
         # 开始后台安装
         installer = get_installer()
@@ -541,11 +613,24 @@ class OCREngineInstallDialog(QDialog):
         # 更新进度条
         self._progress_bar.setValue(int(progress.percentage))
 
-        # 更新标签
-        self._progress_label.setText(progress.message)
+        # 更新标签（包含重试信息）
+        message = progress.message
+        if progress.retry_count > 0:
+            message = f"{message} (重试 {progress.retry_count}/{progress.max_retries})"
+        self._progress_label.setText(message)
 
         # 添加详细信息
-        self._detail_text.append(f"[{progress.status.value}] {progress.message}")
+        detail_msg = f"[{progress.status.value}] {progress.message}"
+        if progress.mirror_name:
+            detail_msg += f" (镜像源: {progress.mirror_name})"
+        if progress.retry_count > 0:
+            detail_msg += f" (重试: {progress.retry_count}/{progress.max_retries})"
+        if progress.download_speed:
+            detail_msg += f" (速度: {progress.download_speed})"
+        if progress.downloaded_size and progress.total_size:
+            detail_msg += f" (进度: {progress.downloaded_size}/{progress.total_size})"
+
+        self._detail_text.append(detail_msg)
 
         # 滚动到底部
         self._detail_text.verticalScrollBar().setValue(
@@ -578,7 +663,7 @@ class OCREngineInstallDialog(QDialog):
             QMessageBox.critical(
                 self,
                 "安装失败",
-                f"OCR引擎安装失败：\n{message}\n\n" "请检查网络连接或尝试手动安装。",
+                f"OCR引擎安装失败：\n{message}\n\n请检查网络连接或尝试手动安装。",
             )
             self.install_completed.emit(False)
 

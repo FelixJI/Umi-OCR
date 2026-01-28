@@ -10,9 +10,9 @@ Date: 2026-01-27
 """
 
 import json
+import os
 import shutil
 import threading
-import requests
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -147,16 +147,60 @@ class PaddleModelManager(QObject):
 
         return True
 
+    def test_connectivity(self) -> bool:
+        """测试下载源的连通性"""
+        try:
+            # 获取用户配置的下载源
+            model_source = os.environ.get("PADDLE_PDX_MODEL_SOURCE", "BOS").upper()
+            logger.info(f"测试连通性: {model_source}")
+            
+            # 使用 PaddleOCR 内置的模型管理功能进行测试
+            from paddleocr import PaddleOCR
+            
+            # 尝试初始化 PaddleOCR 来测试连接
+            # 这里使用一个轻量的初始化，不会实际下载大模型
+            ocr = PaddleOCR(
+                use_doc_orientation_classify=False,
+                use_doc_unwarping=False,
+                use_textline_orientation=False
+            )
+            
+            logger.info(f"连通性测试成功: PaddleOCR 初始化正常")
+            return True
+            
+        except Exception as e:
+            logger.error(f"连通性测试失败: {e}")
+            return False
+
     def _download_model_thread(
         self, model_name: str, model_info: Dict, force: bool
     ) -> None:
         """下载模型（线程函数）"""
         try:
             with self._lock:
+                # 映射 model_info["type"] 到 ModelType
+                type_mapping = {
+                    "text_detection": "detection",
+                    "text_recognition": "recognition",
+                    "text_orientation": "classification",
+                    "doc_orientation": "classification",
+                    "doc_unwarping": "structure",
+                    "layout_detection": "layout",
+                    "layout_block": "layout",
+                    "table_structure": "table",
+                    "table_cells": "table",
+                    "table_classification": "classification",
+                    "formula_recognition": "recognition",
+                    "doc_vlm": "structure",
+                    "ocr_vl": "structure"
+                }
+                
+                model_type = type_mapping.get(model_info["type"], "detection")
+                
                 if model_name not in self._models:
                     self._models[model_name] = ModelInfo(
                         name=model_name,
-                        type=ModelType(model_info["type"]),
+                        type=ModelType(model_type),
                         version=model_info["version"],
                         language=model_info["language"],
                         url=model_info["url"],
@@ -168,33 +212,76 @@ class PaddleModelManager(QObject):
 
                 self._save_model_cache()
 
-            url = model_info.get("download_url", model_info["url"])
-            target_path = self.cache_dir / f"{model_name}.tar"
+            logger.info(f"开始下载模型: {model_name} (使用 PaddleOCR 内置功能)")
 
-            logger.info(f"开始下载模型: {model_name} from {url}")
+            # 测试连通性
+            if not self.test_connectivity():
+                raise Exception("下载源连接失败，请检查网络连接")
 
-            response = requests.get(url, stream=True, timeout=300)
-            response.raise_for_status()
+            # 使用 PaddleOCR 内置功能下载模型
+            from paddleocr import PaddleOCR
 
-            total_size = int(response.headers.get("content-length", 0))
+            # 获取用户配置的下载源
+            model_source = os.environ.get("PADDLE_PDX_MODEL_SOURCE", "BOS").upper()
+            logger.info(f"用户配置的下载源: {model_source}")
+            logger.info("使用 PaddleOCR 内置的下载源管理功能")
 
-            with open(target_path, "wb") as f:
-                downloaded = 0
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-                        downloaded += len(chunk)
+            # 定义进度回调函数
+            def progress_callback(current, total):
+                """进度回调"""
+                if total > 0:
+                    progress = int((current / total) * 100)
+                    speed = 0  # PaddleOCR 没有提供速度信息
+                    self.download_progress.emit(model_name, current, total, speed)
+                    logger.info(f"下载进度: {model_name} - {current}/{total} ({progress}%)")
 
-                        if total_size > 0:
-                            percentage = (downloaded / total_size) * 100
-                            self.download_progress.emit(
-                                model_name, downloaded, total_size, percentage
-                            )
+            # 根据模型类型初始化相应的 PaddleOCR 组件
+            # 这里我们通过尝试初始化来触发模型下载
+            if model_type == "detection":
+                # 文本检测模型
+                PaddleOCR(
+                    text_detection_model_name=model_name,
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False,
+                    show_progressbar=True,  # 显示进度条
+                    progress_func=progress_callback  # 进度回调
+                )
+            elif model_type == "recognition":
+                # 文本识别模型
+                PaddleOCR(
+                    text_recognition_model_name=model_name,
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False,
+                    show_progressbar=True,  # 显示进度条
+                    progress_func=progress_callback  # 进度回调
+                )
+            else:
+                # 其他类型模型
+                PaddleOCR(
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False,
+                    show_progressbar=True,  # 显示进度条
+                    progress_func=progress_callback  # 进度回调
+                )
+
+            # 获取模型下载路径
+            from paddleocr.utils import get_model_dir
+            model_dir = get_model_dir()
+            target_path = Path(model_dir) / model_name
+
+            # 验证模型是否下载成功
+            if not target_path.exists():
+                raise Exception(f"模型下载失败，路径不存在: {target_path}")
 
             with self._lock:
                 self._models[model_name].status = ModelStatus.DOWNLOADED
                 self._models[model_name].local_path = target_path
-                self._models[model_name].size = downloaded
+                self._models[model_name].size = (
+                    model_info.get("size_mb", 0) * 1024 * 1024
+                )
                 self._models[model_name].download_time = datetime.now()
                 self._save_model_cache()
 
