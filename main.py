@@ -117,9 +117,16 @@ def main():
             exit_code = handler.run()
             sys.exit(exit_code)
         else:
-            from src.ui.main_window.main_window import MainWindow
-            main_window = MainWindow()
-            main_window.show()
+            # 禁用最后窗口关闭时自动退出（由控制器管理退出）
+            app.setQuitOnLastWindowClosed(False)
+
+            from src.controllers.main_controller import MainController
+            controller = MainController()
+            controller.show_window()
+
+            # 连接应用退出信号
+            controller.app_exit_requested.connect(app.quit)
+
             app.logger.info("应用程序初始化完成，进入事件循环")
             exit_code = app.exec()
             app.logger.info("应用程序退出，保存配置")

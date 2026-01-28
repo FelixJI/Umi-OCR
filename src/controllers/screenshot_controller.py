@@ -47,13 +47,25 @@ class ScreenshotController(QObject):
     ocr_result_ready = Signal(object)    # OCR结果就绪
     ocr_failed = Signal(str)            # OCR失败
 
+    _instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
     def __init__(self):
         """初始化截图OCR控制器"""
+        if hasattr(self, "_initialized"):
+            return
+
         super().__init__()
+        self._initialized = True
 
         # 创建服务组件
-        self._selector = RegionSelector()
         self._screen_capture = ScreenCapture()
+        self._selector = RegionSelector(screen_capture=self._screen_capture)
         self._task_manager = TaskManager.instance()
 
         # 临时文件

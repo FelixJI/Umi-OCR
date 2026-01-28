@@ -46,9 +46,21 @@ class BatchOcrController(QObject):
     tasks_completed = Signal(str)        # 任务完成(group_id)
     tasks_failed = Signal(str, str)      # 任务失败(group_id, error)
 
+    _instance = None
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
     def __init__(self):
         """初始化批量OCR控制器"""
+        if hasattr(self, "_initialized"):
+            return
+            
         super().__init__()
+        self._initialized = True
 
         self._task_manager = TaskManager.instance()
 
@@ -216,3 +228,50 @@ class BatchOcrController(QObject):
             self.tasks_failed.emit(group_id, "任务执行失败")
         else:
             logger.info(f"任务组暂停: {group_id}, 原因: {reason}")
+
+    def export_results(self, group_id: str, output_path: str, format_text: str) -> bool:
+        """
+        导出结果
+        
+        Args:
+            group_id: 任务组ID
+            output_path: 输出文件路径
+            format_text: 格式描述 (TXT/JSON/CSV)
+            
+        Returns:
+            bool: 是否成功
+        """
+        group = self._task_manager.get_group(group_id)
+        if not group:
+            logger.warning(f"任务组不存在: {group_id}")
+            return False
+            
+        try:
+            logger.info(f"开始导出: {group_id} -> {output_path}")
+            
+            # 收集结果
+            results = []
+            for task in group.get_all_tasks():
+                if task.status.value == "completed" and task.result:
+                    # 假设 result 是字典，包含 text 字段
+                    text = task.result.get("text", "")
+                    filename = Path(task.input_data.get("image_path", "")).name
+                    results.append(f"--- {filename} ---\n{text}")
+            
+            # 格式化输出 (这里仅实现简单的 TXT 拼接，后续可扩展 JSON/CSV)
+            if "JSON" in format_text:
+                import json
+                content = json.dumps(results, ensure_ascii=False, indent=2)
+            else:
+                content = "\n\n".join(results)
+            
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(content)
+                
+            logger.info(f"导出成功: {output_path}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"导出失败: {e}", exc_info=True)
+            return False
+

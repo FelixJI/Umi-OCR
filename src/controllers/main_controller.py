@@ -26,7 +26,6 @@ from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
 from src.platforms.win32.hotkey_manager import HotkeyManager
 from src.services.server.http_server import HTTPServer
-from PySide6.QtWidgets import QWidget
 from qasync import QEventLoop
 import asyncio
 
@@ -308,37 +307,24 @@ class MainController(QObject):
         # 切换到任务管理器页面
         if self.main_window:
             self.main_window.switch_to_page(4)
-            
-    def _init_main_window(self):
-        """初始化主窗口"""
-        # 创建主窗口
-        self.main_window = MainWindow()
-        
-        # 初始化任务管理器界面 (嵌入到主窗口页面堆栈)
-        from src.ui.task_manager.task_manager import TaskManagerView
-        self.task_manager_view = TaskManagerView()
-        
-        # 将任务管理器界面添加到主窗口的 page_task_manager
-        # 注意：这里假设 MainWindow 已经加载了 ui 并且有一个名为 page_task_manager 的页面
-        # 我们需要获取那个页面并设置布局
-        page_task = self.main_window.ui.findChild(QWidget, "page_task_manager")
-        if page_task:
-            layout = page_task.layout()
-            if not layout:
-                from PySide6.QtWidgets import QVBoxLayout
-                layout = QVBoxLayout(page_task)
-                layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.task_manager_view)
 
-        # 连接主窗口信号
-        self._connect_window_signals()
-
-        self.logger.debug("主窗口创建完成")
+    # 设置
+    def handle_settings(self):
         """处理设置命令"""
         self.logger.debug("执行设置命令")
         # 切换到设置页面
         if self.main_window:
             self.main_window.switch_to_page(5)
+
+    def _init_main_window(self):
+        """初始化主窗口"""
+        # 创建主窗口
+        self.main_window = MainWindow()
+
+        # 连接主窗口信号
+        self._connect_window_signals()
+
+        self.logger.debug("主窗口创建完成")
 
     # 打开文件
     def handle_open_file(self):
@@ -426,10 +412,10 @@ class MainController(QObject):
 
     def _on_window_closing(self):
         """窗口关闭事件处理"""
-        # 检查是否最小化到托盘
-        minimize_to_tray = self.config_manager.get("ui.minimize_to_tray", False)
+        # 检查是否关闭到托盘
+        close_to_tray = self.config_manager.get("ui.close_to_tray", False)
         
-        if minimize_to_tray:
+        if close_to_tray:
             self.logger.info("主窗口关闭请求 -> 最小化到托盘")
             self.hide_window()
             if self.tray_manager:

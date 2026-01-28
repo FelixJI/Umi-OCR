@@ -30,7 +30,7 @@ class BatchOCRView(QWidget):
         # 初始化控制器
         try:
             from controllers.batch_ocr_controller import BatchOcrController
-            self._controller = BatchOcrController()
+            self._controller = BatchOcrController.instance()
         except ModuleNotFoundError as e:
             logger.warning(f"批量图片控制器加载失败，部分功能不可用: {e}")
             self._controller = None
@@ -241,9 +241,14 @@ class BatchOCRView(QWidget):
             output_path += default_ext
 
         # 调用控制器导出
-        # 注意：需要先获取识别结果，这里暂时先记录日志
-        logger.info(f"导出路径: {output_path}")
-        logger.info("导出功能待完整实现: 需要获取识别结果并调用相应导出服务")
-
-        # TODO: 实现实际的导出逻辑
-        # self._controller.export_results(group_id, output_path, format_text)
+        if self._current_group_id:
+            if self._controller.export_results(self._current_group_id, output_path, format_text):
+                 from PySide6.QtWidgets import QMessageBox
+                 QMessageBox.information(self, "导出成功", f"结果已保存到:\n{output_path}")
+            else:
+                 from PySide6.QtWidgets import QMessageBox
+                 QMessageBox.warning(self, "导出失败", "导出过程中发生错误，请查看日志。")
+        else:
+            logger.warning("没有可导出的任务组")
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "提示", "请先执行识别任务。")

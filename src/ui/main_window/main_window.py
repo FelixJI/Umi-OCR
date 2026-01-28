@@ -24,11 +24,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt, Signal, QSize
-from PySide6.QtUiTools import QUiLoader
-
 from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
+from src.ui.main_window.ui_main_window import Ui_MainWindow
 from src.ui.settings.settings import SettingsWindow
 from src.ui.screenshot_ocr.screenshot_ocr import ScreenshotOCRView
 from src.ui.batch_ocr.batch_ocr import BatchOCRView
@@ -88,70 +87,126 @@ class MainWindow(QMainWindow):
         # 加载窗口状态
         self._load_window_state()
 
+        # 应用样式优化
+        self._apply_ui_styles()
+
         # 应用多语言
         self._apply_translations()
 
         self.logger.info("主窗口初始化完成")
 
+    def _apply_ui_styles(self):
+        """应用 UI 样式优化"""
+        # 工具栏已从UI移除
+
+        # 2. 隐藏分割线（使用背景色区分）
+        if hasattr(self.ui, "separatorLine"):
+            self.ui.separatorLine.setVisible(False)
+
+        # 3. 侧边栏样式
+        if self.sidebarListWidget:
+            self.sidebarListWidget.setStyleSheet("""
+                QListWidget {
+                    background-color: #f3f3f3;
+                    border: none;
+                    outline: none;
+                }
+                QListWidget::item {
+                    height: 45px;
+                    padding-left: 8px;
+                    margin: 4px 8px;
+                    border-radius: 6px;
+                    color: #444;
+                    font-size: 14px;
+                }
+                QListWidget::item:selected {
+                    background-color: #ffffff;
+                    color: #000;
+                    font-weight: bold;
+                    border: 1px solid #e0e0e0;
+                }
+                QListWidget::item:hover:!selected {
+                    background-color: #e8e8e8;
+                }
+            """)
+            # 设置图标大小
+            self.sidebarListWidget.setIconSize(QSize(24, 24))
+
+        # 4. 设置页面侧边栏样式
+        if hasattr(self.ui, "listWidget_sidebar"):
+            self.ui.listWidget_sidebar.setStyleSheet("""
+                QListWidget {
+                    background-color: transparent;
+                    border-right: 1px solid #e0e0e0;
+                    outline: none;
+                    font-size: 13px;
+                }
+                QListWidget::item {
+                    height: 36px;
+                    padding-left: 15px;
+                    margin: 1px 0;
+                    border-radius: 0;
+                    color: #555;
+                }
+                QListWidget::item:selected {
+                    background-color: #f0f7ff;
+                    color: #0066cc;
+                    border-left: 3px solid #0066cc;
+                }
+                QListWidget::item:hover:!selected {
+                    background-color: #f5f5f5;
+                }
+            """)
+
+        # 5. 优化滚动条策略
+        # 任务管理器滚动区域
+        if hasattr(self.ui, "scrollArea"):
+            self.ui.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            self.ui.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            # 移除边框
+            self.ui.scrollArea.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
+
+        # 6. 全局样式微调
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #ffffff;
+            }
+            QStatusBar {
+                background-color: #f8f8f8;
+                border-top: 1px solid #e0e0e0;
+                color: #666;
+            }
+        """)
+
     def _load_ui(self):
-        """加载 UI 文件"""
+        """加载 UI"""
         try:
-            # 获取 .ui 文件路径
-            ui_file = Path(__file__).parent / "main_window.ui"
-
-            if not ui_file.exists():
-                raise FileNotFoundError(f"UI 文件不存在: {ui_file}")
-
-            # 使用 QUiLoader 加载 UI
-            ui_loader = QUiLoader()
-            self.ui = ui_loader.load(str(ui_file))
-
-            if not self.ui:
-                raise RuntimeError("UI 加载失败")
-
-            # 调试：检查加载的UI对象类型和子对象
-            self.logger.debug(f"Loaded UI type: {type(self.ui).__name__}")
-            self.logger.debug(f"Loaded UI objectName: {self.ui.objectName()}")
-
-            # 查找所有子对象
-            def find_all_children(widget, depth=0):
-                indent = "  " * depth
-                result = []
-                result.append(f"{indent}{widget.objectName()} ({type(widget).__name__})")
-                for child in widget.findChildren(QWidget):
-                    if child.parent() == widget:
-                        result.extend(find_all_children(child, depth + 1))
-                return result
-
-            children = find_all_children(self.ui)
-            self.logger.debug(f"UI children:\n" + "\n".join(children[:20]))  # 只显示前20个
-
-            # 将 UI 的内容设置为中心部件
-            central_widget = self.ui.findChild(QWidget, "centralWidget")
-            if central_widget:
-                self.setCentralWidget(central_widget)
-
+            self.ui = Ui_MainWindow()
+            self.ui.setupUi(self)
+            
             # 导入 UI 元素到实例属性
             self._import_ui_elements()
 
-            self.logger.debug(f"UI 文件加载成功: {ui_file}")
+            self.logger.debug("UI 加载成功")
 
         except Exception as e:
-            self.logger.error(f"加载 UI 文件失败: {e}", exc_info=True)
+            self.logger.error(f"加载 UI 失败: {e}", exc_info=True)
             QMessageBox.critical(
                 self,
                 "错误",
-                f"无法加载界面文件：\n{e}"
+                f"无法加载界面：\n{e}"
             )
             sys.exit(1)
 
     def _import_ui_elements(self):
         """从 UI 对象导入常用元素到实例属性"""
-        # 侧边栏 - 从UI对象中查找，注意类型是QListWidget不是QWidget
-        self.sidebarListWidget = self.ui.findChild(QListWidget, "sidebarListWidget")
+        # 直接从 self.ui 获取元素，不再使用 findChild
+        
+        # 侧边栏
+        self.sidebarListWidget = self.ui.sidebarListWidget
 
-        # 内容区域 - 从self（MainWindow）中查找，因为我们已经设置了centralWidget
-        self.contentStackedWidget = self.findChild(QStackedWidget, "contentStackedWidget")
+        # 内容区域
+        self.contentStackedWidget = self.ui.contentStackedWidget
 
         # 调试：检查contentStackedWidget
         if self.contentStackedWidget:
@@ -162,36 +217,27 @@ class MainWindow(QMainWindow):
         else:
             self.logger.error("contentStackedWidget not found!")
 
-        # 状态栏（使用不同的名称避免与 statusBar() 方法冲突）
-        self.statusBarWidget = self.ui.findChild(QStatusBar, "statusBar")
+        # 状态栏
+        self.statusBarWidget = self.ui.statusBar
 
-        # 各个页面 - 从contentStackedWidget中查找
-        if self.contentStackedWidget:
-            self.pageScreenshotOcr = self.contentStackedWidget.findChild(QWidget, "pageScreenshotOcr")
-            self.pageBatchOcr = self.contentStackedWidget.findChild(QWidget, "pageBatchOcr")
-            self.pageBatchDoc = self.contentStackedWidget.findChild(QWidget, "pageBatchDoc")
-            self.pageQrcode = self.contentStackedWidget.findChild(QWidget, "pageQrcode")
-            self.pageTaskManager = self.contentStackedWidget.findChild(QWidget, "pageTaskManager")
-            self.pageSettings = self.contentStackedWidget.findChild(QWidget, "pageSettings")
-        else:
-            # 如果找不到contentStackedWidget，设置为None
-            self.pageScreenshotOcr = None
-            self.pageBatchOcr = None
-            self.pageBatchDoc = None
-            self.pageQrcode = None
-            self.pageTaskManager = None
-            self.pageSettings = None
+        # 各个页面
+        self.pageScreenshotOcr = self.ui.pageScreenshotOcr
+        self.pageBatchOcr = self.ui.pageBatchOcr
+        self.pageBatchDoc = self.ui.pageBatchDoc
+        self.pageQrcode = self.ui.pageQrcode
+        self.pageTaskManager = self.ui.pageTaskManager
+        self.pageSettings = self.ui.pageSettings
 
         # 动作（菜单项）
-        self.actionOpenFile = self.ui.findChild(QAction, "actionOpenFile")
-        self.actionExit = self.ui.findChild(QAction, "actionExit")
-        self.actionSettings = self.ui.findChild(QAction, "actionSettings")
-        self.actionToggleSidebar = self.ui.findChild(QAction, "actionToggleSidebar")
-        self.actionToggleToolbar = self.ui.findChild(QAction, "actionToggleToolbar")
-        self.actionFullscreen = self.ui.findChild(QAction, "actionFullscreen")
-        self.actionScreenshot = self.ui.findChild(QAction, "actionScreenshot")
-        self.actionTaskManager = self.ui.findChild(QAction, "actionTaskManager")
-        self.actionAbout = self.ui.findChild(QAction, "actionAbout")
+        self.actionOpenFile = self.ui.actionOpenFile
+        self.actionExit = self.ui.actionExit
+        self.actionSettings = self.ui.actionSettings
+        self.actionToggleSidebar = self.ui.actionToggleSidebar
+        self.actionToggleToolbar = self.ui.actionToggleToolbar
+        self.actionFullscreen = self.ui.actionFullscreen
+        self.actionScreenshot = self.ui.actionScreenshot
+        self.actionTaskManager = self.ui.actionTaskManager
+        self.actionAbout = self.ui.actionAbout
 
     def _init_ui_components(self):
         """初始化 UI 组件"""
@@ -249,8 +295,8 @@ class MainWindow(QMainWindow):
 
         if self.pageTaskManager:
             try:
-                self.taskManagerView = TaskManagerView()
-                self._set_page_widget(self.pageTaskManager, self.taskManagerView)
+                self.taskManagerView = TaskManagerView(self.ui)
+                # 任务管理器页面的 UI 已在 ui 文件中定义，不需要添加到布局
                 self.logger.debug("任务管理视图初始化成功")
             except Exception as e:
                 self.logger.error(f"任务管理视图初始化失败: {e}", exc_info=True)
@@ -258,8 +304,7 @@ class MainWindow(QMainWindow):
         # 初始化设置页面
         if self.pageSettings:
             try:
-                self.settingsWindow = SettingsWindow()
-                self._set_page_widget(self.pageSettings, self.settingsWindow)
+                self.settingsWindow = SettingsWindow(self.ui)
                 self.logger.debug("设置视图初始化成功")
             except Exception as e:
                 self.logger.error(f"设置视图初始化失败: {e}", exc_info=True)
@@ -286,9 +331,6 @@ class MainWindow(QMainWindow):
         if self.actionToggleSidebar:
             self.actionToggleSidebar.triggered.connect(self._toggle_sidebar)
 
-        if self.actionToggleToolbar:
-            self.actionToggleToolbar.triggered.connect(self._toggle_toolbar)
-
         if self.actionFullscreen:
             self.actionFullscreen.triggered.connect(self._toggle_fullscreen)
 
@@ -298,32 +340,12 @@ class MainWindow(QMainWindow):
         if self.actionAbout:
             self.actionAbout.triggered.connect(self._show_about_dialog)
 
-        if self.actionSettings:
-            self.actionSettings.triggered.connect(lambda: self.switch_to_page(5))  # 设置页面
-
-        if self.actionTaskManager:
-            self.actionTaskManager.triggered.connect(lambda: self.switch_to_page(4))  # 任务管理页面
-
-        if self.actionScreenshot:
-            self.actionScreenshot.triggered.connect(self._on_action_screenshot)
-
         # 连接语言变更信号
         self.i18n.language_changed.connect(self._apply_translations)
 
         # 连接配置变更信号
         self.config_manager.config_changed.connect(self._on_config_changed)
 
-    def _on_action_screenshot(self):
-        """菜单/工具栏触发截图页面与动作"""
-        self.switch_to_page(0)
-        try:
-            # 触发视图开始截图（视图内部连接控制器）
-            if hasattr(self, "screenshotView"):
-                # 使用视图的按钮逻辑以复用现有行为
-                self.screenshotView._on_start_capture()
-        except Exception as e:
-            self.logger.error(f"触发截图失败: {e}", exc_info=True)
-    
     def _set_page_widget(self, page_container: QWidget, widget: QWidget):
         """将页面容器中的占位内容替换为实际视图"""
         layout = page_container.layout()
@@ -367,6 +389,22 @@ class MainWindow(QMainWindow):
             self.logger.debug(f"切换到页面: {row}")
         else:
             self.logger.error(f"无效的页面索引: {row}, contentStackedWidget.count(): {self.contentStackedWidget.count() if self.contentStackedWidget else 'None'}")
+
+    def _on_sidebar_row_changed(self, row: int):
+        """
+        侧边栏行变化事件处理 (currentRowChanged)
+        """
+        if self.contentStackedWidget and 0 <= row < self.contentStackedWidget.count():
+            # 避免重复切换
+            if self.contentStackedWidget.currentIndex() != row:
+                self.contentStackedWidget.setCurrentIndex(row)
+                self.logger.debug(f"侧边栏行变化触发页面切换: {row}")
+                
+                # 发送页面切换信号
+                self.page_changed.emit(row)
+                
+                # 更新状态栏
+                self._update_status_bar_for_page(row)
 
     def switch_to_page(self, page_index: int):
         """
@@ -489,18 +527,6 @@ class MainWindow(QMainWindow):
             # 更新配置
             self.config_manager.set("ui.main_window.sidebar_visible", checked)
 
-    def _toggle_toolbar(self, checked: bool):
-        """
-        切换工具栏显示/隐藏
-
-        Args:
-            checked: 是否显示
-        """
-        # 通过对象名称查找工具栏
-        main_toolbar = self.ui.findChild(QToolBar, "mainToolBar")
-        if main_toolbar:
-            main_toolbar.setVisible(checked)
-
     def _toggle_fullscreen(self, checked: bool):
         """
         切换全屏模式
@@ -569,11 +595,6 @@ class MainWindow(QMainWindow):
         if not self.ui:
             return
 
-        # 获取菜单栏
-        menu_bar = self.ui.findChild(QWidget, "menuBar")
-        if not menu_bar:
-            return
-
         # 菜单标题翻译映射
         menu_translations = {
             "menuFile": "main_window.menu.file",
@@ -585,7 +606,7 @@ class MainWindow(QMainWindow):
 
         # 遍历所有子菜单并更新标题
         for menu_name, key_path in menu_translations.items():
-            menu = self.ui.findChild(QWidget, menu_name)
+            menu = getattr(self.ui, menu_name, None)
             if menu:
                 # 设置菜单标题（支持多语言）
                 new_title = self.i18n.translate(key_path)

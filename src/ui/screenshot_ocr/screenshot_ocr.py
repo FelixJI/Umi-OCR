@@ -29,7 +29,7 @@ class ScreenshotOCRView(QWidget):
         # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
         try:
             from controllers.screenshot_controller import ScreenshotController
-            self._controller = ScreenshotController()
+            self._controller = ScreenshotController.instance()
         except ModuleNotFoundError as e:
             logger.warning(f"截图控制器加载失败，部分功能不可用: {e}")
             self._controller = None

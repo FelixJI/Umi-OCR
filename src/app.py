@@ -151,7 +151,8 @@ class UmiApplication(QApplication):
                 break
         else:
             # 所有源都不可达，使用第一个
-            self.logger.warning("无法连接任何模型源，使用默认配置")
+            self.logger.info("无法连接到在线模型源，将使用默认配置。")
+            self.logger.info("提示：这不影响使用已下载的模型，仅影响新模型下载。")
 
     def _check_url_accessible(self, url: str, timeout: int = 5) -> bool:
         """

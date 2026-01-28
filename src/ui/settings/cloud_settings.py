@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QGroupBox, QFormLayout, QLineEdit, 
     QPushButton, QHBoxLayout, QScrollArea, QMessageBox
@@ -8,18 +9,22 @@ from PySide6.QtWidgets import (
 from src.controllers.settings_controller import SettingsController
 
 class CloudSettingsPanel(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, controller=None):
         super().__init__(parent)
-        self.controller = SettingsController()
+        self.controller = controller if controller else SettingsController()
         self._init_ui()
         self._load_data()
 
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.NoFrame)
+        # 优化滚动条策略：按需显示垂直滚动条，隐藏水平滚动条
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         
         content_widget = QWidget()
         self.content_layout = QVBoxLayout(content_widget)

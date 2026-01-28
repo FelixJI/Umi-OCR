@@ -6,26 +6,57 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # 基础依赖（OCR引擎为可选依赖，首次运行时按需安装）
+
     # PDF 处理
     "pymupdf>=1.26.0",
+
     # 字体子集
     "fonttools>=4.61.0",
+
     # 图像处理
     "pillow>=12.0.0",
+
     # 系统信息
     "psutil>=7.2.0",
+
     # 键鼠事件（替换 pynput，移除 six 依赖）
     "keyboard>=0.13.5",
+
     # UI 界面 (Qt6)
     "PySide6>=6.10.0",
+
+    # Qt 异步事件循环集成
+    "qasync>=0.27.0",
+
     # 二维码解析
     "zxing-cpp>=2.3.0",
+
+    # 二维码生成
+    "qrcode>=8.0.0",
+
     # NumPy for OCR image processing（如果不安装PaddleOCR，某些功能可能受限）
     "numpy>=1.24.0",
-    # Optional: OpenCV for advanced image handling
+
+    # OpenCV for advanced image handling
     "opencv-python>=4.8.0",
+
     # Excel export support for table recognition
     "openpyxl>=3.1.0",
+
+    # Word 文档导出
+    "python-docx>=1.2.0",
+
+    # PDF 导出
+    "reportlab>=4.0.0",
+
+    # HTTP API 服务器
+    "aiohttp>=3.9.0",
+
+    # 云 OCR API 调用
+    "requests>=2.31.0",
+
+    # Windows 凭证管理（可选，仅 Windows）
+    "pywin32>=306; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]

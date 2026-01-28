@@ -5,8 +5,7 @@ from pathlib import Path
 from typing import Dict
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QScrollArea
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QObject
 
 from services.task.task_manager import TaskManager
 from services.task.task_model import TaskStatus, TaskGroup, CancelMode
@@ -14,41 +13,35 @@ from .task_card import TaskGroupCard
 
 logger = logging.getLogger(__name__)
 
-class TaskManagerView(QWidget):
+class TaskManagerView(QObject):
     """
-    任务管理器界面
+    任务管理器界面逻辑
     """
     
-    def __init__(self, parent=None):
+    def __init__(self, ui, parent=None):
+        """
+        Args:
+            ui: Ui_MainWindow 实例
+            parent: 父对象
+        """
         super().__init__(parent)
+        self.ui = ui
         self._task_manager = TaskManager.instance()
         self._cards: Dict[str, TaskGroupCard] = {} # group_id -> card
         
-        self._load_ui()
+        self._init_ui()
         self._connect_signals()
         
         # 加载现有任务
         self._load_tasks()
         
-    def _load_ui(self):
-        try:
-            ui_file = Path(__file__).parent / "task_manager.ui"
-            loader = QUiLoader()
-            self.ui = loader.load(str(ui_file), self)
-            
-            layout = QVBoxLayout(self)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.ui)
-            
-            # Find widgets
-            self.cards_layout = self.ui.findChild(QVBoxLayout, "verticalLayout_cards")
-            
-            self.btn_pause_all = self.ui.findChild(QPushButton, "btn_pause_all")
-            self.btn_resume_all = self.ui.findChild(QPushButton, "btn_resume_all")
-            self.btn_clear_completed = self.ui.findChild(QPushButton, "btn_clear_completed")
-            
-        except Exception as e:
-            logger.error(f"加载任务管理器 UI 失败: {e}")
+    def _init_ui(self):
+        # Find widgets from ui
+        self.cards_layout = self.ui.verticalLayout_cards
+        
+        self.btn_pause_all = self.ui.btn_pause_all
+        self.btn_resume_all = self.ui.btn_resume_all
+        self.btn_clear_completed = self.ui.btn_clear_completed
 
     def _connect_signals(self):
         # 按钮信号

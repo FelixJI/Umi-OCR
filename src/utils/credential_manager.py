@@ -20,21 +20,59 @@ import logging
 
 from PySide6.QtCore import QObject, Signal
 
+# pywintypes.error 需要特殊处理
+try:
+    import pywintypes
+except ImportError:
+    # 如果 pywintypes 不可用，创建一个占位符
+    class pywintypes:
+        class error(Exception):
+            pass
+
 
 # =============================================================================
 # Windows API 导入
 # =============================================================================
 
-try:
-    import win32cred
-    from win32cred import CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
-    WIN32CRED_AVAILABLE = True
-except ImportError:
-    WIN32CRED_AVAILABLE = False
-    win32cred = None
-    CRED_TYPE_GENERIC = None
-    CRED_PERSIST_ENTERPRISE = None
+def _import_win32cred():
+    try:
+        import win32cred
+        from win32cred import CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+        return True, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+    except ImportError:
+        # 尝试修复 DLL 路径
+        import sys
+        import os
+        import site
+        from pathlib import Path
+        
+        try:
+            site_packages = site.getsitepackages()
+            if not site_packages:
+                site_packages = [p for p in sys.path if 'site-packages' in p]
+            
+            for sp in site_packages:
+                paths_to_add = [
+                    Path(sp) / "pywin32_system32",
+                    Path(sp) / "win32",
+                    Path(sp) / "win32" / "lib",
+                ]
+                for p in paths_to_add:
+                    if p.exists():
+                        if hasattr(os, 'add_dll_directory'):
+                            os.add_dll_directory(str(p))
+                        os.environ['PATH'] = str(p) + os.pathsep + os.environ['PATH']
+            
+            # 重试导入
+            import win32cred
+            from win32cred import CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+            return True, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+        except Exception:
+            return False, None, None, None
 
+WIN32CRED_AVAILABLE, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE = _import_win32cred()
+
+if not WIN32CRED_AVAILABLE:
     logging.warning("win32cred 模块不可用，凭证管理功能将受限")
 
 
@@ -193,6 +231,13 @@ class CredentialManager(QObject):
                 # 从内存存储加载
                 return self._memory_storage.get(provider)
 
+        except pywintypes.error as e:
+            # 错误代码 1168 表示"找不到元素"，这是正常情况（凭证尚未设置）
+            if e.args[0] == 1168:
+                logging.debug(f"凭证未找到: {provider}")
+                return None
+            logging.error(f"凭证加载失败: {provider}, {e}", exc_info=True)
+            raise CredentialReadError(f"无法加载凭证: {str(e)}")
         except Exception as e:
             logging.error(f"凭证加载失败: {provider}, {e}", exc_info=True)
             raise CredentialReadError(f"无法加载凭证: {str(e)}")

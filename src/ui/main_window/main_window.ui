@@ -257,15 +257,95 @@
 
       <!-- 任务管理器页面 -->
       <widget class="QWidget" name="pageTaskManager">
-       <layout class="QVBoxLayout" name="verticalLayoutTaskManager">
+       <layout class="QVBoxLayout" name="verticalLayout_TaskManager">
         <item>
-         <widget class="QLabel" name="labelTaskManagerPlaceholder">
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+         <layout class="QHBoxLayout" name="horizontalLayout_TM_Header">
+          <item>
+           <widget class="QLabel" name="label_title">
+            <property name="font">
+             <font>
+              <pointsize>14</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>任务管理器</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_TM">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_pause_all">
+            <property name="text">
+             <string>暂停全部</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_resume_all">
+            <property name="text">
+             <string>恢复全部</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_clear_completed">
+            <property name="text">
+             <string>清空已完成</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
           </property>
-          <property name="text">
-           <string>任务管理器功能模块 - 待实现</string>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>782</width>
+             <height>542</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_cards">
+            <property name="spacing">
+             <number>10</number>
+            </property>
+            <item>
+             <spacer name="verticalSpacer_TM">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -273,15 +353,112 @@
 
       <!-- 设置页面 -->
       <widget class="QWidget" name="pageSettings">
-       <layout class="QVBoxLayout" name="verticalLayoutSettings">
+       <layout class="QHBoxLayout" name="horizontalLayout_Settings">
         <item>
-         <widget class="QLabel" name="labelSettingsPlaceholder">
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+         <widget class="QListWidget" name="listWidget_sidebar">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
           </property>
-          <property name="text">
-           <string>设置功能模块 - 待实现</string>
-          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QStackedWidget" name="stackedWidget_pages">
+          <widget class="QWidget" name="page_general">
+           <layout class="QVBoxLayout" name="verticalLayout_general">
+            <item>
+             <widget class="QLabel" name="label_general">
+              <property name="text">
+               <string>常规设置</string>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_general">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_ocr_engine">
+           <layout class="QVBoxLayout" name="verticalLayout_engine">
+            <item>
+             <widget class="QLabel" name="label_engine">
+              <property name="text">
+               <string>OCR 引擎设置</string>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_engine">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_cloud">
+           <layout class="QVBoxLayout" name="verticalLayout_cloud">
+            <item>
+             <widget class="QLabel" name="label_cloud">
+              <property name="text">
+               <string>云服务设置</string>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_cloud">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>

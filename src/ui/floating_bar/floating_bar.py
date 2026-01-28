@@ -6,8 +6,8 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
 from PySide6.QtCore import Qt, Signal, QPropertyAnimation, QPoint, QTimer, QEasingCurve
-from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QCursor
+from .ui_floating_bar import Ui_FloatingBar
 
 logger = logging.getLogger(__name__)
 
@@ -71,20 +71,15 @@ class FloatingBar(QWidget):
 
     def _load_ui(self):
         try:
-            ui_file = Path(__file__).parent / "floating_bar.ui"
-            loader = QUiLoader()
-            self.ui = loader.load(str(ui_file), self)
-            
-            layout = QVBoxLayout(self)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self.ui)
+            self.ui = Ui_FloatingBar()
+            self.ui.setupUi(self)
             
             # Find widgets
-            self.btn_screenshot = self.ui.findChild(QPushButton, "btn_screenshot")
-            self.btn_clipboard = self.ui.findChild(QPushButton, "btn_clipboard")
-            self.btn_batch = self.ui.findChild(QPushButton, "btn_batch")
-            self.btn_settings = self.ui.findChild(QPushButton, "btn_settings")
-            self.lbl_grip = self.ui.findChild(QLabel, "lbl_grip")
+            self.btn_screenshot = self.ui.btn_screenshot
+            self.btn_clipboard = self.ui.btn_clipboard
+            self.btn_batch = self.ui.btn_batch
+            self.btn_settings = self.ui.btn_settings
+            self.lbl_grip = self.ui.lbl_grip
             
         except Exception as e:
             logger.error(f"加载悬浮条 UI 失败: {e}")
@@ -166,7 +161,7 @@ class FloatingBar(QWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             # 只有按住 grip 区域才能拖拽
-            if self.lbl_grip.geometry().contains(self.ui.mapFrom(self, event.pos())):
+            if self.lbl_grip.geometry().contains(event.pos()):
                 self._is_dragging = True
                 self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
                 event.accept()

@@ -41,7 +41,8 @@
       "Bash(\"C:\\\\Users\\\\felji\\\\PycharmProjects\\\\Umi-OCR\\\\.venv\\\\Scripts\\\\python.exe\":*)",
       "Bash(du:*)",
       "Bash(git add:*)",
-      "Bash(iconv:*)"
+      "Bash(iconv:*)",
+      "Bash(.venvScriptspython.exe -m pip list)"
     ],
     "deny": [],
     "ask": []

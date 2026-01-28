@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QLineEdit, 
-    QPushButton, QHBoxLayout, QLabel, QGroupBox, QMessageBox
+    QPushButton, QHBoxLayout, QLabel, QGroupBox, QMessageBox, QScrollArea
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeyEvent, QKeySequence
@@ -57,15 +57,36 @@ class HotkeyRecorder(QLineEdit):
         self.setText(hotkey)
 
 class HotkeySettingsPanel(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, controller=None):
         super().__init__(parent)
-        self.controller = SettingsController()
+        self.controller = controller if controller else SettingsController()
         self.config_manager = ConfigManager.get_instance()
         self._init_ui()
         self._load_data()
         
     def _init_ui(self):
-        layout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # 使用 ScrollArea 防止内容过多时溢出
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        
+        content_widget = QWidget()
+        layout = QVBoxLayout(content_widget)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(15)
+        
+        # 标题
+        title_label = QLabel("快捷键设置")
+        font = title_label.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        title_label.setFont(font)
+        layout.addWidget(title_label)
         
         group = QGroupBox("全局快捷键")
         form = QFormLayout(group)
@@ -97,6 +118,9 @@ class HotkeySettingsPanel(QWidget):
         save_btn = QPushButton("保存快捷键配置")
         save_btn.clicked.connect(self._on_save)
         layout.addWidget(save_btn)
+        
+        scroll.setWidget(content_widget)
+        main_layout.addWidget(scroll)
         
     def _load_data(self):
         for action, _ in self.hotkey_items:
