@@ -22,6 +22,8 @@ try:
 except ImportError:
     decode = None
     ZBarSymbol = None
+
+from PySide6.QtGui import QImage
     
 logger = logging.getLogger(__name__)
 
@@ -113,26 +115,102 @@ class QRCodeScanner:
         """
         if decode is None:
             return []
-            
+
         try:
-            # Convert QPixmap to PIL Image
-            # This requires converting QPixmap -> QImage -> bytes -> PIL Image
-            # Or save to temp file
-            # Ideally we should use memory buffer
-            
-            # Simple implementation: save to temp file (robust but slow)
-            # Better: QImage to bytes
-            
+            # Convert QPixmap to PIL Image in memory using QBuffer
+            from PySide6.QtCore import QBuffer, QIODevice
+            import io
+
+            # Convert QPixmap to QImage
             qimage = pixmap.toImage()
-            # ... conversion logic ...
-            # For simplicity in this refactor step, assuming we handle file paths mostly.
-            # If strictly needed, we can implement QImage -> PIL conversion.
-            # But scan_from_image is the main entry point for now.
-            
-            # TODO: Implement in-memory conversion for performance
-            logger.warning("scan_from_pixmap not fully implemented for in-memory conversion")
+
+            # Save to bytes buffer (PNG format for reliability)
+            buffer = QBuffer()
+            buffer.open(QIODevice.ReadWrite)
+            qimage.save(buffer, "PNG")
+            buffer_data = buffer.data()
+
+            # Create PIL Image from bytes
+            pil_image = Image.open(io.BytesIO(bytes(buffer_data)))
+
+            # Decode barcodes
+            decoded_objects = decode(pil_image)
+
+            results = []
+            for obj in decoded_objects:
+                # pyzbar returns bytes, need decode
+                data = obj.data.decode('utf-8')
+                code_type = obj.type
+                rect = (obj.rect.left, obj.rect.top, obj.rect.width, obj.rect.height)
+
+                results.append(QRCodeResult(
+                    type=code_type,
+                    data=data,
+                    rect=rect
+                ))
+
+            logger.info(f"从QPixmap扫描完成, 发现 {len(results)} 个码")
+            return results
+
+        except Exception as e:
+            logger.error(f"二维码扫描失败: {e}", exc_info=True)
             return []
-            
+
+        try:
+            # Convert QPixmap to PIL Image in memory
+            from PySide6.QtGui import QImage
+            import io
+
+            # Convert QPixmap to QImage
+            qimage = pixmap.toImage()
+
+            # Get image dimensions
+            width = qimage.width()
+            height = qimage.height()
+
+            # Determine the format
+            # QImage.Format_RGBA8888 is commonly used
+            format_id = qimage.format()
+
+            # Convert to bytes
+            # We'll use Format_RGBA8888 to ensure proper byte alignment
+            if format_id != QImage.Format_RGBA8888:
+                qimage = qimage.convertToFormat(QImage.Format_RGBA8888)
+
+            # Get raw bytes
+            ptr = qimage.bits()
+            ptr.setsize(qimage.sizeInBytes())
+            data = ptr.asstring()
+
+            # Create PIL Image from bytes
+            pil_image = Image.frombytes("RGBA", (width, height), data)
+
+            # Convert RGBA to RGB if needed (pyzbar works better with RGB)
+            if pil_image.mode == "RGBA":
+                # Convert to RGB - create white background for transparency
+                background = Image.new("RGB", (width, height), (255, 255, 255))
+                background.paste(pil_image, mask=pil_image.split()[3])  # Use alpha channel as mask
+                pil_image = background
+
+            # Decode barcodes
+            decoded_objects = decode(pil_image)
+
+            results = []
+            for obj in decoded_objects:
+                # pyzbar returns bytes, need decode
+                data = obj.data.decode('utf-8')
+                code_type = obj.type
+                rect = (obj.rect.left, obj.rect.top, obj.rect.width, obj.rect.height)
+
+                results.append(QRCodeResult(
+                    type=code_type,
+                    data=data,
+                    rect=rect
+                ))
+
+            logger.info(f"从QPixmap扫描完成, 发现 {len(results)} 个码")
+            return results
+
         except Exception as e:
             logger.error(f"二维码扫描失败: {e}", exc_info=True)
             return []

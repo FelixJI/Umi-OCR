@@ -5,11 +5,26 @@ from PySide6.QtCore import QObject, Slot
 
 from . import app_opengl
 from .i18n_configs import I18n
-from ..platform import Platform
+from ..platforms import Platform
 from .pre_configs import getErrorStr
-from ..server import web_server
-from ..server.cmd_server import CmdActuator
-from umi_log import change_save_log_level, open_logs_dir
+# from ..server import web_server  # TODO: server 模块未实现
+# from ..server.cmd_server import CmdActuator  # TODO: server 模块未实现
+# from umi_log import change_save_log_level, open_logs_dir  # TODO: 导入路径问题
+
+# 临时占位符，直到 server 模块实现
+class web_server:
+    @staticmethod
+    def runUmiWeb(qmlObj, callback, host):
+        print("[GlobalConfigs] Web server not implemented yet")
+
+    @staticmethod
+    def setPort(port):
+        print(f"[GlobalConfigs] Set port: {port}")
+
+class CmdActuator:
+    @staticmethod
+    def initCollect(moduleDict):
+        print("[GlobalConfigs] Cmd actuator not implemented yet")
 
 
 class GlobalConfigsConnector(QObject):

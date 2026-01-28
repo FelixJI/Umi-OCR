@@ -9,10 +9,19 @@ import time
 from PySide6.QtQml import QJSValue
 from typing import List
 
-from ..event_bus.pubsub_service import PubSubService  # 发布事件
-from ..mission.mission_doc import MissionDOC, DocSuf
-from ..mission.mission_ocr import ImageSuf
+from src.event_bus.pubsub_service import PubSubService  # 发布事件
+# from ..mission.mission_doc import MissionDOC, DocSuf  # TODO: mission 模块未实现
+# from ..mission.mission_ocr import ImageSuf  # TODO: mission 模块未实现
 from umi_log import logger
+
+# 临时占位符，直到 mission 模块实现
+class MissionDOC:
+    @staticmethod
+    def getDocInfo(fp):
+        return {"error": "Mission module not implemented yet"}
+
+DocSuf = [".pdf", ".doc", ".docx"]
+ImageSuf = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp"]
 
 
 FileSuf = {  # 合法文件后缀

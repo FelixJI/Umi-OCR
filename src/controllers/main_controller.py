@@ -108,16 +108,21 @@ class MainController(QObject):
         """初始化悬浮工具栏"""
         from src.ui.floating_bar.floating_bar import FloatingBar
         self.floating_bar = FloatingBar()
-        
+
         # 连接信号
         self.floating_bar.screenshot_clicked.connect(self.handle_screenshot_ocr)
         self.floating_bar.clipboard_ocr_clicked.connect(self.handle_clipboard_ocr)
         self.floating_bar.batch_ocr_clicked.connect(self.handle_batch_ocr)
         self.floating_bar.settings_clicked.connect(self.handle_settings)
-        
+
         # 初始状态
-        # TODO: 从配置读取模式
-        # self.floating_bar.set_mode(FloatingBarMode.ALWAYS_VISIBLE)
+        # 从配置读取模式（如果 FloatingBar 有 set_mode 方法）
+        try:
+            mode = self.config_manager.get("ui.floating_bar_mode", "always_visible")
+            if hasattr(self.floating_bar, 'set_mode'):
+                self.floating_bar.set_mode(mode)
+        except Exception as e:
+            self.logger.warning(f"设置悬浮栏模式失败: {e}")
 
     def _init_hotkeys(self):
         """初始化全局快捷键"""
@@ -264,8 +269,8 @@ class MainController(QObject):
             page_name = page_names[page_index]
             self.logger.debug(f"切换到页面: {page_name}")
 
-            # TODO: 在后续阶段中，激活对应的页面控制器
-            # 例如：self._activate_page_controller(page_name)
+            # 激活对应的页面控制器
+            self._activate_page_controller(page_name)
 
     def _activate_page_controller(self, page_name: str):
         """
@@ -273,12 +278,37 @@ class MainController(QObject):
 
         Args:
             page_name: 页面名称
-
-        TODO: 在后续阶段实现
         """
-        # 这个方法会在后续阶段中实现
-        # 用于激活或初始化对应功能模块的控制器
-        pass
+        self.logger.debug(f"激活页面控制器: {page_name}")
+
+        # 如果控制器不存在，则创建
+        if page_name not in self.page_controllers:
+            try:
+                if page_name == "screenshot_ocr":
+                    from src.controllers.screenshot_controller import ScreenshotController
+                    self.page_controllers[page_name] = ScreenshotController(self.main_window)
+                elif page_name == "batch_ocr":
+                    from src.controllers.batch_ocr_controller import BatchOcrController
+                    self.page_controllers[page_name] = BatchOcrController(self.main_window)
+                elif page_name == "batch_doc":
+                    from src.controllers.batch_doc_controller import BatchDocController
+                    self.page_controllers[page_name] = BatchDocController(self.main_window)
+                elif page_name == "qrcode":
+                    from src.controllers.qrcode_controller import QrcodeController
+                    self.page_controllers[page_name] = QrcodeController(self.main_window)
+                elif page_name == "settings":
+                    from src.ui.settings.settings import SettingsWindow
+                    # Settings 需要 ui 对象，稍后处理
+                    self.page_controllers[page_name] = None
+                elif page_name == "task_manager":
+                    from src.ui.task_manager.task_manager import TaskManagerWindow
+                    self.page_controllers[page_name] = TaskManagerWindow()
+
+                self.logger.info(f"页面控制器已创建: {page_name}")
+            except Exception as e:
+                self.logger.error(f"创建页面控制器失败 {page_name}: {e}")
+        else:
+            self.logger.debug(f"页面控制器已存在: {page_name}")
 
     # -------------------------------------------------------------------------
     # 菜单命令处理
@@ -316,54 +346,99 @@ class MainController(QObject):
         if self.main_window:
             self.main_window.switch_to_page(5)
 
-    def _init_main_window(self):
-        """初始化主窗口"""
-        # 创建主窗口
-        self.main_window = MainWindow()
-
-        # 连接主窗口信号
-        self._connect_window_signals()
-
-        self.logger.debug("主窗口创建完成")
-
     # 打开文件
     def handle_open_file(self):
         """处理打开文件命令"""
         self.logger.debug("执行打开文件命令")
-        # TODO: 在后续阶段实现文件对话框
         from PySide6.QtWidgets import QFileDialog
+        import os
 
         if self.main_window:
             file_path, _ = QFileDialog.getOpenFileName(
                 self.main_window,
-                "选择图片文件",
+                "选择文件",
                 "",
-                "图片文件 (*.png *.jpg *.jpeg *.bmp *.tiff)"
+                "所有支持的文件 (*.png *.jpg *.jpeg *.bmp *.tiff *.pdf *.doc *.docx);;图片文件 (*.png *.jpg *.jpeg *.bmp *.tiff);;文档文件 (*.pdf *.doc *.docx)"
             )
-            if file_path:
+            if file_path and os.path.exists(file_path):
                 self.logger.info(f"选择的文件: {file_path}")
-                # TODO: 根据文件类型打开对应的功能模块
+                # 根据文件类型打开对应的功能模块
+                file_ext = os.path.splitext(file_path)[1].lower()
+
+                # 图片文件 -> 批量 OCR
+                if file_ext in [".png", ".jpg", ".jpeg", ".bmp", ".tiff"]:
+                    self.show_status_message("正在打开批量 OCR 页面...")
+                    self.handle_batch_ocr()
+                    # TODO: 将文件路径传递给批量 OCR 控制器
+
+                # 文档文件 -> 批量文档
+                elif file_ext in [".pdf", ".doc", ".docx"]:
+                    self.show_status_message("正在打开批量文档页面...")
+                    # TODO: 切换到批量文档页面
+                    # self.main_window.switch_to_page(2)
+
+                else:
+                    self.show_status_message("不支持的文件类型")
 
     # 导出结果
     def handle_export(self):
         """处理导出命令"""
         self.logger.debug("执行导出命令")
-        # TODO: 在后续阶段实现导出功能
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+
+        if self.main_window:
+            # TODO: 根据当前活动页面确定要导出的内容
+            # 暂时只显示提示信息
+            QMessageBox.information(
+                self.main_window,
+                "导出功能",
+                "导出功能尚未完全实现。请使用各个页面提供的导出按钮。",
+                QMessageBox.StandardButton.Ok
+            )
 
     # 剪贴板 OCR
     def handle_clipboard_ocr(self):
         """处理剪贴板 OCR 命令"""
         self.logger.debug("执行剪贴板 OCR 命令")
-        # TODO: 在后续阶段集成剪贴板 OCR 逻辑
-        # 暂时只做日志记录
-        self.show_status_message("正在读取剪贴板...")
-        
+        from PySide6.QtGui import QClipboard
+        from PySide6.QtWidgets import QApplication, QMessageBox
+
+        clipboard = QApplication.clipboard()
+        image = clipboard.image()
+
+        if not image.isNull():
+            self.show_status_message("正在识别剪贴板图片...")
+            # TODO: 将图片传递给截图 OCR 控制器进行识别
+            self.handle_screenshot_ocr()
+        else:
+            text = clipboard.text()
+            if text:
+                self.show_status_message(f"剪贴板文本: {text[:50]}...")
+                self.logger.debug(f"剪贴板内容: {text}")
+            else:
+                self.show_status_message("剪贴板为空")
+                QMessageBox.information(
+                    self.main_window,
+                    "提示",
+                    "剪贴板中没有可识别的图片或文本。",
+                    QMessageBox.StandardButton.Ok
+                )
     # 暂停/恢复所有任务
     def handle_pause_all(self):
         """处理暂停/恢复所有任务命令"""
         self.logger.debug("执行暂停/恢复所有任务命令")
-        # TODO: 调用 TaskManager
-        pass
+
+        # 检查是否有任务管理器控制器
+        if "task_manager" in self.page_controllers:
+            task_manager = self.page_controllers["task_manager"]
+            if hasattr(task_manager, 'toggle_pause_all'):
+                task_manager.toggle_pause_all()
+                self.show_status_message("已切换所有任务的暂停状态")
+            else:
+                self.show_status_message("任务管理器不支持暂停功能")
+        else:
+            self.show_status_message("任务管理器未初始化")
+            self.logger.warning("任务管理器未初始化，无法执行暂停/恢复操作")
         
     def handle_exit_from_tray(self):
         """处理托盘退出命令"""

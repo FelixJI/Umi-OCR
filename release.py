@@ -6,75 +6,88 @@ import os
 import json
 import shutil
 import argparse
+import subprocess
 from pathlib import Path
 
 # 定义参数
+parser = argparse.ArgumentParser(description="Umi-OCR Release 生成发布包")
 
 # 定义目录变量
 PROJECT_ROOT = Path(__file__).parent
 SOURCE_DIR = PROJECT_ROOT / "src"
 RESOURCES_DIR = PROJECT_ROOT / "resources"
-parser = argparse.ArgumentParser(description="Umi-OCR Release 生成发布包")
+
 # 是否打压缩包
 parser.add_argument(
     "--to_7z", action="store_true", default=True, help="[选填] 是否生成压缩包"
 )
+
 # 是否生成自解压文件
 parser.add_argument(
     "--to_sfx", action="store_true", default=True, help="[选填] 是否生成自解压文件"
 )
+
 # 发布目录
 parser.add_argument(
     "--path", default="./release", help="[选填] 发布包存放路径，默认为 /release"
 )
+
 # 版本文件路径
 parser.add_argument(
     "--about",
     default="./UmiOCR-data/about.json",
     help="[选填] 版本文件 about.json 的路径",
 )
+
 # 启动器路径
 parser.add_argument(
     "--run",
     default="Umi-OCR.exe",
     help="[选填] 启动器，默认为 Umi-OCR.exe",
 )
-    # 保留的内容
-    parser.add_argument(
-        "--datas",
-        default="i18n,resources,qml,runtime,site-packages,main.py",
-        help="[选填] 内容目录文件选取，格式：文件1,文件2,文件3……",
-    )
+
+# 保留的内容
+parser.add_argument(
+    "--datas",
+    default="i18n,resources,qml,runtime,site-packages,main.py",
+    help="[选填] 内容目录文件选取，格式：文件1,文件2,文件3……",
+)
+
 # 插件区分
 parser.add_argument(
     "--plugins",
     default="Rapid,win7_x64_RapidOCR-json",
     help="[选填] 插件选取，格式：打包名1,插件1,插件2|打包名2,插件2,插件3",
 )
+
 # 要屏蔽的目录
 parser.add_argument(
     "--ignores",
     default="__pycache__,temp_doc,logs,.venv,.git,.idea,.vscode",
     help='[选填] 要排除的目录名称，以","划分',
 )
+
 # 7z工具路径
 parser.add_argument(
     "--path_7z",
     default="dev-tools/7z/7zr.exe",
-    help="[选填] 7z 命令行工具的路径，打压缩包要用",
+    help="[选填] 7z命令行工具的路径，打压缩包要用",
 )
+
 # sfx路径
 parser.add_argument(
     "--path_sfx",
     default="dev-tools/7z/7z.sfx",
     help="[选填] sfx 自解压工具的路径，创建自解压文件要用",
 )
+
 # 压缩类型
 parser.add_argument(
     "--args_7z",
     default="-mx=7 -t7z",
     help="[选填] 7z工具参数，可指定压缩包类型和压缩率等。如-t7z等指定压缩类型参数必须放在最后",
 )
+
 args = parser.parse_args()
 
 # 工作路径改为当前文件路径
@@ -82,25 +95,20 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # 检查必要文件和目录
-    print("=== 检查前置条件 ===")
-    if not os.path.exists(args.run):
-        print(f"错误: 启动器不存在: {args.run}")
-        print("请先使用 build_nuitka.py 或其他方式构建 Umi-OCR.exe")
-        exit(1)
-    if not os.path.exists(args.about):
-        print(f"错误: 版本文件不存在: {args.about}")
-        exit(1)
-    if not os.path.exists(SOURCE_DIR):
-        print(f"错误: 源码目录不存在: {SOURCE_DIR}")
-        exit(1)
-    if not os.path.exists(RESOURCES_DIR):
-        print(f"错误: 资源目录不存在: {RESOURCES_DIR}")
-        exit(1)
-
+print("=== 检查前置条件 ===")
+if not os.path.exists(args.run):
+    print(f"错误: 启动器不存在: {args.run}")
+    print("请先使用 build_nuitka.py 或其他方式构建 Umi-OCR.exe")
+    exit(1)
 if not os.path.exists(args.about):
     print(f"错误: 版本文件不存在: {args.about}")
     exit(1)
-
+if not os.path.exists(SOURCE_DIR):
+    print(f"错误: 源码目录不存在: {SOURCE_DIR}")
+    exit(1)
+if not os.path.exists(RESOURCES_DIR):
+    print(f"错误: 资源目录不存在: {RESOURCES_DIR}")
+    exit(1)
 if not os.path.exists("UmiOCR-data"):
     print("错误: UmiOCR-data 目录不存在")
     exit(1)
@@ -294,7 +302,7 @@ def to_sfx(plugs):
         # 目标路径
         target = os.path.abspath(args.path) + "\\" + value["name"] + ".7z"
         # copy构建sfx
-        command = f'copy /b "{path_sfx}"+"{target}" "{target}.exe"'
+        command = f'copy /b "{path_sfx}+{target}" "{target}.exe"'
         print("\n开始创建插件sfx自解压文件：\n", command)
         subprocess.run(command, shell=True, cwd=args.path)
 

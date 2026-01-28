@@ -5,7 +5,14 @@ import ctypes
 from PySide6.QtCore import QTranslator
 
 from . import pre_configs
-from plugin_i18n import setLangCode
+try:
+    from plugin_i18n import setLangCode
+except ImportError:
+    # 临时占位符，直到 plugin_i18n 模块实现
+    def setLangCode(code):
+        """设置插件语言代码的临时占位符"""
+        logger.debug(f"[I18n] Plugin language code: {code}")
+        pass
 from umi_log import logger
 
 

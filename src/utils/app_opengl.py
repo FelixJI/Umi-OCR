@@ -22,7 +22,7 @@ def MessageBox(msg, type_="error"):
 
 
 from . import pre_configs
-from ..platform import Platform
+from ..platforms import Platform
 
 _GLDict = {
     "AA_UseDesktopOpenGL": Qt.AA_UseDesktopOpenGL,

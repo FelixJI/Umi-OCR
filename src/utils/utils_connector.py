@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, Slot
 
 from . import utils
 from . import file_finder  # 文件搜索器
-from ..platform import Platform  # 跨平台
+from ..platforms import Platform  # 跨平台
 from .thread_pool import threadRun  # 异步执行函数
 
 
