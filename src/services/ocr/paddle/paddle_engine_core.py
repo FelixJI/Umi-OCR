@@ -12,7 +12,7 @@ Date: 2026-01-27
 import os
 import logging
 import threading
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from PIL import Image
 import numpy as np
 
@@ -25,7 +25,7 @@ from ..model_manager import get_model_manager
 
 from .paddle_config import PaddleConfig
 from .paddle_preprocessor import ImagePreprocessor
-from .paddle_postprocessor import TextPostprocessor, TextBlockInference
+from .paddle_postprocessor import TextPostprocessor
 
 logger = logging.getLogger(__name__)
 
@@ -35,39 +35,102 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 LANGUAGE_MAP = {
-    "ch": "ch", "chinese": "ch", "chinese_cht": "ch",
-    "en": "en", "english": "en",
-    "japan": "japan", "japanese": "japan",
+    "ch": "ch",
+    "chinese": "ch",
+    "chinese_cht": "ch",
+    "en": "en",
+    "english": "en",
+    "japan": "japan",
+    "japanese": "japan",
     "korean": "korean",
-    "th": "th", "te": "te", "ta": "ta",
-    "latin": "latin", "arabic": "arabic",
-    "cyrillic": "cyrillic", "devanagari": "devanagari",
+    "th": "th",
+    "te": "te",
+    "ta": "ta",
+    "latin": "latin",
+    "arabic": "arabic",
+    "cyrillic": "cyrillic",
+    "devanagari": "devanagari",
     # 拉丁语系
-    "af": "af", "az": "az", "bs": "bs", "cs": "cs", "cy": "cy",
-    "da": "da", "de": "de", "es": "es", "et": "et", "fr": "fr",
-    "ga": "ga", "hr": "hr", "hu": "hu", "id": "id", "is": "is",
-    "it": "it", "ku": "ku", "la": "la", "lt": "lt", "lv": "lv",
-    "mi": "mi", "ms": "ms", "mt": "mt", "nl": "nl", "no": "no",
-    "oc": "oc", "pi": "pi", "pl": "pl", "pt": "pt", "ro": "ro",
-    "rs_latin": "rs_latin", "sk": "sk", "sl": "sl", "sq": "sq",
-    "sv": "sv", "sw": "sw", "tl": "tl", "tr": "tr", "uz": "uz",
-    "vi": "vi", "flemish": "flemish", "german": "german",
-    "fi": "fi", "eu": "eu", "gl": "gl", "lb": "lb", "rm": "rm",
-    "ca": "ca", "qu": "qu",
+    "af": "af",
+    "az": "az",
+    "bs": "bs",
+    "cs": "cs",
+    "cy": "cy",
+    "da": "da",
+    "de": "de",
+    "es": "es",
+    "et": "et",
+    "fr": "fr",
+    "ga": "ga",
+    "hr": "hr",
+    "hu": "hu",
+    "id": "id",
+    "is": "is",
+    "it": "it",
+    "ku": "ku",
+    "la": "la",
+    "lt": "lt",
+    "lv": "lv",
+    "mi": "mi",
+    "ms": "ms",
+    "mt": "mt",
+    "nl": "nl",
+    "no": "no",
+    "oc": "oc",
+    "pi": "pi",
+    "pl": "pl",
+    "pt": "pt",
+    "ro": "ro",
+    "rs_latin": "rs_latin",
+    "sk": "sk",
+    "sl": "sl",
+    "sq": "sq",
+    "sv": "sv",
+    "sw": "sw",
+    "tl": "tl",
+    "tr": "tr",
+    "uz": "uz",
+    "vi": "vi",
+    "flemish": "flemish",
+    "german": "german",
+    "fi": "fi",
+    "eu": "eu",
+    "gl": "gl",
+    "lb": "lb",
+    "rm": "rm",
+    "ca": "ca",
+    "qu": "qu",
     # 阿拉伯语系
-    "ar": "ar", "fa": "fa", "ug": "ug", "ur": "ur", "ps": "ps",
+    "ar": "ar",
+    "fa": "fa",
+    "ug": "ug",
+    "ur": "ur",
+    "ps": "ps",
     # 斯拉夫语系
-    "ru": "ru", "be": "be", "uk": "uk",
+    "ru": "ru",
+    "be": "be",
+    "uk": "uk",
     # 印地语系
-    "hi": "hi", "mr": "mr", "ne": "ne", "bh": "bh", "mai": "mai",
-    "ang": "ang", "bho": "bho", "mah": "mah", "sck": "sck",
-    "new": "new", "gom": "gom", "sa": "sa", "bgc": "bgc",
+    "hi": "hi",
+    "mr": "mr",
+    "ne": "ne",
+    "bh": "bh",
+    "mai": "mai",
+    "ang": "ang",
+    "bho": "bho",
+    "mah": "mah",
+    "sck": "sck",
+    "new": "new",
+    "gom": "gom",
+    "sa": "sa",
+    "bgc": "bgc",
 }
 
 
 # =============================================================================
 # PaddleOCR 引擎主类
 # =============================================================================
+
 
 class PaddleOCREngine(BaseOCREngine):
     """
@@ -133,7 +196,6 @@ class PaddleOCREngine(BaseOCREngine):
         """检查 PaddleOCR 引擎是否可用"""
         try:
             import paddle
-            from paddleocr import PaddleOCR
 
             model_manager = get_model_manager()
             model_info = model_manager.get_model_info(self.paddle_config.lang)
@@ -195,8 +257,7 @@ class PaddleOCREngine(BaseOCREngine):
 
             if self.paddle_config.ram_time_seconds > 0:
                 self._ram_timer = threading.Timer(
-                    self.paddle_config.ram_time_seconds,
-                    self._reset_ram
+                    self.paddle_config.ram_time_seconds, self._reset_ram
                 )
                 self._ram_timer.start()
 
@@ -214,29 +275,41 @@ class PaddleOCREngine(BaseOCREngine):
             "lang": paddle_lang,
             "ocr_version": self.paddle_config.ocr_version,
             "use_textline_orientation": self.paddle_config.use_textline_orientation,
-            "use_doc_orientation_classify": self.paddle_config.use_doc_orientation_classify,
+            "use_doc_orientation_classify": (
+                self.paddle_config.use_doc_orientation_classify
+            ),
             "use_doc_unwarping": self.paddle_config.use_doc_unwarping,
         }
 
-        params.update({
-            "text_det_limit_side_len": self.paddle_config.text_det_limit_side_len,
-            "text_det_limit_type": self.paddle_config.text_det_limit_type,
-            "text_det_thresh": self.paddle_config.text_det_thresh,
-            "text_det_box_thresh": self.paddle_config.text_det_box_thresh,
-            "text_det_unclip_ratio": self.paddle_config.text_det_unclip_ratio,
-        })
+        params.update(
+            {
+                "text_det_limit_side_len": self.paddle_config.text_det_limit_side_len,
+                "text_det_limit_type": self.paddle_config.text_det_limit_type,
+                "text_det_thresh": self.paddle_config.text_det_thresh,
+                "text_det_box_thresh": self.paddle_config.text_det_box_thresh,
+                "text_det_unclip_ratio": self.paddle_config.text_det_unclip_ratio,
+            }
+        )
 
-        params.update({
-            "text_rec_score_thresh": self.paddle_config.text_rec_score_thresh,
-            "return_word_box": self.paddle_config.return_word_box,
-        })
+        params.update(
+            {
+                "text_rec_score_thresh": self.paddle_config.text_rec_score_thresh,
+                "return_word_box": self.paddle_config.return_word_box,
+            }
+        )
 
         if self.paddle_config.text_detection_model_dir:
-            params["text_detection_model_dir"] = self.paddle_config.text_detection_model_dir
+            params["text_detection_model_dir"] = (
+                self.paddle_config.text_detection_model_dir
+            )
         if self.paddle_config.text_recognition_model_dir:
-            params["text_recognition_model_dir"] = self.paddle_config.text_recognition_model_dir
+            params["text_recognition_model_dir"] = (
+                self.paddle_config.text_recognition_model_dir
+            )
         if self.paddle_config.textline_orientation_model_dir:
-            params["textline_orientation_model_dir"] = self.paddle_config.textline_orientation_model_dir
+            params["textline_orientation_model_dir"] = (
+                self.paddle_config.textline_orientation_model_dir
+            )
 
         return params
 
@@ -261,7 +334,7 @@ class PaddleOCREngine(BaseOCREngine):
 
     def _preprocess_image(self, image: Image.Image) -> Image.Image:
         """图像预处理流程
-        
+
         预处理顺序（按最佳实践）:
         1. 调整大小 - 限制内存占用
         2. 纠偏 - 校正文档旋转
@@ -305,15 +378,17 @@ class PaddleOCREngine(BaseOCREngine):
             processed = ImagePreprocessor.denoise(processed)
 
         # 7. 综合文档质量增强（可选，当启用了多项增强时）
-        if (self.paddle_config.enable_contrast_enhance and 
-            self.paddle_config.enable_sharpness_enhance and 
-            self.paddle_config.enable_denoise and
-            self.paddle_config.denoise_strength > 0):
+        if (
+            self.paddle_config.enable_contrast_enhance
+            and self.paddle_config.enable_sharpness_enhance
+            and self.paddle_config.enable_denoise
+            and self.paddle_config.denoise_strength > 0
+        ):
             processed = ImagePreprocessor.enhance_document_quality(
                 processed,
                 self.paddle_config.contrast_factor,
                 self.paddle_config.sharpness_factor,
-                self.paddle_config.denoise_strength
+                self.paddle_config.denoise_strength,
             )
 
         return processed
@@ -326,23 +401,27 @@ class PaddleOCREngine(BaseOCREngine):
             engine_type=self.ENGINE_TYPE,
             engine_name=self.ENGINE_NAME,
             engine_version=self.ENGINE_VERSION,
-            success=True
+            success=True,
         )
 
         text_blocks = []
         for output in result_list:
-            if hasattr(output, 'res') and output.res:
+            if hasattr(output, "res") and output.res:
                 res = output.res
 
-                rec_texts = res.get('rec_texts', [])
-                rec_scores = res.get('rec_scores', [])
-                rec_polys = res.get('rec_polys', [])
+                rec_texts = res.get("rec_texts", [])
+                rec_scores = res.get("rec_scores", [])
+                rec_polys = res.get("rec_polys", [])
 
                 for i, text in enumerate(rec_texts):
                     confidence = rec_scores[i] if i < len(rec_scores) else 1.0
 
                     if i < len(rec_polys):
-                        points = rec_polys[i].tolist() if hasattr(rec_polys[i], 'tolist') else list(rec_polys[i])
+                        points = (
+                            rec_polys[i].tolist()
+                            if hasattr(rec_polys[i], "tolist")
+                            else list(rec_polys[i])
+                        )
                         bbox = BoundingBox(points=points)
                     else:
                         bbox = None
@@ -351,7 +430,7 @@ class PaddleOCREngine(BaseOCREngine):
                         text=text,
                         confidence=confidence,
                         bbox=bbox,
-                        block_type=TextBlockType.PARAGRAPH
+                        block_type=TextBlockType.PARAGRAPH,
                     )
                     text_blocks.append(text_block)
 
@@ -365,7 +444,7 @@ class PaddleOCREngine(BaseOCREngine):
     def _recognize_table(self, cv_image: np.ndarray) -> OCRResult:
         """
         表格识别 (PP-TableMagic v2 产线)
-        
+
         流程:
         1. 表格分类 - 判断有线表/无线表
         2. 表格结构识别 - 获取表格结构HTML
@@ -377,56 +456,56 @@ class PaddleOCREngine(BaseOCREngine):
             engine_type=self.ENGINE_TYPE,
             engine_name=self.ENGINE_NAME,
             engine_version=self.ENGINE_VERSION,
-            success=True
+            success=True,
         )
-        
+
         try:
             # 尝试使用 PaddleOCR 的表格识别功能
             # PaddleOCR 3.3.0+ 支持 table_rec 产线
             from paddleocr import TableRecognition
-            
+
             table_rec = TableRecognition(
                 device=self.paddle_config.device,
                 use_tensorrt=self.paddle_config.use_tensorrt,
                 precision=self.paddle_config.precision,
             )
-            
+
             # 执行表格识别
             table_result = table_rec.predict(cv_image)
-            
+
             # 解析结果
             if table_result:
                 for output in table_result:
-                    if hasattr(output, 'res') and output.res:
+                    if hasattr(output, "res") and output.res:
                         res = output.res
-                        
+
                         # 提取HTML表格
-                        html_content = res.get('html', '')
+                        html_content = res.get("html", "")
                         if html_content:
                             table_block = TextBlock(
                                 text=html_content,
                                 confidence=1.0,
-                                block_type=TextBlockType.TABLE
+                                block_type=TextBlockType.TABLE,
                             )
                             result.text_blocks.append(table_block)
-                            result.extra['table_html'] = html_content
-                        
+                            result.extra["table_html"] = html_content
+
                         # 提取单元格文本
-                        cell_texts = res.get('cell_texts', [])
+                        cell_texts = res.get("cell_texts", [])
                         for cell_text in cell_texts:
                             if cell_text.strip():
                                 cell_block = TextBlock(
                                     text=cell_text,
                                     confidence=0.9,
-                                    block_type=TextBlockType.PARAGRAPH
+                                    block_type=TextBlockType.PARAGRAPH,
                                 )
                                 result.text_blocks.append(cell_block)
-                        
+
                         break
-            
+
             # 生成纯文本
             result.full_text = result.get_text(separator="\n")
-            
+
         except ImportError:
             # TableRecognition 未安装，回退到普通文本识别
             logger.warning("表格识别模块未安装，使用普通OCR识别")
@@ -435,13 +514,13 @@ class PaddleOCREngine(BaseOCREngine):
             logger.error(f"表格识别失败: {e}", exc_info=True)
             # 回退到普通文本识别
             return self._recognize_text(cv_image)
-        
+
         return result
 
     def _recognize_structure(self, cv_image: np.ndarray) -> OCRResult:
         """
         文档版面结构分析 (PP-DocLayout)
-        
+
         检测文档中的各类区域:
         - 文本区域
         - 表格区域
@@ -453,70 +532,74 @@ class PaddleOCREngine(BaseOCREngine):
             engine_type=self.ENGINE_TYPE,
             engine_name=self.ENGINE_NAME,
             engine_version=self.ENGINE_VERSION,
-            success=True
+            success=True,
         )
-        
+
         try:
             # 尝试使用 PaddleOCR 的版面分析功能
             from paddleocr import PPStructure
-            
+
             structure = PPStructure(
                 lang=self.paddle_config.lang,
                 device=self.paddle_config.device,
                 use_tensorrt=self.paddle_config.use_tensorrt,
             )
-            
+
             # 执行版面分析
             structure_result = structure.predict(cv_image)
-            
+
             # 解析结果
             if structure_result:
                 for output in structure_result:
-                    if hasattr(output, 'res') and output.res:
+                    if hasattr(output, "res") and output.res:
                         res = output.res
-                        
+
                         # 提取各区域
-                        regions = res.get('regions', [])
+                        regions = res.get("regions", [])
                         for region in regions:
-                            region_type = region.get('type', 'text')
-                            region_text = region.get('text', '')
-                            region_bbox = region.get('bbox', [])
-                            
+                            region_type = region.get("type", "text")
+                            region_text = region.get("text", "")
+                            region_bbox = region.get("bbox", [])
+
                             # 映射区域类型
                             block_type = self._map_region_type(region_type)
-                            
+
                             if region_text.strip():
                                 block = TextBlock(
                                     text=region_text,
-                                    confidence=region.get('score', 0.9),
-                                    bbox=BoundingBox(points=region_bbox) if region_bbox else None,
-                                    block_type=block_type
+                                    confidence=region.get("score", 0.9),
+                                    bbox=(
+                                        BoundingBox(points=region_bbox)
+                                        if region_bbox
+                                        else None
+                                    ),
+                                    block_type=block_type,
                                 )
                                 result.text_blocks.append(block)
-                        
+
                         break
-            
+
             result.full_text = result.get_text(separator="\n")
-            
+
         except ImportError:
             logger.warning("版面分析模块未安装，使用普通OCR识别")
             return self._recognize_text(cv_image)
         except Exception as e:
             logger.error(f"版面分析失败: {e}", exc_info=True)
             return self._recognize_text(cv_image)
-        
+
         return result
-    
+
     def _map_region_type(self, region_type: str) -> TextBlockType:
         """映射版面区域类型到TextBlockType"""
         type_map = {
-            'text': TextBlockType.PARAGRAPH,
-            'title': TextBlockType.HEADER,
-            'table': TextBlockType.TABLE,
-            'figure': TextBlockType.UNKNOWN,
-            'formula': TextBlockType.FORMULA,
-            'header': TextBlockType.HEADER,
-            'footer': TextBlockType.FOOTER,
+            "text": TextBlockType.PARAGRAPH,
+            "title": TextBlockType.HEADER,
+            "table": TextBlockType.TABLE,
+            "figure": TextBlockType.UNKNOWN,
+            "formula": TextBlockType.FORMULA,
+            "header": TextBlockType.HEADER,
+            "footer": TextBlockType.FOOTER,
         }
         return type_map.get(region_type.lower(), TextBlockType.PARAGRAPH)
 
@@ -527,9 +610,9 @@ class PaddleOCREngine(BaseOCREngine):
 
         languages = set()
         for block in result.text_blocks:
-            if any('\u4e00' <= c <= '\u9fff' for c in block.text):
+            if any("\u4e00" <= c <= "\u9fff" for c in block.text):
                 languages.add("zh")
-            elif any('a' <= c.lower() <= 'z' for c in block.text):
+            elif any("a" <= c.lower() <= "z" for c in block.text):
                 languages.add("en")
 
         if languages:
@@ -573,8 +656,7 @@ class PaddleOCREngine(BaseOCREngine):
 
         if self.paddle_config.ram_time_seconds > 0:
             self._ram_timer = threading.Timer(
-                self.paddle_config.ram_time_seconds,
-                self._reset_ram
+                self.paddle_config.ram_time_seconds, self._reset_ram
             )
             self._ram_timer.start()
 
@@ -611,19 +693,30 @@ class PaddleOCREngine(BaseOCREngine):
                     "type": "boolean",
                     "title": "启用表格识别",
                     "default": False,
-                    "description": "使用PP-TableMagic v2产线进行表格识别，需要安装表格相关模型",
+                    "description": (
+                        "使用PP-TableMagic v2产线进行表格识别，"
+                        "需要安装表格相关模型"
+                    ),
                 },
                 "use_structure": {
                     "type": "boolean",
                     "title": "启用版面分析",
                     "default": False,
-                    "description": "使用PP-DocLayout进行版面结构分析，需要安装版面相关模型",
+                    "description": (
+                        "使用PP-DocLayout进行版面结构分析，"
+                        "需要安装版面相关模型"
+                    ),
                 },
                 "table_structure_model": {
                     "type": "string",
                     "title": "表格结构模型",
                     "default": "slanet_plus",
-                    "enum": ["slanet", "slanet_plus", "slanext_wired", "slanext_wireless"],
+                    "enum": [
+                        "slanet",
+                        "slanet_plus",
+                        "slanext_wired",
+                        "slanext_wireless",
+                    ],
                     "description": "表格结构识别模型",
                 },
                 "table_output_format": {
@@ -674,13 +767,14 @@ class PaddleOCREngine(BaseOCREngine):
                     "minimum": 0,
                 },
             },
-            "required": ["lang"]
+            "required": ["lang"],
         }
 
 
 # =============================================================================
 # 批量识别引擎
 # =============================================================================
+
 
 class PaddleBatchOCREngine(BatchOCREngine):
     """PaddleOCR 批量识别引擎"""

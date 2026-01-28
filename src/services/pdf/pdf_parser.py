@@ -26,20 +26,22 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PDFPage:
     """PDF页面信息"""
-    page_number: int            # 页码
-    width: int                # 宽度
-    height: int               # 高度
-    image_path: Optional[str] = None   # 页面图像路径
-    text: Optional[str] = None         # 提取的文本
+
+    page_number: int  # 页码
+    width: int  # 宽度
+    height: int  # 高度
+    image_path: Optional[str] = None  # 页面图像路径
+    text: Optional[str] = None  # 提取的文本
 
 
 @dataclass
 class PDFInfo:
     """PDF文件信息"""
-    file_path: str            # 文件路径
-    total_pages: int          # 总页数
-    title: Optional[str] = None       # 标题
-    pages: List[PDFPage] = None        # 页面列表
+
+    file_path: str  # 文件路径
+    total_pages: int  # 总页数
+    title: Optional[str] = None  # 标题
+    pages: List[PDFPage] = None  # 页面列表
 
 
 class PDFParser:
@@ -73,27 +75,26 @@ class PDFParser:
             doc = fitz.open(file_path)
             total_pages = len(doc)
             title = doc.metadata.get("title", "")
-            
+
             pages = []
             for i in range(total_pages):
                 page = doc.load_page(i)
                 rect = page.rect
-                pages.append(PDFPage(
-                    page_number=i + 1,
-                    width=int(rect.width),
-                    height=int(rect.height)
-                ))
-            
+                pages.append(
+                    PDFPage(
+                        page_number=i + 1,
+                        width=int(rect.width),
+                        height=int(rect.height),
+                    )
+                )
+
             doc.close()
 
             logger.info(f"解析PDF成功: {file_path}, 共 {total_pages} 页")
 
             # 创建PDF信息
             pdf_info = PDFInfo(
-                file_path=file_path,
-                total_pages=total_pages,
-                title=title,
-                pages=pages
+                file_path=file_path, total_pages=total_pages, title=title, pages=pages
             )
 
             return pdf_info
@@ -107,7 +108,7 @@ class PDFParser:
         file_path: str,
         page_number: int,
         dpi: int = 200,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> Optional[str]:
         """
         提取指定页面为图像
@@ -126,25 +127,25 @@ class PDFParser:
             if page_number < 1 or page_number > len(doc):
                 logger.error(f"页码超出范围: {page_number}")
                 return None
-            
+
             page = doc.load_page(page_number - 1)
             zoom = dpi / 72.0
             mat = fitz.Matrix(zoom, zoom)
             pix = page.get_pixmap(matrix=mat)
-            
+
             if output_dir:
                 out_path = Path(output_dir)
             else:
                 out_path = Path(file_path).parent / "extracted_images"
-            
+
             out_path.mkdir(parents=True, exist_ok=True)
-            
+
             image_filename = f"{Path(file_path).stem}_page_{page_number}.png"
             image_path = out_path / image_filename
-            
+
             pix.save(str(image_path))
             doc.close()
-            
+
             logger.info(f"提取PDF页面成功: {image_path}")
 
             return str(image_path)
@@ -154,10 +155,7 @@ class PDFParser:
             return None
 
     def extract_all_images(
-        self,
-        file_path: str,
-        output_dir: str,
-        dpi: int = 200
+        self, file_path: str, output_dir: str, dpi: int = 200
     ) -> List[str]:
         """
         提取所有页面为图像

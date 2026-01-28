@@ -11,7 +11,6 @@ Date: 2026-01-27
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
-from pathlib import Path
 
 
 class BaseExporter(ABC):
@@ -24,12 +23,7 @@ class BaseExporter(ABC):
     """
 
     @abstractmethod
-    def export(
-        self,
-        data: List[Dict[str, Any]],
-        output_path: str,
-        **kwargs
-    ) -> bool:
+    def export(self, data: List[Dict[str, Any]], output_path: str, **kwargs) -> bool:
         """
         导出数据
 

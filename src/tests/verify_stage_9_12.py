@@ -11,6 +11,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Import project modules
 from services.task import (
     Task,
     TaskGroup,
@@ -19,15 +20,14 @@ from services.task import (
     TaskManager,
     create_simple_task,
     create_simple_task_group,
-)
+)  # noqa: E402
 
 
 def test_task_creation():
     """Test task creation"""
     print("Test 1: Task creation")
     task = create_simple_task(
-        task_type=TaskType.OCR,
-        input_data={"image_path": "/test/image.jpg"}
+        task_type=TaskType.OCR, input_data={"image_path": "/test/image.jpg"}
     )
     assert task.task_type == TaskType.OCR
     assert task.status == TaskStatus.PENDING
@@ -38,8 +38,7 @@ def test_task_serialization():
     """Test task serialization"""
     print("\nTest 2: Task serialization")
     task = create_simple_task(
-        task_type=TaskType.OCR,
-        input_data={"image_path": "/test/image.jpg"}
+        task_type=TaskType.OCR, input_data={"image_path": "/test/image.jpg"}
     )
     task.transition_to(TaskStatus.RUNNING)
     task.transition_to(TaskStatus.COMPLETED)
@@ -59,15 +58,10 @@ def test_task_group():
     """Test task group"""
     print("\nTest 3: Task group")
     tasks = [
-        create_simple_task(TaskType.OCR, {"path": f"/test{i}.jpg"})
-        for i in range(3)
+        create_simple_task(TaskType.OCR, {"path": f"/test{i}.jpg"}) for i in range(3)
     ]
 
-    group = create_simple_task_group(
-        title="Test group",
-        tasks=tasks,
-        priority=5
-    )
+    group = create_simple_task_group(title="Test group", tasks=tasks, priority=5)
 
     assert group.total_tasks == 3
     assert group.priority == 5
@@ -115,7 +109,7 @@ def test_task_submission():
     group_id = manager.submit_ocr_tasks(
         image_paths=["/test/image1.jpg", "/test/image2.jpg"],
         title="Batch OCR test",
-        priority=10
+        priority=10,
     )
 
     assert group_id
@@ -189,6 +183,7 @@ def main():
     except Exception as e:
         print(f"\n[FAILED] Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -10,7 +10,6 @@ Date: 2026-01-26
 """
 
 from pathlib import Path
-import json
 from collections import defaultdict
 
 # 读取 model_download_config.py
@@ -23,7 +22,10 @@ config_file = (
 )
 
 # 执行配置文件以提取模型定义
-exec(open(config_file, "r", encoding="utf-8").read())
+config_namespace = {}
+exec(open(config_file, "r", encoding="utf-8").read(), config_namespace)
+ALL_MODELS = config_namespace["ALL_MODELS"]
+MODEL_PRESETS = config_namespace["MODEL_PRESETS"]
 
 print("\n" + "=" * 70)
 print("Umi-OCR PaddleOCR 模型配置分析报告")

@@ -18,10 +18,9 @@ Author: Umi-OCR Team
 Date: 2026-01-26
 """
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Union, Callable
+from abc import abstractmethod
+from typing import Dict, Any, List, Optional, Union
 from enum import Enum
-from dataclasses import dataclass, replace
 import threading
 import time
 from pathlib import Path
@@ -31,12 +30,12 @@ from io import BytesIO
 
 from PySide6.QtCore import QObject, Signal
 
-from .ocr_result import OCRResult, TextBlock, TextBlockType, BoundingBox
-
+from .ocr_result import OCRResult
 
 # =============================================================================
 # 错误码枚举（细粒度）
 # =============================================================================
+
 
 class OCRErrorCode(Enum):
     """
@@ -48,54 +47,55 @@ class OCRErrorCode(Enum):
     # -------------------------------------------------------------------------
     # 成功状态
     # -------------------------------------------------------------------------
-    SUCCESS = "success"                              # 成功
-    NO_CONTENT = "no_content"                        # 无内容
+    SUCCESS = "success"  # 成功
+    NO_CONTENT = "no_content"  # 无内容
 
     # -------------------------------------------------------------------------
     # 初始化错误
     # -------------------------------------------------------------------------
-    ENGINE_INIT_FAILED = "engine_init_failed"        # 引擎初始化失败
-    CONFIG_INVALID = "config_invalid"                # 配置无效
-    MODEL_LOAD_FAILED = "model_load_failed"          # 模型加载失败
-    RESOURCE_NOT_FOUND = "resource_not_found"        # 资源未找到
+    ENGINE_INIT_FAILED = "engine_init_failed"  # 引擎初始化失败
+    CONFIG_INVALID = "config_invalid"  # 配置无效
+    MODEL_LOAD_FAILED = "model_load_failed"  # 模型加载失败
+    RESOURCE_NOT_FOUND = "resource_not_found"  # 资源未找到
 
     # -------------------------------------------------------------------------
     # 网络错误（云 OCR）
     # -------------------------------------------------------------------------
-    NETWORK_TIMEOUT = "network_timeout"              # 网络超时
-    NETWORK_ERROR = "network_error"                  # 网络错误
-    AUTH_FAILED = "auth_failed"                      # 认证失败
-    API_QUOTA_EXCEEDED = "api_quota_exceeded"        # API 配额超限
-    TOKEN_EXPIRED = "token_expired"                  # 令牌过期
-    INVALID_API_KEY = "invalid_api_key"              # 无效的 API Key
+    NETWORK_TIMEOUT = "network_timeout"  # 网络超时
+    NETWORK_ERROR = "network_error"  # 网络错误
+    AUTH_FAILED = "auth_failed"  # 认证失败
+    API_QUOTA_EXCEEDED = "api_quota_exceeded"  # API 配额超限
+    TOKEN_EXPIRED = "token_expired"  # 令牌过期
+    INVALID_API_KEY = "invalid_api_key"  # 无效的 API Key
 
     # -------------------------------------------------------------------------
     # 识别错误
     # -------------------------------------------------------------------------
     IMAGE_FORMAT_UNSUPPORTED = "image_format_unsupported"  # 不支持的图片格式
-    IMAGE_TOO_LARGE = "image_too_large"                    # 图片过大
-    IMAGE_CORRUPTED = "image_corrupted"                    # 图片损坏
-    RECOGNITION_FAILED = "recognition_failed"              # 识别失败
-    EMPTY_IMAGE = "empty_image"                            # 空白图片
+    IMAGE_TOO_LARGE = "image_too_large"  # 图片过大
+    IMAGE_CORRUPTED = "image_corrupted"  # 图片损坏
+    RECOGNITION_FAILED = "recognition_failed"  # 识别失败
+    EMPTY_IMAGE = "empty_image"  # 空白图片
 
     # -------------------------------------------------------------------------
     # 资源错误
     # -------------------------------------------------------------------------
-    OUT_OF_MEMORY = "out_of_memory"                  # 内存不足
-    RESOURCE_BUSY = "resource_busy"                  # 资源忙碌
-    THREAD_LOCK_TIMEOUT = "thread_lock_timeout"     # 线程锁超时
+    OUT_OF_MEMORY = "out_of_memory"  # 内存不足
+    RESOURCE_BUSY = "resource_busy"  # 资源忙碌
+    THREAD_LOCK_TIMEOUT = "thread_lock_timeout"  # 线程锁超时
 
     # -------------------------------------------------------------------------
     # 其他错误
     # -------------------------------------------------------------------------
-    UNKNOWN_ERROR = "unknown_error"                  # 未知错误
-    NOT_INITIALIZED = "not_initialized"              # 未初始化
-    OPERATION_CANCELLED = "operation_cancelled"      # 操作已取消
+    UNKNOWN_ERROR = "unknown_error"  # 未知错误
+    NOT_INITIALIZED = "not_initialized"  # 未初始化
+    OPERATION_CANCELLED = "operation_cancelled"  # 操作已取消
 
 
 # =============================================================================
 # 配置 Schema 定义
 # =============================================================================
+
 
 class ConfigSchema:
     """
@@ -115,7 +115,7 @@ class ConfigSchema:
         max_value: Optional[float] = None,
         options: Optional[List[Any]] = None,
         i18n_key: Optional[str] = None,
-        dependencies: Optional[Dict[str, Any]] = None
+        dependencies: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         创建配置字段定义
@@ -140,7 +140,7 @@ class ConfigSchema:
             "title": title,
             "description": description,
             "default": default,
-            "required": required
+            "required": required,
         }
 
         # 添加约束条件
@@ -166,7 +166,7 @@ class ConfigSchema:
         title: str,
         description: str = "",
         fields: Optional[Dict[str, Dict[str, Any]]] = None,
-        i18n_key: Optional[str] = None
+        i18n_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         创建配置节定义
@@ -184,7 +184,7 @@ class ConfigSchema:
             "type": "object",
             "title": title,
             "description": description,
-            "properties": fields or {}
+            "properties": fields or {},
         }
 
         # 添加国际化支持
@@ -207,19 +207,19 @@ class EnginePerformanceMetrics:
     """
 
     # 基础指标
-    total_calls: int = 0              # 总调用次数
-    success_calls: int = 0            # 成功次数
-    failure_calls: int = 0            # 失败次数
+    total_calls: int = 0  # 总调用次数
+    success_calls: int = 0  # 成功次数
+    failure_calls: int = 0  # 失败次数
 
     # 耗时指标
-    total_duration: float = 0.0       # 总耗时（秒）
-    min_duration: float = float('inf')  # 最小耗时
-    max_duration: float = 0.0         # 最大耗时
-    avg_duration: float = 0.0         # 平均耗时
+    total_duration: float = 0.0  # 总耗时（秒）
+    min_duration: float = float("inf")  # 最小耗时
+    max_duration: float = 0.0  # 最大耗时
+    avg_duration: float = 0.0  # 平均耗时
 
     # 资源指标（可选，由引擎实现提供）
     memory_usage: Optional[float] = None  # 内存占用（MB）
-    cpu_usage: Optional[float] = None     # CPU 使用率（%）
+    cpu_usage: Optional[float] = None  # CPU 使用率（%）
 
     # 时间戳
     last_call_time: Optional[float] = None  # 最后调用时间（Unix timestamp）
@@ -292,24 +292,26 @@ class EnginePerformanceMetrics:
             "failure_calls": self.failure_calls,
             "success_rate": self.get_success_rate(),
             "total_duration": self.total_duration,
-            "min_duration": self.min_duration if self.min_duration != float('inf') else 0.0,
+            "min_duration": (
+                self.min_duration if self.min_duration != float("inf") else 0.0
+            ),
             "max_duration": self.max_duration,
             "avg_duration": self.avg_duration,
             "memory_usage": self.memory_usage,
             "cpu_usage": self.cpu_usage,
             "last_call_time": self.last_call_time,
             "last_success_time": self.last_success_time,
-            "last_failure_time": self.last_failure_time
+            "last_failure_time": self.last_failure_time,
         }
 
 
 # 导入 dataclass
-from dataclasses import dataclass
 
 
 # =============================================================================
 # OCR 引擎抽象基类
 # =============================================================================
+
 
 class BaseOCREngine(QObject):
     """
@@ -359,9 +361,9 @@ class BaseOCREngine(QObject):
     # 类属性（子类必须重写）
     # -------------------------------------------------------------------------
 
-    ENGINE_TYPE: str = "base"         # 引擎类型标识
+    ENGINE_TYPE: str = "base"  # 引擎类型标识
     ENGINE_NAME: str = "Base OCR Engine"  # 引擎显示名称
-    ENGINE_VERSION: str = "1.0.0"     # 引擎版本
+    ENGINE_VERSION: str = "1.0.0"  # 引擎版本
 
     # 支持的图片格式
     SUPPORTED_IMAGE_FORMATS: List[str] = ["jpg", "jpeg", "png", "bmp", "tiff", "webp"]
@@ -403,9 +405,9 @@ class BaseOCREngine(QObject):
 
         # 告警阈值配置
         self._warning_thresholds = {
-            "max_duration": 5.0,      # 单次识别最大耗时（秒）
-            "min_success_rate": 0.9,   # 最低成功率
-            "max_failure_rate": 0.1    # 最高失败率
+            "max_duration": 5.0,  # 单次识别最大耗时（秒）
+            "min_success_rate": 0.9,  # 最低成功率
+            "max_failure_rate": 0.1,  # 最高失败率
         }
 
     # -------------------------------------------------------------------------
@@ -530,7 +532,7 @@ class BaseOCREngine(QObject):
                 else:
                     return False
 
-            except Exception as e:
+            except Exception:
                 self.engine_status_changed.emit(False)
                 return False
 
@@ -544,7 +546,7 @@ class BaseOCREngine(QObject):
 
             try:
                 self._do_cleanup()
-            except Exception as e:
+            except Exception:
                 pass  # 忽略清理错误
             finally:
                 self._engine_instance = None
@@ -579,7 +581,7 @@ class BaseOCREngine(QObject):
         self,
         image: Union[str, bytes, Image.Image],
         task_id: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> OCRResult:
         """
         执行 OCR 识别
@@ -603,7 +605,7 @@ class BaseOCREngine(QObject):
                 error_code=OCRErrorCode.NOT_INITIALIZED.value,
                 error_message="引擎未初始化，请先调用 initialize() 方法",
                 engine_type=self.ENGINE_TYPE,
-                engine_name=self.ENGINE_NAME
+                engine_name=self.ENGINE_NAME,
             )
 
         # 检查取消标志（队列层取消方案）
@@ -614,7 +616,7 @@ class BaseOCREngine(QObject):
                 error_code=OCRErrorCode.OPERATION_CANCELLED.value,
                 error_message="操作已取消",
                 engine_type=self.ENGINE_TYPE,
-                engine_name=self.ENGINE_NAME
+                engine_name=self.ENGINE_NAME,
             )
 
         # 加载图像
@@ -625,14 +627,14 @@ class BaseOCREngine(QObject):
                 task_id,
                 OCRErrorCode.IMAGE_FORMAT_UNSUPPORTED.value,
                 f"图像加载失败: {str(e)}",
-                self.ENGINE_NAME
+                self.ENGINE_NAME,
             )
             return OCRResult(
                 success=False,
                 error_code=OCRErrorCode.IMAGE_FORMAT_UNSUPPORTED.value,
                 error_message=f"图像加载失败: {str(e)}",
                 engine_type=self.ENGINE_TYPE,
-                engine_name=self.ENGINE_NAME
+                engine_name=self.ENGINE_NAME,
             )
 
         # 发送识别开始信号
@@ -675,10 +677,7 @@ class BaseOCREngine(QObject):
             error_message = str(e)
 
             self.recognition_failed.emit(
-                task_id,
-                error_code,
-                error_message,
-                self.ENGINE_NAME
+                task_id, error_code, error_message, self.ENGINE_NAME
             )
 
             return OCRResult(
@@ -687,14 +686,16 @@ class BaseOCREngine(QObject):
                 error_message=error_message,
                 engine_type=self.ENGINE_TYPE,
                 engine_name=self.ENGINE_NAME,
-                duration=duration
+                duration=duration,
             )
 
     # -------------------------------------------------------------------------
     # 图像加载
     # -------------------------------------------------------------------------
 
-    def _load_image(self, image: Union[str, bytes, Image.Image, BytesIO]) -> Image.Image:
+    def _load_image(
+        self, image: Union[str, bytes, Image.Image, BytesIO]
+    ) -> Image.Image:
         """
         加载图像为 PIL Image 对象
 
@@ -771,6 +772,7 @@ class BaseOCREngine(QObject):
         with self._lock:
             # 深拷贝指标，避免外部修改
             from dataclasses import replace
+
             return replace(self._metrics)
 
     def reset_metrics(self) -> None:
@@ -795,15 +797,16 @@ class BaseOCREngine(QObject):
         # 检查成功率告警（只在失败时检查）
         if not success:
             success_rate = self._metrics.get_success_rate()
-            if success_rate < self._warning_thresholds["min_success_rate"] and self._metrics.total_calls > 10:
+            if (
+                success_rate < self._warning_thresholds["min_success_rate"]
+                and self._metrics.total_calls > 10
+            ):
                 warnings.append(f"成功率过低: {success_rate:.1%}")
 
         # 发送告警
         for warning in warnings:
             self.performance_warning.emit(
-                "performance",
-                warning,
-                self._metrics.to_dict()
+                "performance", warning, self._metrics.to_dict()
             )
 
     def set_warning_threshold(self, key: str, value: float) -> None:
@@ -845,7 +848,7 @@ class BaseOCREngine(QObject):
         self,
         error_code: OCRErrorCode,
         error_message: str,
-        task_id: Optional[str] = None
+        task_id: Optional[str] = None,
     ) -> None:
         """
         传播错误信息
@@ -859,10 +862,7 @@ class BaseOCREngine(QObject):
             task_id = "unknown"
 
         self.recognition_failed.emit(
-            task_id,
-            error_code.value,
-            error_message,
-            self.ENGINE_NAME
+            task_id, error_code.value, error_message, self.ENGINE_NAME
         )
 
     # -------------------------------------------------------------------------
@@ -916,6 +916,7 @@ class BaseOCREngine(QObject):
 # 批量识别支持
 # =============================================================================
 
+
 class BatchOCREngine(BaseOCREngine):
     """
     批量 OCR 引擎基类
@@ -927,7 +928,7 @@ class BatchOCREngine(BaseOCREngine):
         self,
         images: List[Union[str, bytes, Image.Image]],
         task_id: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> List[OCRResult]:
         """
         批量识别
@@ -962,7 +963,7 @@ class BatchOCREngine(BaseOCREngine):
         output_path: str,
         task_id: Optional[str] = None,
         output_format: str = "json",
-        **kwargs
+        **kwargs,
     ) -> bool:
         """
         批量识别并保存到文件
@@ -985,6 +986,7 @@ class BatchOCREngine(BaseOCREngine):
             if output_format == "json":
                 # 合并为批量结果
                 from .ocr_result import BatchOCRResult
+
                 batch_result = BatchOCRResult(results=results)
                 with open(output_path, "w", encoding="utf-8") as f:
                     f.write(batch_result.to_json())
@@ -1002,5 +1004,5 @@ class BatchOCREngine(BaseOCREngine):
 
             return True
 
-        except Exception as e:
+        except Exception:
             return False

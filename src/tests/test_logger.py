@@ -17,13 +17,19 @@ import logging
 import tempfile
 import time
 import gc
-from datetime import datetime
 from unittest.mock import patch, MagicMock
 
 # 添加 src 目录到路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.logger import Logger, get_logger, LogLevel, LogLevelFilter, JsonRotatingFileHandler, LevelFormatter
+from utils.logger import (
+    Logger,
+    get_logger,
+    LogLevel,
+    LogLevelFilter,
+    JsonRotatingFileHandler,
+    LevelFormatter,
+)
 
 
 class TestLogLevelEnum(unittest.TestCase):

@@ -20,26 +20,34 @@ import logging
 from typing import Optional
 
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QProgressBar, QRadioButton, QButtonGroup,
-    QScrollArea, QWidget, QFrame, QTextEdit,
-    QMessageBox, QFileDialog
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QProgressBar,
+    QRadioButton,
+    QButtonGroup,
+    QScrollArea,
+    QWidget,
+    QFrame,
+    QTextEdit,
+    QMessageBox,
 )
-from PySide6.QtCore import Qt, QTimer, Slot, Signal
-from PySide6.QtGui import QFont, QPixmap, QIcon
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QFont
 
 from src.utils.check_dependencies import (
     check_ocr_dependencies,
     OCRDependencyInfo,
     InstallOption,
-    DependencyStatus
+    DependencyStatus,
 )
-from src.utils.gpu_detector import get_gpu_detector, GPUVendor
+
 from src.utils.dependency_installer import (
     get_installer,
     InstallConfig,
     InstallProgress,
-    InstallStatus
 )
 
 logger = logging.getLogger(__name__)
@@ -49,6 +57,7 @@ logger = logging.getLogger(__name__)
 # OCR引擎安装向导对话框
 # =============================================================================
 
+
 class OCREngineInstallDialog(QDialog):
     """
     OCR引擎安装向导对话框
@@ -57,8 +66,8 @@ class OCREngineInstallDialog(QDialog):
     """
 
     # 信号定义
-    install_completed = Signal(bool)      # 安装完成 (成功/失败）
-    skipped = Signal()                    # 用户跳过安装
+    install_completed = Signal(bool)  # 安装完成 (成功/失败）
+    skipped = Signal()  # 用户跳过安装
 
     def __init__(self, parent=None):
         """
@@ -118,7 +127,11 @@ class OCREngineInstallDialog(QDialog):
         icon_label = QLabel()
         icon_label.setFixedSize(48, 48)
         # TODO: 添加OCR图标
-        # icon_label.setPixmap(QPixmap(":/icons/ocr.png").scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        # icon_label.setPixmap(
+        #     QPixmap(":/icons/ocr.png").scaled(
+        #         48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        #     )
+        # )
         icon_label.setText("🔍")
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setStyleSheet("font-size: 36px;")
@@ -128,8 +141,7 @@ class OCREngineInstallDialog(QDialog):
         title_label.setFont(QFont("Arial", 16, QFont.Bold))
 
         desc_label = QLabel(
-            "Umi-OCR需要安装OCR引擎才能正常工作。\n"
-            "我们为您检测了最适合的安装方案。"
+            "Umi-OCR需要安装OCR引擎才能正常工作。\n" "我们为您检测了最适合的安装方案。"
         )
         desc_label.setWordWrap(True)
         desc_label.setStyleSheet("color: #666;")
@@ -218,8 +230,10 @@ class OCREngineInstallDialog(QDialog):
             self._show_dependency_info()
 
             # 如果都已安装，禁用安装按钮
-            if (self._dep_info.paddlepaddle.status == DependencyStatus.INSTALLED and
-                self._dep_info.paddleocr.status == DependencyStatus.INSTALLED):
+            if (
+                self._dep_info.paddlepaddle.status == DependencyStatus.INSTALLED
+                and self._dep_info.paddleocr.status == DependencyStatus.INSTALLED
+            ):
                 self._install_button.setText("已安装")
                 self._install_button.setEnabled(False)
                 self._skip_button.setText("关闭")
@@ -297,7 +311,10 @@ class OCREngineInstallDialog(QDialog):
         elif dep_info.status == DependencyStatus.NOT_INSTALLED:
             return "❌ 未安装"
         elif dep_info.status == DependencyStatus.INCOMPATIBLE:
-            return f"⚠️ 版本不兼容 (已安装: {dep_info.version}, 需要: {dep_info.required_version})"
+            return (
+                f"⚠️ 版本不兼容 (已安装: {dep_info.version}, "
+                f"需要: {dep_info.required_version})"
+            )
         else:
             return "❓ 未知状态"
 
@@ -312,9 +329,7 @@ class OCREngineInstallDialog(QDialog):
         # CPU版本选项
         cpu_radio = QRadioButton("CPU版本（推荐）")
         cpu_radio.setDescription(
-            "适合大多数用户\n"
-            "下载大小: 约 200MB\n"
-            "速度: 较慢，但稳定"
+            "适合大多数用户\n" "下载大小: 约 200MB\n" "速度: 较慢，但稳定"
         )
         cpu_radio.setChecked(True)  # 默认选中
         self._option_group.addButton(cpu_radio, 0)
@@ -333,10 +348,7 @@ class OCREngineInstallDialog(QDialog):
 
         # 跳过选项
         skip_radio = QRadioButton("跳过安装（仅使用云OCR）")
-        skip_radio.setDescription(
-            "稍后手动安装\n"
-            "或仅使用在线OCR服务"
-        )
+        skip_radio.setDescription("稍后手动安装\n" "或仅使用在线OCR服务")
         self._option_group.addButton(skip_radio, 2)
         option_group.layout().addWidget(skip_radio)
 
@@ -393,7 +405,7 @@ class OCREngineInstallDialog(QDialog):
             "info": "#333",
             "warning": "#ff9800",
             "error": "#f44336",
-            "success": "#4caf50"
+            "success": "#4caf50",
         }
 
         color = colors.get(msg_type, "#333")
@@ -431,7 +443,7 @@ class OCREngineInstallDialog(QDialog):
                 "如果安装失败，请手动卸载并安装CPU版本。\n\n"
                 "确定要安装GPU版本吗？",
                 QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
+                QMessageBox.No,
             )
 
             if reply == QMessageBox.No:
@@ -557,7 +569,7 @@ class OCREngineInstallDialog(QDialog):
             QMessageBox.information(
                 self,
                 "安装成功",
-                "OCR引擎安装成功！\n\n请重启程序以使用新安装的OCR引擎。"
+                "OCR引擎安装成功！\n\n请重启程序以使用新安装的OCR引擎。",
             )
             self.install_completed.emit(True)
         else:
@@ -566,8 +578,7 @@ class OCREngineInstallDialog(QDialog):
             QMessageBox.critical(
                 self,
                 "安装失败",
-                f"OCR引擎安装失败：\n{message}\n\n"
-                "请检查网络连接或尝试手动安装。"
+                f"OCR引擎安装失败：\n{message}\n\n" "请检查网络连接或尝试手动安装。",
             )
             self.install_completed.emit(False)
 
@@ -579,11 +590,7 @@ class OCREngineInstallDialog(QDialog):
             error_message: 错误消息
         """
         self._detail_text.append(f"\n❌ 错误: {error_message}")
-        QMessageBox.critical(
-            self,
-            "安装错误",
-            f"安装过程中发生错误：\n{error_message}"
-        )
+        QMessageBox.critical(self, "安装错误", f"安装过程中发生错误：\n{error_message}")
 
     def _on_skip(self):
         """跳过安装"""
@@ -594,7 +601,7 @@ class OCREngineInstallDialog(QDialog):
             "只能使用在线OCR服务（需要网络）。\n\n"
             "确定要跳过吗？",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
@@ -610,7 +617,7 @@ class OCREngineInstallDialog(QDialog):
                 "确认取消",
                 "安装正在进行中，确定要取消吗？",
                 QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
+                QMessageBox.No,
             )
 
             if reply == QMessageBox.Yes:

@@ -13,11 +13,11 @@ from .window_detector import WindowDetector, WindowInfo
 from .magnifier import Magnifier
 
 __all__ = [
-    'ScreenCapture',
-    'ScreenInfo',
-    'RegionSelector',
-    'DragMode',
-    'WindowDetector',
-    'WindowInfo',
-    'Magnifier',
+    "ScreenCapture",
+    "ScreenInfo",
+    "RegionSelector",
+    "DragMode",
+    "WindowDetector",
+    "WindowInfo",
+    "Magnifier",
 ]

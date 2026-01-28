@@ -11,7 +11,6 @@ Date: 2026-01-27
 
 import logging
 from typing import List, Dict, Any
-from pathlib import Path
 from docx import Document
 
 from .base_exporter import BaseExporter
@@ -26,12 +25,7 @@ class WordExporter(BaseExporter):
         """初始化Word导出器"""
         logger.info("Word导出器初始化完成")
 
-    def export(
-        self,
-        data: List[Dict[str, Any]],
-        output_path: str,
-        **kwargs
-    ) -> bool:
+    def export(self, data: List[Dict[str, Any]], output_path: str, **kwargs) -> bool:
         """
         导出为 Word
 
@@ -45,17 +39,17 @@ class WordExporter(BaseExporter):
         """
         try:
             doc = Document()
-            
+
             for item in data:
                 text = item.get("text", "")
                 title = item.get("title", "")
-                
+
                 if title:
                     doc.add_heading(title, level=1)
-                
+
                 doc.add_paragraph(text)
                 doc.add_page_break()
-            
+
             doc.save(output_path)
             logger.info(f"Word 导出成功: {output_path}")
 

@@ -14,8 +14,8 @@ Date: 2026-01-26
 """
 
 import sys
-import logging
 from pathlib import Path
+import logging
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
@@ -24,14 +24,12 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 sys.path.insert(0, str(project_root))
 
-from services.ocr.model_manager import ModelRepository
+# 导入项目模块
+from services.ocr.model_manager import ModelRepository  # noqa: E402
 from services.ocr.model_download_config import (
     ALL_MODELS,
-    TEXT_DETECTION_MODELS,
-    TEXT_RECOGNITION_MODELS,
     MODEL_PRESETS,
-    ModelCategory,
-)
+)  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
@@ -350,8 +348,8 @@ def print_report():
     print("\n" + "=" * 70)
     print("Umi-OCR PaddleOCR 模型配置统一验证报告")
     print("=" * 70)
-    print(f"生成时间: 2026-01-26")
-    print(f"Commit: 9e4ba28d - 集成 PaddleOCR 本地引擎与模型管理器")
+    print("生成时间: 2026-01-26")
+    print("Commit: 9e4ba28d - 集成 PaddleOCR 本地引擎与模型管理器")
     print()
 
     # 1. 模型覆盖报告
@@ -390,7 +388,7 @@ def print_report():
 
     # 显示统一模型支持的主要语言
     unified_langs = ["ch", "en", "japan", "korean"]
-    print(f"\n  PP-OCRv5 统一模型支持的语言：")
+    print("\n  PP-OCRv5 统一模型支持的语言：")
     for lang in unified_langs:
         info = valid_languages.get(lang, [])
         if info:
@@ -398,7 +396,7 @@ def print_report():
 
     # 显示语言组
     language_groups = ["cyrillic", "latin", "arabic", "devanagari"]
-    print(f"\n  语言组模型（专用优化）：")
+    print("\n  语言组模型（专用优化）：")
     for lang in language_groups:
         info = valid_languages.get(lang, [])
         if info:
@@ -420,9 +418,9 @@ def print_report():
         print(f"    推荐场景: {preset.recommended_for}")
         print(f"    总大小: {preset.total_size_mb:.1f} MB")
         print(f"    包含模型: {len(preset.models)} 个")
-        print(f"    模型列表:")
+        print("    模型列表:")
         for model_id in preset.models:
-            model = get_model_by_id(model_id)
+            model = ALL_MODELS.get(model_id)
             if model:
                 print(f"      - {model_id:40s} ({model.display_name})")
 

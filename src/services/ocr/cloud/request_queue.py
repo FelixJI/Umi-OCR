@@ -17,33 +17,42 @@ Date: 2026-01-27
 
 import asyncio
 import time
-from typing import Callable, Any, Dict, List, Optional
+from typing import Callable, Any, Dict, Optional
 from collections import deque
 import threading
+import logging
 
 from PySide6.QtCore import QObject, Signal
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # 请求队列异常
 # =============================================================================
 
+
 class RequestQueueError(Exception):
     """请求队列异常"""
+
     pass
+
 
 class RateLimitExceeded(RequestQueueError):
     """请求频率超限异常"""
+
     pass
+
 
 class QueueShutdown(RequestQueueError):
     """队列已关闭异常"""
+
     pass
 
 
 # =============================================================================
 # 请求队列实现
 # =============================================================================
+
 
 class RequestQueue(QObject):
     """
@@ -363,7 +372,7 @@ class RequestQueue(QObject):
                 "average_duration": avg_duration,
                 "qps_limit": self._qps_limit,
                 "window_size": self._window_size,
-                "current_requests_in_window": len(self._request_window)
+                "current_requests_in_window": len(self._request_window),
             }
 
     def reset_statistics(self) -> None:
@@ -378,6 +387,3 @@ class RequestQueue(QObject):
 # =============================================================================
 # 日志记录器
 # =============================================================================
-
-import logging
-logger = logging.getLogger(__name__)

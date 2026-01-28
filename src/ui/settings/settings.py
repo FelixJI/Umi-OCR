@@ -7,12 +7,8 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import logging
-from pathlib import Path
-from typing import Optional
-
-from PySide6.QtWidgets import QWidget, QListWidget, QStackedWidget, QMessageBox, QLineEdit, QCheckBox, QVBoxLayout
-from PySide6.QtCore import Qt, QObject
+from PySide6.QtWidgets import QMessageBox, QCheckBox, QVBoxLayout
+from PySide6.QtCore import QObject
 
 from src.controllers.settings_controller import SettingsController
 from src.utils.logger import get_logger
@@ -36,10 +32,10 @@ class SettingsWindow(QObject):
         self.ui = ui
         self.logger = logger
         self.controller = SettingsController()
-        
+
         self._init_ui()
         self._connect_signals()
-        
+
         self.logger.info("设置界面初始化完成")
 
     def _init_ui(self):
@@ -57,7 +53,10 @@ class SettingsWindow(QObject):
 
         # Initialize Cloud Settings Panel
         from .cloud_settings import CloudSettingsPanel
-        self.cloud_panel = CloudSettingsPanel(self.ui.page_cloud, controller=self.controller)
+
+        self.cloud_panel = CloudSettingsPanel(
+            self.ui.page_cloud, controller=self.controller
+        )
 
         # Add to page_cloud layout
         page_cloud = self.ui.page_cloud
@@ -72,7 +71,10 @@ class SettingsWindow(QObject):
 
         # Initialize OCR Settings Panel
         from .ocr_settings import OcrSettingsPanel
-        self.ocr_panel = OcrSettingsPanel(self.ui.page_ocr_engine, controller=self.controller)
+
+        self.ocr_panel = OcrSettingsPanel(
+            self.ui.page_ocr_engine, controller=self.controller
+        )
 
         # Initialize General Settings (Startup, etc.)
         self._init_general_settings()
@@ -97,7 +99,9 @@ class SettingsWindow(QObject):
 
         # Close to Tray Checkbox
         self.cb_close_to_tray = QCheckBox("关闭窗口时最小化到托盘")
-        self.cb_close_to_tray.setChecked(self.controller.get_config("ui.close_to_tray", False))
+        self.cb_close_to_tray.setChecked(
+            self.controller.get_config("ui.close_to_tray", False)
+        )
         self.cb_close_to_tray.toggled.connect(self._on_close_to_tray_toggled)
         layout.insertWidget(2, self.cb_close_to_tray)
 
@@ -108,7 +112,11 @@ class SettingsWindow(QObject):
         parent_widget = self.ui.page_general
         if checked:
             if not StartupManager.enable():
-                QMessageBox.warning(parent_widget, "警告", "无法设置开机自启，请检查权限或杀毒软件拦截。")
+                QMessageBox.warning(
+                    parent_widget,
+                    "警告",
+                    "无法设置开机自启，请检查权限或杀毒软件拦截。",
+                )
                 self.cb_startup.setChecked(False)
         else:
             if not StartupManager.disable():

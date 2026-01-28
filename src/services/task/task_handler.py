@@ -95,6 +95,7 @@ class TaskHandlerRegistry:
         TaskHandlerRegistry.register(TaskType.OCR, OCRTaskHandler)
         handler = TaskHandlerRegistry.get(TaskType.OCR)
     """
+
     _handlers: Dict[TaskType, Type[TaskHandler]] = {}
 
     @classmethod
@@ -139,6 +140,7 @@ class TaskHandlerRegistry:
 # OCR 任务处理器示例
 # =============================================================================
 
+
 class OCRTaskHandler(TaskHandler):
     """OCR 任务处理器示例"""
 
@@ -158,6 +160,7 @@ class OCRTaskHandler(TaskHandler):
 
         # 获取引擎管理器
         from src.services.ocr.engine_manager import get_engine_manager
+
         engine_manager = get_engine_manager()
 
         # 执行识别
@@ -176,6 +179,7 @@ class OCRTaskHandler(TaskHandler):
 
 class TaskCancelledException(Exception):
     """任务被取消异常"""
+
     pass
 
 

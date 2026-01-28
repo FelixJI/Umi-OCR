@@ -44,7 +44,8 @@ class UtilsConnector(QObject):
         sufType: str,  # 后缀类型，FileSuf的key
         isRecurrence: bool,  # 若为True，则递归搜索
         completeKey: str,  # 全部完成后的事件key。向事件传入合法路径列表。
-        updateKey: str,  # 加载中刷新进度的key，不填则无。向事件传入 (已完成的路径数量, 最近一条路径)
+        updateKey: str,  # 加载中刷新进度的key，不填则无。
+        # 向事件传入 (已完成的路径数量, 最近一条路径)
         updateTime: float,  # 刷新进度的间距
     ):
         threadRun(

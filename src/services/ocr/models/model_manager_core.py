@@ -314,7 +314,8 @@ class PaddleModelManager(QObject):
             self.cache_cleaned.emit(cleaned_count, freed_space // (1024 * 1024))
 
             logger.info(
-                f"缓存清理完成: 清理了 {cleaned_count} 个模型，释放了 {freed_space // (1024 * 1024)} MB"
+                f"缓存清理完成: 清理了 {cleaned_count} 个模型，"
+                f"释放了 {freed_space // (1024 * 1024)} MB"
             )
 
             return cleaned_count, freed_space // (1024 * 1024)

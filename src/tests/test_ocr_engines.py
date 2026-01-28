@@ -21,8 +21,6 @@ import os
 import unittest
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch
-from dataclasses import dataclass
 
 # 添加项目根目录到 Python 路径
 project_root = Path(__file__).parent.parent.parent
@@ -53,7 +51,9 @@ class TestOCRErrorCode(unittest.TestCase):
         self.assertEqual(OCRErrorCode.AUTH_FAILED.value, "auth_failed")
 
         # 识别错误
-        self.assertEqual(OCRErrorCode.IMAGE_FORMAT_UNSUPPORTED.value, "image_format_unsupported")
+        self.assertEqual(
+            OCRErrorCode.IMAGE_FORMAT_UNSUPPORTED.value, "image_format_unsupported"
+        )
         self.assertEqual(OCRErrorCode.IMAGE_TOO_LARGE.value, "image_too_large")
         self.assertEqual(OCRErrorCode.RECOGNITION_FAILED.value, "recognition_failed")
 
@@ -87,7 +87,7 @@ class TestConfigSchema(unittest.TestCase):
             title="测试字段",
             description="这是一个测试字段",
             default="默认值",
-            required=True
+            required=True,
         )
 
         self.assertEqual(field["type"], "string")
@@ -105,7 +105,7 @@ class TestConfigSchema(unittest.TestCase):
             title="数字字段",
             min_value=0,
             max_value=100,
-            default=50
+            default=50,
         )
 
         self.assertEqual(field["type"], "number")
@@ -121,7 +121,7 @@ class TestConfigSchema(unittest.TestCase):
             field_type="string",
             title="选择字段",
             options=["option1", "option2", "option3"],
-            default="option1"
+            default="option1",
         )
 
         self.assertEqual(field["type"], "string")
@@ -133,9 +133,7 @@ class TestConfigSchema(unittest.TestCase):
         from src.services.ocr.base_engine import ConfigSchema
 
         field = ConfigSchema.create_field(
-            field_type="string",
-            title="国际化字段",
-            i18n_key="config.field.name"
+            field_type="string", title="国际化字段", i18n_key="config.field.name"
         )
 
         self.assertEqual(field["i18n_key"], "config.field.name")
@@ -149,9 +147,9 @@ class TestConfigSchema(unittest.TestCase):
             description="这是一个测试配置节",
             fields={
                 "field1": ConfigSchema.create_field("string", "字段1"),
-                "field2": ConfigSchema.create_field("number", "字段2")
+                "field2": ConfigSchema.create_field("number", "字段2"),
             },
-            i18n_key="config.section.test"
+            i18n_key="config.section.test",
         )
 
         self.assertEqual(section["title"], "测试节")
@@ -249,7 +247,10 @@ class TestBoundingBox(unittest.TestCase):
 
         bbox = BoundingBox(
             points=[[0, 0], [100, 0], [100, 100], [0, 100]],
-            x=5, y=5, width=90, height=90
+            x=5,
+            y=5,
+            width=90,
+            height=90,
         )
 
         self.assertEqual(bbox.x, 5)
@@ -277,7 +278,7 @@ class TestBoundingBox(unittest.TestCase):
             "x": 10,
             "y": 20,
             "width": 80,
-            "height": 80
+            "height": 80,
         }
 
         bbox = BoundingBox.from_dict(data)
@@ -308,7 +309,7 @@ class TestTextBlock(unittest.TestCase):
             text="测试文本",
             confidence=0.95,
             bbox=bbox,
-            block_type=TextBlockType.PARAGRAPH
+            block_type=TextBlockType.PARAGRAPH,
         )
 
         self.assertIsNotNone(block.bbox)
@@ -329,16 +330,19 @@ class TestTextBlock(unittest.TestCase):
 
     def test_from_dict(self):
         """测试从字典创建"""
-        from src.services.ocr.ocr_result import TextBlock, BoundingBox
+        from src.services.ocr.ocr_result import TextBlock
 
         data = {
             "text": "测试文本",
             "confidence": 0.95,
             "bbox": {
                 "points": [[0, 0], [100, 0], [100, 50], [0, 50]],
-                "x": 0, "y": 0, "width": 100, "height": 50
+                "x": 0,
+                "y": 0,
+                "width": 100,
+                "height": 50,
             },
-            "block_type": "paragraph"
+            "block_type": "paragraph",
         }
 
         block = TextBlock.from_dict(data)
@@ -368,12 +372,10 @@ class TestOCRResult(unittest.TestCase):
 
         blocks = [
             TextBlock(text="第一行", confidence=0.95),
-            TextBlock(text="第二行", confidence=0.90)
+            TextBlock(text="第二行", confidence=0.90),
         ]
         result = OCRResult(
-            text_blocks=blocks,
-            full_text="第一行\n第二行",
-            engine_type="paddle"
+            text_blocks=blocks, full_text="第一行\n第二行", engine_type="paddle"
         )
 
         self.assertEqual(len(result.text_blocks), 2)
@@ -392,10 +394,7 @@ class TestOCRResult(unittest.TestCase):
         from src.services.ocr.ocr_result import OCRResult, TextBlock
 
         result = OCRResult()
-        result.text_blocks = [
-            TextBlock(text="Hello"),
-            TextBlock(text="World")
-        ]
+        result.text_blocks = [TextBlock(text="Hello"), TextBlock(text="World")]
 
         text = result.get_text(separator=" ")
         self.assertEqual(text, "Hello World")
@@ -408,7 +407,7 @@ class TestOCRResult(unittest.TestCase):
         result.text_blocks = [
             TextBlock(text="高置信度", confidence=0.95),
             TextBlock(text="低置信度", confidence=0.60),
-            TextBlock(text="中置信度", confidence=0.80)
+            TextBlock(text="中置信度", confidence=0.80),
         ]
 
         filtered = result.get_text_blocks_by_confidence(0.75)
@@ -424,7 +423,7 @@ class TestOCRResult(unittest.TestCase):
         result = OCRResult(
             text_blocks=[TextBlock(text="测试", confidence=0.9)],
             full_text="测试",
-            engine_type="test"
+            engine_type="test",
         )
 
         data = result.to_dict()
@@ -446,7 +445,7 @@ class TestOCRResult(unittest.TestCase):
             "engine_type": "test",
             "success": True,
             "batch_index": 0,
-            "batch_total": 1
+            "batch_total": 1,
         }
 
         result = OCRResult.from_dict(data)
@@ -472,7 +471,7 @@ class TestOCRResult(unittest.TestCase):
         results = [
             OCRResult(text_blocks=[TextBlock(text="第一")], duration=0.5),
             OCRResult(text_blocks=[TextBlock(text="第二")], duration=0.3),
-            OCRResult(text_blocks=[TextBlock(text="第三")], duration=0.4)
+            OCRResult(text_blocks=[TextBlock(text="第三")], duration=0.4),
         ]
 
         merged = OCRResult.merge_results(results)
@@ -574,6 +573,7 @@ class TestBaseOCREngine(unittest.TestCase):
 
             def _do_recognize(self, image, **kwargs):
                 from src.services.ocr.ocr_result import OCRResult
+
                 return OCRResult()
 
             def _do_cleanup(self):
@@ -693,9 +693,10 @@ class TestBaseOCREngine(unittest.TestCase):
                 return True
 
             def _do_recognize(self, image, **kwargs):
-                return OCRResult(success=True, text_blocks=[
-                    TextBlock(text="测试结果", confidence=0.95)
-                ])
+                return OCRResult(
+                    success=True,
+                    text_blocks=[TextBlock(text="测试结果", confidence=0.95)],
+                )
 
             def _do_cleanup(self):
                 pass
@@ -732,9 +733,10 @@ class TestBaseOCREngine(unittest.TestCase):
                 return True
 
             def _do_recognize(self, image, **kwargs):
-                return OCRResult(success=True, text_blocks=[
-                    TextBlock(text="测试结果", confidence=0.95)
-                ])
+                return OCRResult(
+                    success=True,
+                    text_blocks=[TextBlock(text="测试结果", confidence=0.95)],
+                )
 
             def _do_cleanup(self):
                 pass
@@ -770,9 +772,10 @@ class TestBaseOCREngine(unittest.TestCase):
                 # 验证接收到的是 PIL Image
                 if not isinstance(image, Image.Image):
                     raise TypeError(f"期望 PIL Image，实际收到 {type(image)}")
-                return OCRResult(success=True, text_blocks=[
-                    TextBlock(text="识别结果", confidence=0.95)
-                ])
+                return OCRResult(
+                    success=True,
+                    text_blocks=[TextBlock(text="识别结果", confidence=0.95)],
+                )
 
             def _do_cleanup(self):
                 pass
@@ -835,9 +838,10 @@ class TestBaseOCREngine(unittest.TestCase):
 
             def _do_recognize(self, image, **kwargs):
                 # 不要在 _do_recognize 中添加断言
-                return OCRResult(success=True, text_blocks=[
-                    TextBlock(text="测试结果", confidence=0.95)
-                ])
+                return OCRResult(
+                    success=True,
+                    text_blocks=[TextBlock(text="测试结果", confidence=0.95)],
+                )
 
             def _do_cleanup(self):
                 pass
@@ -880,9 +884,7 @@ class TestBaseOCREngine(unittest.TestCase):
 
             @classmethod
             def get_config_schema(cls):
-                return {
-                    "required": ["lang"]
-                }
+                return {"required": ["lang"]}
 
         engine = TestEngine({"lang": "ch"})
 

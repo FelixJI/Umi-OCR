@@ -14,10 +14,9 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import logging
 import os
 from pathlib import Path
-from typing import List, Set
+from typing import List, Set, Optional
 
 from PySide6.QtCore import QObject, Signal
 
@@ -41,10 +40,10 @@ class BatchOcrController(QObject):
     SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff"}
 
     # 信号定义
-    tasks_submitted = Signal(str)        # 任务已提交(group_id)
-    progress_updated = Signal(str, float) # 进度更新(group_id, progress)
-    tasks_completed = Signal(str)        # 任务完成(group_id)
-    tasks_failed = Signal(str, str)      # 任务失败(group_id, error)
+    tasks_submitted = Signal(str)  # 任务已提交(group_id)
+    progress_updated = Signal(str, float)  # 进度更新(group_id, progress)
+    tasks_completed = Signal(str)  # 任务完成(group_id)
+    tasks_failed = Signal(str, str)  # 任务失败(group_id, error)
 
     _instance = None
 
@@ -54,12 +53,12 @@ class BatchOcrController(QObject):
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, parent: Optional[QObject] = None):
         """初始化批量OCR控制器"""
         if hasattr(self, "_initialized"):
             return
-            
-        super().__init__()
+
+        super().__init__(parent)
         self._initialized = True
 
         self._task_manager = TaskManager.instance()
@@ -80,10 +79,7 @@ class BatchOcrController(QObject):
         self._task_manager.group_paused.connect(self._on_group_paused)
 
     def submit_batch_ocr(
-        self,
-        image_paths: List[str],
-        title: str = "批量OCR",
-        priority: int = 0
+        self, image_paths: List[str], title: str = "批量OCR", priority: int = 0
     ) -> str:
         """
         提交批量OCR任务
@@ -103,11 +99,9 @@ class BatchOcrController(QObject):
 
         # 提交到任务管理器
         group_id = self._task_manager.submit_ocr_tasks(
-            image_paths=list(self._pending_files),
-            title=title,
-            priority=priority
+            image_paths=list(self._pending_files), title=title, priority=priority
         )
-        
+
         self._submitted_groups.add(group_id)
 
         # 发送信号
@@ -232,12 +226,12 @@ class BatchOcrController(QObject):
     def export_results(self, group_id: str, output_path: str, format_text: str) -> bool:
         """
         导出结果
-        
+
         Args:
             group_id: 任务组ID
             output_path: 输出文件路径
             format_text: 格式描述 (TXT/JSON/CSV)
-            
+
         Returns:
             bool: 是否成功
         """
@@ -245,10 +239,10 @@ class BatchOcrController(QObject):
         if not group:
             logger.warning(f"任务组不存在: {group_id}")
             return False
-            
+
         try:
             logger.info(f"开始导出: {group_id} -> {output_path}")
-            
+
             # 收集结果
             results = []
             for task in group.get_all_tasks():
@@ -257,21 +251,21 @@ class BatchOcrController(QObject):
                     text = task.result.get("text", "")
                     filename = Path(task.input_data.get("image_path", "")).name
                     results.append(f"--- {filename} ---\n{text}")
-            
+
             # 格式化输出 (这里仅实现简单的 TXT 拼接，后续可扩展 JSON/CSV)
             if "JSON" in format_text:
                 import json
+
                 content = json.dumps(results, ensure_ascii=False, indent=2)
             else:
                 content = "\n\n".join(results)
-            
+
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(content)
-                
+
             logger.info(f"导出成功: {output_path}")
             return True
-            
+
         except Exception as e:
             logger.error(f"导出失败: {e}", exc_info=True)
             return False
-

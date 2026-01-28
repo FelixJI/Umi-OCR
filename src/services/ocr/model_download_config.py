@@ -20,6 +20,7 @@ from enum import Enum
 
 class ModelCategory(str, Enum):
     """模型类别枚举"""
+
     TEXT_DETECTION = "text_detection"
     TEXT_RECOGNITION = "text_recognition"
     TEXT_ORIENTATION = "text_orientation"
@@ -32,12 +33,13 @@ class ModelCategory(str, Enum):
     TABLE_CLASSIFICATION = "table_classification"
     FORMULA_RECOGNITION = "formula_recognition"
     DOC_VLM = "doc_vlm"  # PP-DocBee文档理解模型
-    OCR_VL = "ocr_vl"    # PaddleOCR-VL文档解析模型
+    OCR_VL = "ocr_vl"  # PaddleOCR-VL文档解析模型
 
 
 @dataclass
 class ModelInfo:
     """单个模型信息"""
+
     name: str  # 模型标识名称
     display_name: str  # 显示名称
     category: ModelCategory  # 模型类别
@@ -50,6 +52,7 @@ class ModelInfo:
 @dataclass
 class ModelPreset:
     """模型预设组合"""
+
     id: str
     name: str
     description: str
@@ -71,7 +74,7 @@ TEXT_DETECTION_MODELS = {
         size_mb=101.0,
         description="最新高精度检测模型，Hmean 83.8%，支持109种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_det_infer.tar",
-        language="multilingual"
+        language="multilingual",
     ),
     "ppocrv5_mobile_det": ModelInfo(
         name="PP-OCRv5_mobile_det",
@@ -80,7 +83,7 @@ TEXT_DETECTION_MODELS = {
         size_mb=4.7,
         description="轻量检测模型，适合端侧部署，Hmean 79.0%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_det_infer.tar",
-        language="multilingual"
+        language="multilingual",
     ),
 }
 
@@ -93,7 +96,7 @@ TEXT_RECOGNITION_MODELS = {
         size_mb=81.0,
         description="单模型支持简中/繁中/英/日/拼音，精度86.38%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_server_rec_infer.tar",
-        language="multilingual"
+        language="multilingual",
     ),
     "ppocrv5_mobile_rec": ModelInfo(
         name="PP-OCRv5_mobile_rec",
@@ -102,7 +105,7 @@ TEXT_RECOGNITION_MODELS = {
         size_mb=16.0,
         description="轻量识别模型，精度81.29%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv5_mobile_rec_infer.tar",
-        language="multilingual"
+        language="multilingual",
     ),
 }
 
@@ -119,7 +122,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="支持俄语、乌克兰语、白俄罗斯语等20+种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/cyrillic_PP-OCRv5_mobile_rec_infer.tar",
-        language="cyrillic"
+        language="cyrillic",
     ),
     "latin_ppocrv5_rec": ModelInfo(
         name="latin_PP-OCRv5_mobile_rec",
@@ -128,7 +131,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="支持法文、德文、西语、37+种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/latin_PP-OCRv5_mobile_rec_infer.tar",
-        language="latin"
+        language="latin",
     ),
     "arabic_ppocrv5_rec": ModelInfo(
         name="arabic_PP-OCRv5_mobile_rec",
@@ -137,7 +140,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="支持阿拉伯语、波斯语、20+种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/arabic_PP-OCRv5_mobile_rec_infer.tar",
-        language="arabic"
+        language="arabic",
     ),
     "devanagari_ppocrv5_rec": ModelInfo(
         name="devanagari_PP-OCRv5_mobile_rec",
@@ -146,7 +149,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="支持印地语、马拉地语、10+种语言",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/devanagari_PP-OCRv5_mobile_rec_infer.tar",
-        language="devanagari"
+        language="devanagari",
     ),
     # 语言专用模型
     "korean_ppocrv5_rec": ModelInfo(
@@ -156,7 +159,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="韩语专用优化模型",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/korean_PP-OCRv5_mobile_rec_infer.tar",
-        language="korean"
+        language="korean",
     ),
     "japan_ppocrv5_rec": ModelInfo(
         name="japan_PP-OCRv5_mobile_rec",
@@ -165,7 +168,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="日语专用优化模型",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/japan_PP-OCRv5_mobile_rec_infer.tar",
-        language="japan"
+        language="japan",
     ),
     "th_ppocrv5_rec": ModelInfo(
         name="th_PP-OCRv5_mobile_rec",
@@ -174,7 +177,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="泰语专用，精度82.68%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/th_PP-OCRv5_mobile_rec_infer.tar",
-        language="th"
+        language="th",
     ),
     "el_ppocrv5_rec": ModelInfo(
         name="el_PP-OCRv5_mobile_rec",
@@ -183,7 +186,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="希腊语专用，精度89.28%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/el_PP-OCRv5_mobile_rec_infer.tar",
-        language="el"
+        language="el",
     ),
     "ta_ppocrv5_rec": ModelInfo(
         name="ta_PP-OCRv5_mobile_rec",
@@ -192,7 +195,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="泰米尔语专用，精度94.2%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/ta_PP-OCRv5_mobile_rec_infer.tar",
-        language="ta"
+        language="ta",
     ),
     "te_ppocrv5_rec": ModelInfo(
         name="te_PP-OCRv5_mobile_rec",
@@ -201,7 +204,7 @@ MULTILANGUAGE_RECOGNITION_MODELS = {
         size_mb=8.0,
         description="泰卢固语专用，精度87.65%",
         download_url="https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/te_PP-OCRv5_mobile_rec_infer.tar",
-        language="te"
+        language="te",
     ),
 }
 
@@ -518,7 +521,7 @@ OCR_VL_MODELS = {
         size_mb=1800.0,
         description="超紧凑0.9B参数VLM，SOTA文档解析，支持109种语言，擅长文本/表格/公式/图表识别",
         download_url="https://huggingface.co/PaddlePaddle/PaddleOCR-VL/resolve/main/paddleocr_vl_0.9b_infer.tar",
-        language="multilingual"
+        language="multilingual",
     ),
 }
 
@@ -565,7 +568,7 @@ ALL_MODELS = {
     **TABLE_CELLS_MODELS,
     **TABLE_CLASSIFICATION_MODELS,
     **FORMULA_RECOGNITION_MODELS,
-    **OCR_VL_MODELS,   # PaddleOCR-VL文档解析
+    **OCR_VL_MODELS,  # PaddleOCR-VL文档解析
     **DOC_VLM_MODELS,  # PP-DocBee文档问答
 }
 
@@ -581,16 +584,21 @@ MODEL_PRESETS = {
         description="包含文本检测和识别功能，适用于简单的文档OCR场景",
         models=["ppocrv5_server_det", "ppocrv5_server_rec"],
         total_size_mb=182.0,
-        recommended_for="日常文档截图、屏幕文本识别等基础场景"
+        recommended_for="日常文档截图、屏幕文本识别等基础场景",
     ),
     # 层级2: 标准OCR - 核心 + 图像预处理
     "standard_ocr": ModelPreset(
         id="standard_ocr",
         name="标准OCR",
         description="核心OCR + 文档方向分类 + 文档图像矫正，处理旋转和弯曲文档",
-        models=["ppocrv5_server_det", "ppocrv5_server_rec", "pp_lcnet_doc_ori", "uvdoc"],
+        models=[
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
+        ],
         total_size_mb=219.3,
-        recommended_for="扫描文档、照片、书籍、曲面文档等场景"
+        recommended_for="扫描文档、照片、书籍、曲面文档等场景",
     ),
     # 层级3: 表格OCR - 标准 + 表格识别
     "table_ocr": ModelPreset(
@@ -598,13 +606,16 @@ MODEL_PRESETS = {
         name="表格识别",
         description="标准OCR + 表格区域检测 + 表格结构识别 + 表格分类",
         models=[
-            "ppocrv5_server_det", "ppocrv5_server_rec",
-            "pp_lcnet_doc_ori", "uvdoc",
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
             "picodet_layout_1x_table",
-            "slanet_plus", "pp_lcnet_table_cls",
+            "slanet_plus",
+            "pp_lcnet_table_cls",
         ],
         total_size_mb=235.3,
-        recommended_for="财务报表、表格文档、简历等含表格场景"
+        recommended_for="财务报表、表格文档、简历等含表格场景",
     ),
     # 层级4: 版面OCR - 表格OCR + 版面分析
     "layout_ocr": ModelPreset(
@@ -612,15 +623,18 @@ MODEL_PRESETS = {
         name="版面分析",
         description="表格OCR + 通用版面分析 + 子区域检测",
         models=[
-            "ppocrv5_server_det", "ppocrv5_server_rec",
-            "pp_lcnet_doc_ori", "uvdoc",
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
             "picodet_layout_1x_table",
-            "slanet_plus", "pp_lcnet_table_cls",
+            "slanet_plus",
+            "pp_lcnet_table_cls",
             "pp_doclayout_plus_l",  # 高精度版面
-            "pp_docblocklayout",    # 子区域检测
+            "pp_docblocklayout",  # 子区域检测
         ],
         total_size_mb=486.2,  # 235.3 + 126 + 124
-        recommended_for="论文、杂志、报纸等多区域复杂文档"
+        recommended_for="论文、杂志、报纸等多区域复杂文档",
     ),
     # 层级5: 公式OCR - 版面OCR + 公式识别
     "formula_ocr": ModelPreset(
@@ -628,15 +642,19 @@ MODEL_PRESETS = {
         name="公式识别",
         description="版面OCR + 公式识别，支持中英文LaTeX公式",
         models=[
-            "ppocrv5_server_det", "ppocrv5_server_rec",
-            "pp_lcnet_doc_ori", "uvdoc",
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
             "picodet_layout_1x_table",
-            "slanet_plus", "pp_lcnet_table_cls",
-            "pp_doclayout_plus_l", "pp_docblocklayout",
+            "slanet_plus",
+            "pp_lcnet_table_cls",
+            "pp_doclayout_plus_l",
+            "pp_docblocklayout",
             "pp_formulanet_plus_m",  # 中量高精度公式
         ],
         total_size_mb=1078.2,  # 486.2 + 592
-        recommended_for="学术论文、教材、试卷等含公式的文档"
+        recommended_for="学术论文、教材、试卷等含公式的文档",
     ),
     # 层级6: 文档解析 - PaddleOCR-VL SOTA模型
     "ocr_vl": ModelPreset(
@@ -647,7 +665,7 @@ MODEL_PRESETS = {
             "paddleocr_vl_0_9b",  # 0.9B参数，SOTA文档解析
         ],
         total_size_mb=1800.0,
-        recommended_for="端到端文档解析、复杂文档处理、多语言109种语言支持"
+        recommended_for="端到端文档解析、复杂文档处理、多语言109种语言支持",
     ),
     # 层级7: 智能文档 - 公式OCR + Doc VLM
     "smart_doc": ModelPreset(
@@ -655,16 +673,20 @@ MODEL_PRESETS = {
         name="智能问答",
         description="公式OCR + PP-DocBee文档问答模型，支持文档理解、问答、内容提取",
         models=[
-            "ppocrv5_server_det", "ppocrv5_server_rec",
-            "pp_lcnet_doc_ori", "uvdoc",
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
             "picodet_layout_1x_table",
-            "slanet_plus", "pp_lcnet_table_cls",
-            "pp_doclayout_plus_l", "pp_docblocklayout",
+            "slanet_plus",
+            "pp_lcnet_table_cls",
+            "pp_doclayout_plus_l",
+            "pp_docblocklayout",
             "pp_formulanet_plus_m",
             "pp_docbee2_3b",  # 3B参数Doc VLM
         ],
         total_size_mb=8678.2,  # 1078.2 + 7600
-        recommended_for="需要文档理解、多模态问答、内容提取的智能文档场景"
+        recommended_for="需要文档理解、多模态问答、内容提取的智能文档场景",
     ),
     # 层级8: 全功能 - 智能文档 + 高精度表格模型
     "full_ocr": ModelPreset(
@@ -672,25 +694,32 @@ MODEL_PRESETS = {
         name="全功能",
         description="智能文档 + 高精度表格结构模型 + 高精度单元格检测",
         models=[
-            "ppocrv5_server_det", "ppocrv5_server_rec",
-            "pp_lcnet_doc_ori", "uvdoc",
+            "ppocrv5_server_det",
+            "ppocrv5_server_rec",
+            "pp_lcnet_doc_ori",
+            "uvdoc",
             "picodet_layout_1x_table",
-            "slanet_plus", "pp_lcnet_table_cls",
-            "pp_doclayout_plus_l", "pp_docblocklayout",
+            "slanet_plus",
+            "pp_lcnet_table_cls",
+            "pp_doclayout_plus_l",
+            "pp_docblocklayout",
             "pp_formulanet_plus_m",
             "pp_docbee2_3b",
             # 高精度表格模型
-            "slanext_wired", "slanext_wireless",
-            "rt_detr_l_wired_table_cell", "rt_detr_l_wireless_table_cell",
+            "slanext_wired",
+            "slanext_wireless",
+            "rt_detr_l_wired_table_cell",
+            "rt_detr_l_wireless_table_cell",
         ],
         total_size_mb=10304.2,  # 8678.2 + 351 + 351 + 124 + 124 + 702 - 重复计算
-        recommended_for="需要处理各类复杂文档的专业场景，高精度表格处理"
+        recommended_for="需要处理各类复杂文档的专业场景，高精度表格处理",
     ),
 }
 
 # ============================================================================
 # 辅助函数
 # ============================================================================
+
 
 def get_model_by_id(model_id: str) -> Optional[ModelInfo]:
     """根据模型ID获取模型信息"""
@@ -769,73 +798,104 @@ class ModelDownloadConfig:
         "core": {
             "models": ["ppocrv5_server_det", "ppocrv5_server_rec"],
             "total_size_mb": 182.0,
-            "description": "核心OCR，仅文本检测和识别"
+            "description": "核心OCR，仅文本检测和识别",
         },
         "standard": {
-            "models": ["ppocrv5_server_det", "ppocrv5_server_rec", "pp_lcnet_doc_ori", "uvdoc"],
+            "models": [
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+            ],
             "total_size_mb": 219.3,
-            "description": "标准OCR，包含文档预处理"
+            "description": "标准OCR，包含文档预处理",
         },
         "table": {
             "models": [
-                "ppocrv5_server_det", "ppocrv5_server_rec",
-                "pp_lcnet_doc_ori", "uvdoc",
-                "picodet_layout_1x_table", "slanet_plus", "pp_lcnet_table_cls"
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+                "picodet_layout_1x_table",
+                "slanet_plus",
+                "pp_lcnet_table_cls",
             ],
             "total_size_mb": 235.3,
-            "description": "表格识别OCR"
+            "description": "表格识别OCR",
         },
         "layout": {
             "models": [
-                "ppocrv5_server_det", "ppocrv5_server_rec",
-                "pp_lcnet_doc_ori", "uvdoc",
-                "picodet_layout_1x_table", "slanet_plus", "pp_lcnet_table_cls",
-                "pp_doclayout_plus_l", "pp_docblocklayout",
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+                "picodet_layout_1x_table",
+                "slanet_plus",
+                "pp_lcnet_table_cls",
+                "pp_doclayout_plus_l",
+                "pp_docblocklayout",
             ],
             "total_size_mb": 486.2,
-            "description": "版面分析OCR"
+            "description": "版面分析OCR",
         },
         "formula": {
             "models": [
-                "ppocrv5_server_det", "ppocrv5_server_rec",
-                "pp_lcnet_doc_ori", "uvdoc",
-                "picodet_layout_1x_table", "slanet_plus", "pp_lcnet_table_cls",
-                "pp_doclayout_plus_l", "pp_docblocklayout",
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+                "picodet_layout_1x_table",
+                "slanet_plus",
+                "pp_lcnet_table_cls",
+                "pp_doclayout_plus_l",
+                "pp_docblocklayout",
                 "pp_formulanet_plus_m",
             ],
             "total_size_mb": 1078.2,
-            "description": "公式识别OCR"
+            "description": "公式识别OCR",
         },
         "ocr_vl": {
             "models": ["paddleocr_vl_0_9b"],
             "total_size_mb": 1800.0,
-            "description": "PaddleOCR-VL 0.9B SOTA文档解析，端到端多模态"
+            "description": "PaddleOCR-VL 0.9B SOTA文档解析，端到端多模态",
         },
         "smart": {
             "models": [
-                "ppocrv5_server_det", "ppocrv5_server_rec",
-                "pp_lcnet_doc_ori", "uvdoc",
-                "picodet_layout_1x_table", "slanet_plus", "pp_lcnet_table_cls",
-                "pp_doclayout_plus_l", "pp_docblocklayout",
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+                "picodet_layout_1x_table",
+                "slanet_plus",
+                "pp_lcnet_table_cls",
+                "pp_doclayout_plus_l",
+                "pp_docblocklayout",
                 "pp_formulanet_plus_m",
                 "pp_docbee2_3b",
             ],
             "total_size_mb": 8678.2,
-            "description": "智能问答，包含PP-DocBee文档问答"
+            "description": "智能问答，包含PP-DocBee文档问答",
         },
         "full": {
             "models": [
-                "ppocrv5_server_det", "ppocrv5_server_rec",
-                "pp_lcnet_doc_ori", "uvdoc",
-                "picodet_layout_1x_table", "slanet_plus", "pp_lcnet_table_cls",
-                "pp_doclayout_plus_l", "pp_docblocklayout",
+                "ppocrv5_server_det",
+                "ppocrv5_server_rec",
+                "pp_lcnet_doc_ori",
+                "uvdoc",
+                "picodet_layout_1x_table",
+                "slanet_plus",
+                "pp_lcnet_table_cls",
+                "pp_doclayout_plus_l",
+                "pp_docblocklayout",
                 "pp_formulanet_plus_m",
                 "pp_docbee2_3b",
-                "slanext_wired", "slanext_wireless",
-                "rt_detr_l_wired_table_cell", "rt_detr_l_wireless_table_cell",
+                "slanext_wired",
+                "slanext_wireless",
+                "rt_detr_l_wired_table_cell",
+                "rt_detr_l_wireless_table_cell",
             ],
             "total_size_mb": 10304.2,
-            "description": "全功能OCR，包含所有模块"
+            "description": "全功能OCR，包含所有模块",
         },
     }
 

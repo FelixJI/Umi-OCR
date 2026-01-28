@@ -17,23 +17,24 @@ import logging
 from typing import List, Optional
 from dataclasses import dataclass
 from PIL import Image
+
 try:
     from pyzbar.pyzbar import decode, ZBarSymbol
 except ImportError:
     decode = None
     ZBarSymbol = None
 
-from PySide6.QtGui import QImage
-    
+
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class QRCodeResult:
     """二维码识别结果"""
-    type: str                  # 码型
-    data: str                  # 数据
-    rect: Optional[tuple] = None   # 位置矩形 (x, y, w, h)
+
+    type: str  # 码型
+    data: str  # 数据
+    rect: Optional[tuple] = None  # 位置矩形 (x, y, w, h)
 
 
 class QRCodeScanner:
@@ -82,20 +83,16 @@ class QRCodeScanner:
         try:
             image = Image.open(image_path)
             decoded_objects = decode(image)
-            
+
             results = []
             for obj in decoded_objects:
                 # pyzbar returns bytes, need decode
-                data = obj.data.decode('utf-8')
+                data = obj.data.decode("utf-8")
                 code_type = obj.type
                 rect = (obj.rect.left, obj.rect.top, obj.rect.width, obj.rect.height)
-                
-                results.append(QRCodeResult(
-                    type=code_type,
-                    data=data,
-                    rect=rect
-                ))
-            
+
+                results.append(QRCodeResult(type=code_type, data=data, rect=rect))
+
             logger.info(f"扫描完成, 发现 {len(results)} 个码")
             return results
 
@@ -139,15 +136,11 @@ class QRCodeScanner:
             results = []
             for obj in decoded_objects:
                 # pyzbar returns bytes, need decode
-                data = obj.data.decode('utf-8')
+                data = obj.data.decode("utf-8")
                 code_type = obj.type
                 rect = (obj.rect.left, obj.rect.top, obj.rect.width, obj.rect.height)
 
-                results.append(QRCodeResult(
-                    type=code_type,
-                    data=data,
-                    rect=rect
-                ))
+                results.append(QRCodeResult(type=code_type, data=data, rect=rect))
 
             logger.info(f"从QPixmap扫描完成, 发现 {len(results)} 个码")
             return results
@@ -189,7 +182,9 @@ class QRCodeScanner:
             if pil_image.mode == "RGBA":
                 # Convert to RGB - create white background for transparency
                 background = Image.new("RGB", (width, height), (255, 255, 255))
-                background.paste(pil_image, mask=pil_image.split()[3])  # Use alpha channel as mask
+                background.paste(
+                    pil_image, mask=pil_image.split()[3]
+                )  # Use alpha channel as mask
                 pil_image = background
 
             # Decode barcodes
@@ -198,15 +193,11 @@ class QRCodeScanner:
             results = []
             for obj in decoded_objects:
                 # pyzbar returns bytes, need decode
-                data = obj.data.decode('utf-8')
+                data = obj.data.decode("utf-8")
                 code_type = obj.type
                 rect = (obj.rect.left, obj.rect.top, obj.rect.width, obj.rect.height)
 
-                results.append(QRCodeResult(
-                    type=code_type,
-                    data=data,
-                    rect=rect
-                ))
+                results.append(QRCodeResult(type=code_type, data=data, rect=rect))
 
             logger.info(f"从QPixmap扫描完成, 发现 {len(results)} 个码")
             return results

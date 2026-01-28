@@ -17,8 +17,8 @@ Date: 2026-01-28
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-from PySide6.QtCore import QCoreApplication, QObject, Signal
+from unittest.mock import Mock
+from PySide6.QtCore import QCoreApplication, QObject
 
 from src.ui.settings.settings_search import SettingsSearch, SearchResult
 
@@ -33,7 +33,7 @@ class TestSearchResult(unittest.TestCase):
             value="paddle",
             label="OCR 引擎类型",
             description="选择本地 OCR 引擎或云服务 OCR",
-            matched_fields=["key", "label"]
+            matched_fields=["key", "label"],
         )
 
         self.assertEqual(result.key, "ocr.engine_type")
@@ -50,7 +50,7 @@ class TestSearchResult(unittest.TestCase):
             value="test_value",
             label="Test Label",
             description="",
-            matched_fields=["key"]
+            matched_fields=["key"],
         )
 
         # 空描述也应该有效
@@ -351,11 +351,11 @@ class TestSettingsSearchResults(unittest.TestCase):
             result = results[0]
 
             # 验证结果包含所有必需字段
-            self.assertTrue(hasattr(result, 'key'))
-            self.assertTrue(hasattr(result, 'value'))
-            self.assertTrue(hasattr(result, 'label'))
-            self.assertTrue(hasattr(result, 'description'))
-            self.assertTrue(hasattr(result, 'matched_fields'))
+            self.assertTrue(hasattr(result, "key"))
+            self.assertTrue(hasattr(result, "value"))
+            self.assertTrue(hasattr(result, "label"))
+            self.assertTrue(hasattr(result, "description"))
+            self.assertTrue(hasattr(result, "matched_fields"))
 
             # 验证字段类型
             self.assertIsInstance(result.key, str)
@@ -369,7 +369,7 @@ class TestSettingsSearchResults(unittest.TestCase):
 
         # 所有键应该包含点分隔符
         for result in results:
-            self.assertGreater(result.key.count('.'), 0)
+            self.assertGreater(result.key.count("."), 0)
 
     def test_result_values_retrievable(self):
         """测试结果值可获取"""
@@ -534,4 +534,5 @@ def run_tests():
 if __name__ == "__main__":
     success = run_tests()
     import sys
+
     sys.exit(0 if success else 1)

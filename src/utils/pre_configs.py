@@ -38,13 +38,14 @@ def writeConfigs():
         with open(_FileName, "w", encoding="utf-8") as file:
             json.dump(_Configs, file, ensure_ascii=False, indent=4)
     except PermissionError:
-        _Errors[
-            "Write PermissionError"
-        ] = "权限不足，无法写入配置文件。\nInsufficient permissions, unable to write to the configuration file."
+        _Errors["Write PermissionError"] = (
+            "权限不足，无法写入配置文件。\n"
+            "Insufficient permissions, unable to write to the configuration file."
+        )
     except Exception as e:
-        _Errors[
-            "Write Error"
-        ] = f"无法写入配置文件。\nUnable to write to the configuration file: {e}"
+        _Errors["Write Error"] = (
+            f"无法写入配置文件。\nUnable to write to the configuration file: {e}"
+        )
 
 
 def readConfigs():
@@ -57,13 +58,15 @@ def readConfigs():
         for key in _Configs:
             _Configs[key] = data[key]
     except PermissionError:
-        _Errors[
-            "Write PermissionError"
-        ] = "权限不足，无法读取配置文件。\nInsufficient permissions, unable to read to the configuration file."
+        _Errors["Write PermissionError"] = (
+            "权限不足，无法读取配置文件。\n"
+            "Insufficient permissions, unable to read to the configuration file."
+        )
     except Exception as e:
-        _Errors[
-            "Write Error"
-        ] = f"无法读取配置文件。\nUnable to read to the configuration file: {e}"
+        _Errors["Write Error"] = (
+            f"无法读取配置文件。\n"
+            f"Unable to read to the configuration file: {e}"
+        )
 
 
 # 返回异常情况字符串

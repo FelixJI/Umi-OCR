@@ -40,7 +40,6 @@ Date: 2025-01-26
 """
 
 import json
-import os
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional, List
@@ -242,7 +241,6 @@ class I18nManager(QObject):
                 return False
 
         # 更新当前语言
-        old_language = self._current_language
         self._current_language = lang_code
 
         # 发送语言变更信号
@@ -304,7 +302,9 @@ class I18nManager(QObject):
                 else:
                     # 如果当前语言未找到，尝试使用默认语言
                     if self._current_language != self._default_language:
-                        default_translations = self._translations.get(self._default_language, {})
+                        default_translations = self._translations.get(
+                            self._default_language, {}
+                        )
                         value = default_translations
                         for default_key in keys:
                             if isinstance(value, dict) and default_key in value:

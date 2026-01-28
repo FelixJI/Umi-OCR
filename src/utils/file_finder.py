@@ -3,22 +3,24 @@
 # ============================================
 # 从指定路径中，查找符合的文件
 
-import re
 import os
 import time
 from PySide6.QtQml import QJSValue
 from typing import List
 
 from src.event_bus.pubsub_service import PubSubService  # 发布事件
+
 # from ..mission.mission_doc import MissionDOC, DocSuf  # TODO: mission 模块未实现
 # from ..mission.mission_ocr import ImageSuf  # TODO: mission 模块未实现
 from umi_log import logger
+
 
 # 临时占位符，直到 mission 模块实现
 class MissionDOC:
     @staticmethod
     def getDocInfo(fp):
         return {"error": "Mission module not implemented yet"}
+
 
 DocSuf = [".pdf", ".doc", ".docx"]
 ImageSuf = [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp"]
@@ -78,7 +80,8 @@ def asynFindFiles(
     sufType: str,  # 后缀类型，FileSuf的key
     isRecurrence: bool,  # 若为True，则递归搜索
     completeKey: str,  # 全部完成后的事件key。向事件传入合法路径列表。
-    updateKey: str,  # UI刷新进度的事件key。填""则不刷新。向事件传入 (已完成的路径数量, 最近一条路径)
+    updateKey: str,  # UI刷新进度的事件key。填""则不刷新。
+    # 向事件传入 (已完成的路径数量, 最近一条路径)
     updateTime: float,  # UI刷新进度的间距
 ):
     if isinstance(paths, QJSValue):

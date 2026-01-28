@@ -19,19 +19,16 @@ Date: 2025-01-26
 """
 
 import sys
-import os
 from pathlib import Path
+from . import test_logger
+from . import test_config
+from . import test_i18n
+from . import test_ocr_engines
 
 # 确保项目根目录在路径中
 project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
-
-# 导入测试模块
-from . import test_logger
-from . import test_config
-from . import test_i18n
-from . import test_ocr_engines
 
 __all__ = [
     "test_logger",

@@ -16,9 +16,9 @@ Date: 2026-01-27
 import logging
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QPoint, QRect
-from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QColor
+from PySide6.QtGui import QPixmap, QPainter, QPen, QColor, QCursor
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,9 @@ class Magnifier(QWidget):
     """
 
     # 放大镜配置
-    ZOOM_FACTOR = 4              # 放大倍数
-    SIZE = 120                  # 放大镜尺寸(像素)
-    BORDER_WIDTH = 2             # 边框宽度
+    ZOOM_FACTOR = 4  # 放大倍数
+    SIZE = 120  # 放大镜尺寸(像素)
+    BORDER_WIDTH = 2  # 边框宽度
 
     def __init__(self, parent: Optional[QWidget] = None):
         """
@@ -45,11 +45,7 @@ class Magnifier(QWidget):
         super().__init__(parent)
 
         # 设置窗口属性
-        self.setWindowFlags(
-            Qt.Tool |
-            Qt.FramelessWindowHint |
-            Qt.WindowStaysOnTopHint
-        )
+        self.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # 设置固定大小
@@ -61,13 +57,16 @@ class Magnifier(QWidget):
 
         logger.debug("放大镜控件初始化完成")
 
-    def update_position(self, local_pos: QPoint, source_image: QPixmap) -> None:
+    def update_position(
+        self, local_pos: QPoint, source_image: QPixmap, global_offset: QPoint = None
+    ) -> None:
         """
         更新放大镜位置和图像
 
         Args:
             local_pos: 相对于源图像的本地坐标位置
             source_image: 源图像
+            global_offset: 本地坐标到全局坐标的偏移量
         """
         if source_image.isNull():
             return
@@ -75,10 +74,9 @@ class Magnifier(QWidget):
         # 保存本地坐标和图像
         self._local_pos = local_pos
         self._source_image = source_image
+        self._global_offset = global_offset if global_offset else QPoint(0, 0)
 
         # 计算放大镜显示位置(使用全局鼠标位置)
-        global_pos = self.mapToGlobal(local_pos) if self.parent() else local_pos
-        # 实际使用QCursor获取真实鼠标全局位置
         cursor_pos = QCursor.pos()
         magnifier_pos = self._calculate_magnifier_position(cursor_pos)
         self.move(magnifier_pos)
@@ -99,10 +97,7 @@ class Magnifier(QWidget):
             QPoint: 放大镜位置
         """
         # 尝试在鼠标右下方显示
-        pos = QPoint(
-            mouse_pos.x() + 20,
-            mouse_pos.y() + 20
-        )
+        pos = QPoint(mouse_pos.x() + 20, mouse_pos.y() + 20)
 
         # 检查是否超出屏幕
         screens = self.screen()
@@ -140,7 +135,7 @@ class Magnifier(QWidget):
             self._local_pos.x() - half_size,
             self._local_pos.y() - half_size,
             self.SIZE // self.ZOOM_FACTOR,
-            self.SIZE // self.ZOOM_FACTOR
+            self.SIZE // self.ZOOM_FACTOR,
         )
 
         # 确保不超出源图像范围
@@ -155,9 +150,7 @@ class Magnifier(QWidget):
         cropped = self._source_image.copy(source_rect)
         if not cropped.isNull():
             scaled = cropped.scaled(
-                self.SIZE, self.SIZE,
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation
+                self.SIZE, self.SIZE, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
 
             # 绘制放大的图像

@@ -89,10 +89,10 @@ class SystemTrayConnector(QObject):
             # 状态不一致时才调用 show/hide
             if value:
                 self._tray.show()
-                logger.debug(f"[SystemTrayConnector] setVisible: 显示托盘")
+                logger.debug("[SystemTrayConnector] setVisible: 显示托盘")
             else:
                 self._tray.hide()
-                logger.debug(f"[SystemTrayConnector] setVisible: 隐藏托盘")
+                logger.debug("[SystemTrayConnector] setVisible: 隐藏托盘")
             # 更新内部状态
             self._visible = value
             self.visibleChanged.emit()
@@ -109,7 +109,9 @@ class SystemTrayConnector(QObject):
             # 转换为绝对路径
             if not os.path.isabs(path):
                 # 相对于QML文件所在目录 (resources/MainWindow/)
-                qml_file_dir = Path(__file__).parent.parent.parent / "resources" / "MainWindow"
+                qml_file_dir = (
+                    Path(__file__).parent.parent.parent / "resources" / "MainWindow"
+                )
                 full_path = (qml_file_dir / path).resolve()
                 logger.debug(f"[SystemTrayConnector] 图标路径: {path} -> {full_path}")
 
@@ -146,7 +148,7 @@ class SystemTrayConnector(QObject):
         if self._available:
             # 检查图标是否有效
             if self._tray.icon().isNull():
-                logger.warning(f"[SystemTrayConnector] 图标为空，托盘可能无法正常显示")
+                logger.warning("[SystemTrayConnector] 图标为空，托盘可能无法正常显示")
             else:
                 logger.debug(f"[SystemTrayConnector] 图标已设置: {self._iconSource}")
 
@@ -155,11 +157,11 @@ class SystemTrayConnector(QObject):
                 self._tray.show()
                 self._visible = True
                 self.visibleChanged.emit()
-                logger.info(f"[SystemTrayConnector] 显示托盘图标")
+                logger.info("[SystemTrayConnector] 显示托盘图标")
             else:
-                logger.debug(f"[SystemTrayConnector] 托盘图标已显示，跳过")
+                logger.debug("[SystemTrayConnector] 托盘图标已显示，跳过")
         else:
-            logger.warning(f"[SystemTrayConnector] 系统托盘不可用，无法显示图标")
+            logger.warning("[SystemTrayConnector] 系统托盘不可用，无法显示图标")
 
     @Slot()
     def hide(self):
@@ -169,9 +171,9 @@ class SystemTrayConnector(QObject):
             self._tray.hide()
             self._visible = False
             self.visibleChanged.emit()
-            logger.info(f"[SystemTrayConnector] 隐藏托盘图标")
+            logger.info("[SystemTrayConnector] 隐藏托盘图标")
         else:
-            logger.debug(f"[SystemTrayConnector] 托盘图标已隐藏，跳过")
+            logger.debug("[SystemTrayConnector] 托盘图标已隐藏，跳过")
 
     @Slot(str, str, str)
     def showMessage(self, title, message, icon_type="Information"):
@@ -204,7 +206,7 @@ class SystemTrayConnector(QObject):
     def _getQmlProperty(self, property_name):
         """
         安全地从 QML qmlapp 对象获取属性
-        
+
         QML 对象的属性需要通过 property() 方法访问，而不是直接属性访问
         """
         if not self._qmlapp:
@@ -234,7 +236,9 @@ class SystemTrayConnector(QObject):
                 PubSubService.publish(eventTitle)
                 logger.info(f"[SystemTrayConnector] 已发布事件: {eventTitle}")
             except Exception as e:
-                logger.error(f"[SystemTrayConnector] 菜单项点击失败: {e}", exc_info=True)
+                logger.error(
+                    f"[SystemTrayConnector] 菜单项点击失败: {e}", exc_info=True
+                )
 
         action.triggered.connect(onTriggered)
         logger.debug(
@@ -258,4 +262,4 @@ class SystemTrayConnector(QObject):
         """清理资源"""
         self._tray.hide()
         self._menu.clear()
-        logger.info(f"[SystemTrayConnector] 资源已清理")
+        logger.info("[SystemTrayConnector] 资源已清理")

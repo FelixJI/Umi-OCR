@@ -17,7 +17,7 @@ Date: 2026-01-27
 import hashlib
 import hmac
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 from urllib.parse import quote
 import uuid
@@ -27,10 +27,10 @@ import requests
 from .base_cloud import BaseCloudEngine, CloudOCRType, CloudOCRResult
 from ...utils.credential_manager import CredentialManager
 
-
 # =============================================================================
 # 阿里云 V3 签名算法
 # =============================================================================
+
 
 class AliyunV3Signature:
     """
@@ -69,23 +69,21 @@ class AliyunV3Signature:
         if value is None:
             return ""
 
-        result = quote(str(value), safe='-_.~')
+        result = quote(str(value), safe="-_.~")
         # 替换特殊字符以符合阿里云规范
-        result = result.replace('+', '%20').replace('*', '%2A').replace('%7E', '~')
+        result = result.replace("+", "%20").replace("*", "%2A").replace("%7E", "~")
         return result
 
     @staticmethod
     def sha256_hex(data: str) -> str:
         """计算 SHA256 哈希值（十六进制）"""
-        return hashlib.sha256(data.encode('utf-8')).hexdigest()
+        return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
     @staticmethod
     def hmac_sha256(key: str, data: str) -> str:
         """计算 HMAC-SHA256 签名"""
         return hmac.new(
-            key.encode('utf-8'),
-            data.encode('utf-8'),
-            hashlib.sha256
+            key.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
         ).hexdigest()
 
     def build_authorization_header(
@@ -94,7 +92,7 @@ class AliyunV3Signature:
         endpoint: str,
         action: str,
         version: str,
-        params: Dict[str, str] = None
+        params: Dict[str, str] = None,
     ) -> Dict[str, str]:
         """
         构建Authorization头和请求头（V3签名）
@@ -112,7 +110,6 @@ class AliyunV3Signature:
         # 获取当前时间（UTC时间）
         now = datetime.now(timezone.utc)
         timestamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-        date = now.strftime("%Y-%m-%d")
 
         # 生成随机数
         signature_nonce = str(uuid.uuid4())
@@ -132,7 +129,8 @@ class AliyunV3Signature:
 
         # 已签名头列表
         signed_headers = (
-            "host;x-acs-action;x-acs-content-sha256;x-acs-date;x-acs-signature-nonce;x-acs-version"
+            "host;x-acs-action;x-acs-content-sha256;"
+            "x-acs-date;x-acs-signature-nonce;x-acs-version"
         )
 
         # 构造规范请求字符串
@@ -150,22 +148,22 @@ class AliyunV3Signature:
             canonicalized_query_string = "&".join(encoded_params)
 
         # 拼接规范请求字符串
-        canonical_request = "\n".join([
-            method.upper(),
-            canonicalized_resource,
-            canonicalized_query_string,
-            canonical_headers,
-            signed_headers,
-            content_sha256
-        ])
+        canonical_request = "\n".join(
+            [
+                method.upper(),
+                canonicalized_resource,
+                canonicalized_query_string,
+                canonical_headers,
+                signed_headers,
+                content_sha256,
+            ]
+        )
 
         # 计算签名
         # 签名字符串: AccessKeySecret + "&"
-        string_to_sign = "\n".join([
-            "ACS3-HMAC-SHA256",
-            timestamp,
-            self.sha256_hex(canonical_request)
-        ])
+        string_to_sign = "\n".join(
+            ["ACS3-HMAC-SHA256", timestamp, self.sha256_hex(canonical_request)]
+        )
 
         signing_key = self.access_key_secret + "&"
         signature = self.hmac_sha256(signing_key, string_to_sign)
@@ -189,7 +187,7 @@ class AliyunV3Signature:
             "x-acs-signature-nonce": signature_nonce,
             "x-acs-version": version,
             "Accept": "application/json",
-            "User-Agent": "Umi-OCR/1.0.0"
+            "User-Agent": "Umi-OCR/1.0.0",
         }
 
         return headers
@@ -198,6 +196,7 @@ class AliyunV3Signature:
 # =============================================================================
 # 阿里云 OCR 引擎
 # =============================================================================
+
 
 class AliyunOCREngine(BaseCloudEngine):
     """
@@ -263,16 +262,18 @@ class AliyunOCREngine(BaseCloudEngine):
         Returns:
             List[str]: ['access_key_id', 'access_key_secret']
         """
-        return ['access_key_id', 'access_key_secret']
+        return ["access_key_id", "access_key_secret"]
 
     def _init_session(self) -> None:
         """初始化 HTTP 会话"""
         self._http_session = requests.Session()
-        self._http_session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'User-Agent': f'Umi-OCR/{self.ENGINE_VERSION}'
-        })
+        self._http_session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": f"Umi-OCR/{self.ENGINE_VERSION}",
+            }
+        )
 
     def _test_connection(self) -> bool:
         """
@@ -289,8 +290,8 @@ class AliyunOCREngine(BaseCloudEngine):
 
             # 初始化签名器
             self._signature = AliyunV3Signature(
-                access_key_id=credentials['access_key_id'],
-                access_key_secret=credentials['access_key_secret']
+                access_key_id=credentials["access_key_id"],
+                access_key_secret=credentials["access_key_secret"],
             )
 
             # 构建一个最小测试请求
@@ -298,22 +299,26 @@ class AliyunOCREngine(BaseCloudEngine):
 
             # 生成签名
             headers = self._signature.build_authorization_header(
-                method='POST',
+                method="POST",
                 endpoint=self.API_HOST,
-                action='RecognizeAllText',
-                version=self.API_VERSION
+                action="RecognizeAllText",
+                version=self.API_VERSION,
             )
 
             # 发送测试请求（即使失败也能验证签名是否正确）
             url = f"https://{self.API_HOST}/{self.ACTIONS[CloudOCRType.GENERAL]}"
-            response = self._http_session.post(url, headers=headers, data=payload, timeout=10)
+            response = self._http_session.post(
+                url, headers=headers, data=payload, timeout=10
+            )
 
             # 检查是否为认证错误（阿里云签名错误通常是 403）
             if response.status_code == 403:
                 logging.warning("阿里云连接测试失败：签名错误或凭证无效")
                 return False
             elif response.status_code >= 500:
-                logging.warning(f"阿里云连接测试失败：服务器错误 {response.status_code}")
+                logging.warning(
+                    f"阿里云连接测试失败：服务器错误 {response.status_code}"
+                )
                 return False
             else:
                 return True
@@ -331,18 +336,22 @@ class AliyunOCREngine(BaseCloudEngine):
         """
         # 从 CredentialManager 加载凭证
         cred_manager = CredentialManager()
-        credentials = cred_manager.load('aliyun')
+        credentials = cred_manager.load("aliyun")
 
         if not credentials:
-            raise ValueError("阿里云 OCR 凭证未配置，请在设置中添加 AccessKeyId 和 AccessKeySecret")
+            raise ValueError(
+                "阿里云 OCR 凭证未配置，请在设置中添加 AccessKeyId 和 AccessKeySecret"
+            )
 
         # 验证凭证格式
-        if 'access_key_id' not in credentials or 'access_key_secret' not in credentials:
-            raise ValueError("阿里云 OCR 凭证格式错误，需要 access_key_id 和 access_key_secret")
+        if "access_key_id" not in credentials or "access_key_secret" not in credentials:
+            raise ValueError(
+                "阿里云 OCR 凭证格式错误，需要 access_key_id 和 access_key_secret"
+            )
 
         return {
-            'access_key_id': credentials['access_key_id'],
-            'access_key_secret': credentials['access_key_secret']
+            "access_key_id": credentials["access_key_id"],
+            "access_key_secret": credentials["access_key_secret"],
         }
 
     def _build_request(self, image_data: str, ocr_type: CloudOCRType) -> Dict[str, Any]:
@@ -366,29 +375,24 @@ class AliyunOCREngine(BaseCloudEngine):
             raise ValueError(f"不支持的 OCR 类型: {ocr_type}")
 
         # 构建请求体
-        payload = json.dumps({
-            "Image": image_data
-        })
+        payload = json.dumps({"Image": image_data})
 
         # 生成签名和请求头
         headers = self._signature.build_authorization_header(
-            method='POST',
+            method="POST",
             endpoint=self.API_HOST,
             action=action,
-            version=self.API_VERSION
+            version=self.API_VERSION,
         )
 
         # 构建完整 URL
         url = f"https://{self.API_HOST}/{action}"
 
-        return {
-            'url': url,
-            'method': 'POST',
-            'headers': headers,
-            'data': payload
-        }
+        return {"url": url, "method": "POST", "headers": headers, "data": payload}
 
-    def _parse_response(self, response: Dict, ocr_type: CloudOCRType) -> List[CloudOCRResult]:
+    def _parse_response(
+        self, response: Dict, ocr_type: CloudOCRType
+    ) -> List[CloudOCRResult]:
         """
         解析阿里云响应为统一格式
 
@@ -409,22 +413,22 @@ class AliyunOCREngine(BaseCloudEngine):
             List[CloudOCRResult]: 统一格式的识别结果列表
         """
         # 检查是否有错误
-        if 'Code' in response:
-            error_code = response.get('Code', '')
-            error_msg = response.get('Message', f"错误码 {error_code}")
+        if "Code" in response:
+            error_code = response.get("Code", "")
+            error_msg = response.get("Message", f"错误码 {error_code}")
 
             # 阿里云错误码处理
-            if error_code == 'InvalidParameter':
+            if error_code == "InvalidParameter":
                 raise Exception(f"参数错误: {error_msg}")
-            elif error_code == 'AuthFailure':
+            elif error_code == "AuthFailure":
                 raise Exception(f"认证失败: {error_msg}")
             else:
                 raise Exception(f"阿里云 OCR 错误: {error_msg} ({error_code})")
 
         # 解析识别结果
-        data = response.get('Data', {})
-        words_infos = data.get('WordsInfos', [])
-        content = data.get('Content', '')
+        data = response.get("Data", {})
+        words_infos = data.get("WordsInfos", [])
+        content = data.get("Content", "")
 
         # 阿里云的WordsInfos格式：
         # [{
@@ -436,25 +440,24 @@ class AliyunOCREngine(BaseCloudEngine):
 
         if not words_infos and not content:
             # 无识别结果，返回空结果
-            return [CloudOCRResult(
-                text='',
-                confidence=0.0,
-                location=None,
-                extra=response
-            )]
+            return [
+                CloudOCRResult(text="", confidence=0.0, location=None, extra=response)
+            ]
 
         # 如果有Content（通用识别结果），按换行符分割
         if content:
-            texts = content.split('\n')
+            texts = content.split("\n")
             results = []
             for i, text in enumerate(texts):
                 if text.strip():
-                    results.append(CloudOCRResult(
-                        text=text.strip(),
-                        confidence=0.95,  # 默认置信度
-                        location=None,
-                        extra={'provider': 'aliyun', 'line_index': i}
-                    ))
+                    results.append(
+                        CloudOCRResult(
+                            text=text.strip(),
+                            confidence=0.95,  # 默认置信度
+                            location=None,
+                            extra={"provider": "aliyun", "line_index": i},
+                        )
+                    )
 
             return results
 
@@ -462,39 +465,36 @@ class AliyunOCREngine(BaseCloudEngine):
         if words_infos:
             results = []
             for word_info in words_infos:
-                text = word_info.get('Content', '')
-                confidence = word_info.get('Score', 0.0) / 100.0  # 转换为 0-1
-                rect = word_info.get('WordRectangle', {})
+                text = word_info.get("Content", "")
+                confidence = word_info.get("Score", 0.0) / 100.0  # 转换为 0-1
+                rect = word_info.get("WordRectangle", {})
 
                 location = None
                 if rect:
                     # 阿里云坐标：Top=左上, Left=左上
-                    left = int(rect.get('Left', 0))
-                    top = int(rect.get('Top', 0))
-                    width = int(rect.get('Width', 0))
-                    height = int(rect.get('Height', 0))
+                    left = int(rect.get("Left", 0))
+                    top = int(rect.get("Top", 0))
+                    width = int(rect.get("Width", 0))
+                    height = int(rect.get("Height", 0))
                     location = [left, top, width, height]
 
-                results.append(CloudOCRResult(
-                    text=text,
-                    confidence=confidence,
-                    location=location,
-                    extra={
-                        'provider': 'aliyun',
-                        'index': word_info.get('Index', 0),
-                        'raw_rect': rect
-                    }
-                ))
+                results.append(
+                    CloudOCRResult(
+                        text=text,
+                        confidence=confidence,
+                        location=location,
+                        extra={
+                            "provider": "aliyun",
+                            "index": word_info.get("Index", 0),
+                            "raw_rect": rect,
+                        },
+                    )
+                )
 
             return results
 
         # 默认返回空结果
-        return [CloudOCRResult(
-            text='',
-            confidence=0.0,
-            location=None,
-            extra=response
-        )]
+        return [CloudOCRResult(text="", confidence=0.0, location=None, extra=response)]
 
     def _is_auth_error(self, error_code: str) -> bool:
         """
@@ -508,11 +508,7 @@ class AliyunOCREngine(BaseCloudEngine):
         Returns:
             bool: 是否为认证错误
         """
-        auth_errors = [
-            'AuthFailure',
-            'InvalidAccessKeyId',
-            'InvalidAccessKeySecret'
-        ]
+        auth_errors = ["AuthFailure", "InvalidAccessKeyId", "InvalidAccessKeySecret"]
         return error_code in auth_errors
 
     def _is_quota_error(self, error_code: str) -> bool:
@@ -527,10 +523,7 @@ class AliyunOCREngine(BaseCloudEngine):
         Returns:
             bool: 是否为配额超限
         """
-        quota_errors = [
-            'QuotaExceeded',
-            'ServiceUnavailable'
-        ]
+        quota_errors = ["QuotaExceeded", "ServiceUnavailable"]
         return error_code in quota_errors
 
     # -------------------------------------------------------------------------

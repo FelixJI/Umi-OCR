@@ -11,7 +11,7 @@ from .qrcode_scanner import QRCodeScanner, QRCodeResult
 from .qrcode_generator import QRCodeGenerator
 
 __all__ = [
-    'QRCodeScanner',
-    'QRCodeResult',
-    'QRCodeGenerator',
+    "QRCodeScanner",
+    "QRCodeResult",
+    "QRCodeGenerator",
 ]

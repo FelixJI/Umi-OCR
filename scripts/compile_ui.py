@@ -7,9 +7,7 @@ This script compiles .ui files to .py files using pyside6-uic.
 Run this script after modifying any .ui file in Qt Designer.
 """
 
-import os
 import subprocess
-import sys
 from pathlib import Path
 
 # List of UI files to compile
@@ -19,6 +17,7 @@ UI_FILES = [
     ("src/ui/main_window/main_window.ui", "src/ui/main_window/ui_main_window.py"),
     ("src/ui/floating_bar/floating_bar.ui", "src/ui/floating_bar/ui_floating_bar.py"),
 ]
+
 
 def compile_ui():
     project_root = Path(__file__).parent.parent
@@ -38,11 +37,11 @@ def compile_ui():
             continue
 
         print(f"Compiling {ui_rel} -> {py_rel} ...")
-        
+
         try:
             # Check if pyside6-uic is available
             cmd = ["pyside6-uic", str(ui_path), "-o", str(py_path)]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
             print(f"[OK] Generated {py_rel}")
             success_count += 1
         except subprocess.CalledProcessError as e:
@@ -50,11 +49,14 @@ def compile_ui():
             print(e.stderr)
             fail_count += 1
         except FileNotFoundError:
-            print("[ERROR] pyside6-uic command not found. Please ensure PySide6 is installed.")
+            print(
+                "[ERROR] pyside6-uic command not found. Please ensure PySide6 is installed."
+            )
             return
 
     print("-" * 50)
     print(f"Compilation finished. Success: {success_count}, Failed: {fail_count}")
+
 
 if __name__ == "__main__":
     compile_ui()

@@ -7,9 +7,17 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
-                            QPushButton, QLabel, QProgressBar, QTextEdit, QFileDialog)
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidget,
+    QPushButton,
+    QLabel,
+    QProgressBar,
+    QTextEdit,
+    QFileDialog,
+)
 
 from src.utils.logger import get_logger
 
@@ -27,6 +35,7 @@ class BatchDocView(QWidget):
         # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
         try:
             from controllers.batch_doc_controller import BatchDocController
+
             self._controller = BatchDocController()
         except ModuleNotFoundError as e:
             logger.warning(f"批量文档控制器加载失败，部分功能不可用: {e}")
@@ -133,7 +142,7 @@ class BatchDocView(QWidget):
             self,
             "选择文档文件",
             "",
-            "Documents (*.pdf *.xps *.epub *.mobi *.fb2 *.cbz);;All Files (*.*)"
+            "Documents (*.pdf *.xps *.epub *.mobi *.fb2 *.cbz);;All Files (*.*)",
         )
 
         if files:

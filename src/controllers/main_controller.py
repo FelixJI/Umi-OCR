@@ -26,7 +26,6 @@ from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
 from src.platforms.win32.hotkey_manager import HotkeyManager
 from src.services.server.http_server import HTTPServer
-from qasync import QEventLoop
 import asyncio
 
 
@@ -73,16 +72,16 @@ class MainController(QObject):
 
         # 初始化主窗口
         self._init_main_window()
-        
+
         # 初始化系统托盘 (阶段21)
         self._init_tray()
-        
+
         # 初始化全局快捷键 (阶段22)
         self._init_hotkeys()
-        
+
         # 初始化悬浮工具栏 (阶段24)
         self._init_floating_bar()
-        
+
         # 初始化 HTTP 服务 (阶段26)
         self._init_http_server()
 
@@ -93,9 +92,9 @@ class MainController(QObject):
         # 检查是否启用
         if not self.config_manager.get("system.http_server_enabled", False):
             return
-            
+
         self.http_server = HTTPServer()
-        
+
         # 使用 qasync 将 asyncio 集成到 Qt 事件循环
         # 注意：这需要在 main.py 中正确设置 loop
         try:
@@ -107,6 +106,7 @@ class MainController(QObject):
     def _init_floating_bar(self):
         """初始化悬浮工具栏"""
         from src.ui.floating_bar.floating_bar import FloatingBar
+
         self.floating_bar = FloatingBar()
 
         # 连接信号
@@ -119,7 +119,7 @@ class MainController(QObject):
         # 从配置读取模式（如果 FloatingBar 有 set_mode 方法）
         try:
             mode = self.config_manager.get("ui.floating_bar_mode", "always_visible")
-            if hasattr(self.floating_bar, 'set_mode'):
+            if hasattr(self.floating_bar, "set_mode"):
                 self.floating_bar.set_mode(mode)
         except Exception as e:
             self.logger.warning(f"设置悬浮栏模式失败: {e}")
@@ -129,29 +129,35 @@ class MainController(QObject):
         self.hotkey_manager = HotkeyManager(self)
         self.hotkey_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
         self.hotkey_manager.start()
-        
+
         # 初始注册
         self._update_hotkeys_registration()
-        
+
         # 监听配置变更
         self.config_manager.config_changed.connect(self._on_config_changed_hotkey)
-        
+
     def _update_hotkeys_registration(self):
         """更新热键注册"""
         # Screenshot
         key = self.config_manager.get("hotkeys.screenshot", "")
-        if key: self.hotkey_manager.register_hotkey("screenshot", key)
-        else: self.hotkey_manager.unregister_hotkey("screenshot")
-            
+        if key:
+            self.hotkey_manager.register_hotkey("screenshot", key)
+        else:
+            self.hotkey_manager.unregister_hotkey("screenshot")
+
         # Clipboard
         key = self.config_manager.get("hotkeys.clipboard", "")
-        if key: self.hotkey_manager.register_hotkey("clipboard", key)
-        else: self.hotkey_manager.unregister_hotkey("clipboard")
-        
+        if key:
+            self.hotkey_manager.register_hotkey("clipboard", key)
+        else:
+            self.hotkey_manager.unregister_hotkey("clipboard")
+
         # Show/Hide
         key = self.config_manager.get("hotkeys.show_hide", "")
-        if key: self.hotkey_manager.register_hotkey("show_hide", key)
-        else: self.hotkey_manager.unregister_hotkey("show_hide")
+        if key:
+            self.hotkey_manager.register_hotkey("show_hide", key)
+        else:
+            self.hotkey_manager.unregister_hotkey("show_hide")
 
     def _on_config_changed_hotkey(self, key_path, old, new):
         """配置变更处理"""
@@ -176,8 +182,9 @@ class MainController(QObject):
     def _init_tray(self):
         """初始化系统托盘"""
         from src.utils.tray_manager import TrayManager
+
         self.tray_manager = TrayManager(self)
-        
+
         # 连接托盘信号
         self.tray_manager.show_window_requested.connect(self.show_window)
         self.tray_manager.screenshot_requested.connect(self.handle_screenshot_ocr)
@@ -262,7 +269,7 @@ class MainController(QObject):
             "batch_doc",
             "qrcode",
             "task_manager",
-            "settings"
+            "settings",
         ]
 
         if 0 <= page_index < len(page_names):
@@ -285,23 +292,37 @@ class MainController(QObject):
         if page_name not in self.page_controllers:
             try:
                 if page_name == "screenshot_ocr":
-                    from src.controllers.screenshot_controller import ScreenshotController
-                    self.page_controllers[page_name] = ScreenshotController(self.main_window)
+                    from src.controllers.screenshot_controller import (
+                        ScreenshotController,
+                    )
+
+                    self.page_controllers[page_name] = ScreenshotController(
+                        self.main_window
+                    )
                 elif page_name == "batch_ocr":
                     from src.controllers.batch_ocr_controller import BatchOcrController
-                    self.page_controllers[page_name] = BatchOcrController(self.main_window)
+
+                    self.page_controllers[page_name] = BatchOcrController(
+                        self.main_window
+                    )
                 elif page_name == "batch_doc":
                     from src.controllers.batch_doc_controller import BatchDocController
-                    self.page_controllers[page_name] = BatchDocController(self.main_window)
+
+                    self.page_controllers[page_name] = BatchDocController(
+                        self.main_window
+                    )
                 elif page_name == "qrcode":
                     from src.controllers.qrcode_controller import QrcodeController
-                    self.page_controllers[page_name] = QrcodeController(self.main_window)
+
+                    self.page_controllers[page_name] = QrcodeController(
+                        self.main_window
+                    )
                 elif page_name == "settings":
-                    from src.ui.settings.settings import SettingsWindow
                     # Settings 需要 ui 对象，稍后处理
                     self.page_controllers[page_name] = None
                 elif page_name == "task_manager":
                     from src.ui.task_manager.task_manager import TaskManagerWindow
+
                     self.page_controllers[page_name] = TaskManagerWindow()
 
                 self.logger.info(f"页面控制器已创建: {page_name}")
@@ -358,7 +379,9 @@ class MainController(QObject):
                 self.main_window,
                 "选择文件",
                 "",
-                "所有支持的文件 (*.png *.jpg *.jpeg *.bmp *.tiff *.pdf *.doc *.docx);;图片文件 (*.png *.jpg *.jpeg *.bmp *.tiff);;文档文件 (*.pdf *.doc *.docx)"
+                "所有支持的文件 (*.png *.jpg *.jpeg *.bmp *.tiff *.pdf *.doc *.docx);;"+
+                "图片文件 (*.png *.jpg *.jpeg *.bmp *.tiff);;"+
+                "文档文件 (*.pdf *.doc *.docx)",
             )
             if file_path and os.path.exists(file_path):
                 self.logger.info(f"选择的文件: {file_path}")
@@ -384,7 +407,7 @@ class MainController(QObject):
     def handle_export(self):
         """处理导出命令"""
         self.logger.debug("执行导出命令")
-        from PySide6.QtWidgets import QFileDialog, QMessageBox
+        from PySide6.QtWidgets import QMessageBox
 
         if self.main_window:
             # TODO: 根据当前活动页面确定要导出的内容
@@ -393,14 +416,13 @@ class MainController(QObject):
                 self.main_window,
                 "导出功能",
                 "导出功能尚未完全实现。请使用各个页面提供的导出按钮。",
-                QMessageBox.StandardButton.Ok
+                QMessageBox.StandardButton.Ok,
             )
 
     # 剪贴板 OCR
     def handle_clipboard_ocr(self):
         """处理剪贴板 OCR 命令"""
         self.logger.debug("执行剪贴板 OCR 命令")
-        from PySide6.QtGui import QClipboard
         from PySide6.QtWidgets import QApplication, QMessageBox
 
         clipboard = QApplication.clipboard()
@@ -421,8 +443,9 @@ class MainController(QObject):
                     self.main_window,
                     "提示",
                     "剪贴板中没有可识别的图片或文本。",
-                    QMessageBox.StandardButton.Ok
+                    QMessageBox.StandardButton.Ok,
                 )
+
     # 暂停/恢复所有任务
     def handle_pause_all(self):
         """处理暂停/恢复所有任务命令"""
@@ -431,7 +454,7 @@ class MainController(QObject):
         # 检查是否有任务管理器控制器
         if "task_manager" in self.page_controllers:
             task_manager = self.page_controllers["task_manager"]
-            if hasattr(task_manager, 'toggle_pause_all'):
+            if hasattr(task_manager, "toggle_pause_all"):
                 task_manager.toggle_pause_all()
                 self.show_status_message("已切换所有任务的暂停状态")
             else:
@@ -439,7 +462,7 @@ class MainController(QObject):
         else:
             self.show_status_message("任务管理器未初始化")
             self.logger.warning("任务管理器未初始化，无法执行暂停/恢复操作")
-        
+
     def handle_exit_from_tray(self):
         """处理托盘退出命令"""
         self.logger.info("托盘请求退出")
@@ -489,7 +512,7 @@ class MainController(QObject):
         """窗口关闭事件处理"""
         # 检查是否关闭到托盘
         close_to_tray = self.config_manager.get("ui.close_to_tray", False)
-        
+
         if close_to_tray:
             self.logger.info("主窗口关闭请求 -> 最小化到托盘")
             self.hide_window()

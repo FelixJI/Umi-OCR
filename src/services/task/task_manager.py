@@ -18,9 +18,8 @@ from PySide6.QtCore import QObject, Signal
 
 from .task_model import Task, TaskGroup, TaskType, TaskStatus, CancelMode
 from .task_queue import TaskQueue
-from .task_worker import TaskWorker, WorkerManager
+from .task_worker import WorkerManager
 from ..pdf.pdf_parser import PDFParser
-
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +27,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # 任务管理器
 # =============================================================================
+
 
 class TaskManager(QObject):
     """
@@ -42,16 +42,16 @@ class TaskManager(QObject):
     """
 
     # === Qt 信号（供 UI 层连接）===
-    task_submitted = Signal(str)              # (group_id)
-    task_started = Signal(str, str)           # (task_id, group_id)
-    task_progress = Signal(str, float)        # (task_id, progress)
-    task_completed = Signal(str, object)      # (task_id, result)
-    task_failed = Signal(str, str)            # (task_id, error)
-    group_progress = Signal(str, float)       # (group_id, progress)
-    group_completed = Signal(str)             # (group_id)
-    group_paused = Signal(str, str)           # (group_id, reason: "user"/"failure")
-    group_cancelled = Signal(str)             # (group_id)
-    queue_changed = Signal()                  # 队列状态变化
+    task_submitted = Signal(str)  # (group_id)
+    task_started = Signal(str, str)  # (task_id, group_id)
+    task_progress = Signal(str, float)  # (task_id, progress)
+    task_completed = Signal(str, object)  # (task_id, result)
+    task_failed = Signal(str, str)  # (task_id, error)
+    group_progress = Signal(str, float)  # (group_id, progress)
+    group_completed = Signal(str)  # (group_id)
+    group_paused = Signal(str, str)  # (group_id, reason: "user"/"failure")
+    group_cancelled = Signal(str)  # (group_id)
+    queue_changed = Signal()  # 队列状态变化
 
     _instance: Optional["TaskManager"] = None
     _lock = threading.Lock()
@@ -180,11 +180,12 @@ class TaskManager(QObject):
         """
         # 创建任务组
         import uuid
+
         group = TaskGroup(
             id=str(uuid.uuid4()),
             title=title,
             priority=priority,
-            max_concurrency=max_concurrency
+            max_concurrency=max_concurrency,
         )
 
         # 添加任务
@@ -194,8 +195,8 @@ class TaskManager(QObject):
                 task_type=TaskType.OCR,
                 input_data={
                     "image_path": image_path,
-                    "engine_config": engine_config or {}
-                }
+                    "engine_config": engine_config or {},
+                },
             )
             group.add_task(task)
 
@@ -225,12 +226,9 @@ class TaskManager(QObject):
             str: 任务组 ID
         """
         import uuid
+
         # 创建根任务组
-        root_group = TaskGroup(
-            id=str(uuid.uuid4()),
-            title=title,
-            priority=priority
-        )
+        root_group = TaskGroup(id=str(uuid.uuid4()), title=title, priority=priority)
 
         parser = PDFParser()
 
@@ -239,13 +237,13 @@ class TaskManager(QObject):
             # 解析 PDF 获取页数
             pdf_info = parser.parse_pdf(pdf_path)
             total_pages = pdf_info.total_pages if pdf_info else 0
-            
+
             # 创建子任务组
             pdf_group = TaskGroup(
                 id=str(uuid.uuid4()),
                 title=Path(pdf_path).name,
                 priority=priority,
-                max_concurrency=1  # PDF 任务串行执行
+                max_concurrency=1,  # PDF 任务串行执行
             )
 
             if total_pages > 0:
@@ -253,10 +251,7 @@ class TaskManager(QObject):
                     task = Task(
                         id=str(uuid.uuid4()),
                         task_type=TaskType.PDF_PARSE,
-                        input_data={
-                            "pdf_path": pdf_path,
-                            "page_number": i
-                        }
+                        input_data={"pdf_path": pdf_path, "page_number": i},
                     )
                     pdf_group.add_task(task)
             else:
@@ -266,10 +261,7 @@ class TaskManager(QObject):
                 task = Task(
                     id=str(uuid.uuid4()),
                     task_type=TaskType.PDF_PARSE,
-                    input_data={
-                        "pdf_path": pdf_path,
-                        "page_number": 1
-                    }
+                    input_data={"pdf_path": pdf_path, "page_number": 1},
                 )
                 pdf_group.add_task(task)
 
@@ -303,7 +295,9 @@ class TaskManager(QObject):
         self._queue.resume_group(group_id)
         logger.info(f"任务组恢复请求: {group_id}")
 
-    def cancel_group(self, group_id: str, mode: CancelMode = CancelMode.GRACEFUL) -> None:
+    def cancel_group(
+        self, group_id: str, mode: CancelMode = CancelMode.GRACEFUL
+    ) -> None:
         """
         取消任务组
         GRACEFUL: 等待当前 Task 完成

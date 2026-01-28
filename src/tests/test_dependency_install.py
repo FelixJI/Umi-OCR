@@ -19,8 +19,7 @@ sys.path.insert(0, str(project_root))
 
 # 配置日志
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -58,7 +57,7 @@ def test_gpu_detection():
 
         # 获取摘要
         summary = detector.get_summary()
-        print(f"\n摘要:")
+        print("\n摘要:")
         print(f"  GPU总数: {summary['gpu_count']}")
         print(f"  NVIDIA GPU: {summary['nvidia_gpu_available']}")
         print(f"  推荐选项: {summary['recommend_gpu']}")
@@ -69,6 +68,7 @@ def test_gpu_detection():
     except Exception as e:
         print(f"\n[ERROR] GPU检测测试失败: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -80,12 +80,12 @@ def test_dependency_check():
     print("=" * 60)
 
     try:
-        from utils.check_dependencies import check_ocr_dependencies, DependencyStatus
+        from utils.check_dependencies import check_ocr_dependencies
 
         # 检查依赖
         dep_info = check_ocr_dependencies()
 
-        print(f"\nPaddlePaddle:")
+        print("\nPaddlePaddle:")
         print(f"  状态: {dep_info.paddlepaddle.status.value}")
         print(f"  描述: {dep_info.paddlepaddle.description}")
         if dep_info.paddlepaddle.version:
@@ -93,7 +93,7 @@ def test_dependency_check():
         if dep_info.paddlepaddle.install_command:
             print(f"  安装命令: {dep_info.paddlepaddle.install_command}")
 
-        print(f"\nPaddleOCR:")
+        print("\nPaddleOCR:")
         print(f"  状态: {dep_info.paddleocr.status.value}")
         print(f"  描述: {dep_info.paddleocr.description}")
         if dep_info.paddleocr.version:
@@ -101,18 +101,20 @@ def test_dependency_check():
         if dep_info.paddleocr.install_command:
             print(f"  安装命令: {dep_info.paddleocr.install_command}")
 
-        print(f"\nGPU:")
+        print("\nGPU:")
         print(f"  可用: {dep_info.gpu_available}")
         print(f"  数量: {dep_info.gpu_count}")
 
         if dep_info.gpu_info_list:
-            print(f"\n检测到的GPU:")
+            print("\n检测到的GPU:")
             for i, gpu in enumerate(dep_info.gpu_info_list, 1):
                 print(f"  {i}. {gpu.name} ({gpu.vendor.value})")
                 print(f"     显存: {gpu.memory_mb // 1024}GB")
                 print(f"     建议: {gpu.recommendation}")
 
-        print(f"\n推荐安装选项: {dep_info.recommendation.value if dep_info.recommendation else 'N/A'}")
+        print(
+            f"\n推荐安装选项: {dep_info.recommendation.value if dep_info.recommendation else 'N/A'}"
+        )
 
         print("\n[OK] 依赖检测测试通过")
         return True
@@ -120,6 +122,7 @@ def test_dependency_check():
     except Exception as e:
         print(f"\n[ERROR] 依赖检测测试失败: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -151,6 +154,7 @@ def test_mirror_sources():
     except Exception as e:
         print(f"\n[ERROR] 镜像源配置测试失败: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -166,7 +170,7 @@ def test_install_config():
 
         # 测试CPU配置
         cpu_config = InstallConfig(option=InstallOption.CPU)
-        print(f"\nCPU配置:")
+        print("\nCPU配置:")
         print(f"  选项: {cpu_config.option.value}")
         print(f"  镜像源数量: {len(cpu_config.mirrors)}")
         print(f"  最大重试: {cpu_config.max_retries}")
@@ -174,12 +178,12 @@ def test_install_config():
 
         # 测试GPU配置
         gpu_config = InstallConfig(option=InstallOption.GPU)
-        print(f"\nGPU配置:")
+        print("\nGPU配置:")
         print(f"  选项: {gpu_config.option.value}")
 
         # 测试SKIP配置
         skip_config = InstallConfig(option=InstallOption.SKIP)
-        print(f"\nSKIP配置:")
+        print("\nSKIP配置:")
         print(f"  选项: {skip_config.option.value}")
 
         print("\n[OK] 安装配置测试通过")
@@ -188,6 +192,7 @@ def test_install_config():
     except Exception as e:
         print(f"\n[ERROR] 安装配置测试失败: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

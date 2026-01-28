@@ -16,17 +16,17 @@ Date: 2026-01-27
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import requests
 import time
 
 from .base_cloud import BaseCloudEngine, CloudOCRType, CloudOCRResult
 from ...utils.credential_manager import CredentialManager
 
-
 # =============================================================================
 # 百度 OCR 引擎配置
 # =============================================================================
+
 
 class BaiduOCREngine(BaseCloudEngine):
     """
@@ -109,16 +109,18 @@ class BaiduOCREngine(BaseCloudEngine):
         Returns:
             List[str]: ['api_key', 'secret_key']
         """
-        return ['api_key', 'secret_key']
+        return ["api_key", "secret_key"]
 
     def _init_session(self) -> None:
         """初始化 HTTP 会话"""
         self._http_session = requests.Session()
-        self._http_session.headers.update({
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-            'User-Agent': f'Umi-OCR/{self.ENGINE_VERSION}'
-        })
+        self._http_session.headers.update(
+            {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+                "User-Agent": f"Umi-OCR/{self.ENGINE_VERSION}",
+            }
+        )
 
     def _test_connection(self) -> bool:
         """
@@ -145,18 +147,20 @@ class BaiduOCREngine(BaseCloudEngine):
         """
         # 从 CredentialManager 加载凭证
         cred_manager = CredentialManager()
-        credentials = cred_manager.load('baidu')
+        credentials = cred_manager.load("baidu")
 
         if not credentials:
-            raise ValueError("百度云 OCR 凭证未配置，请在设置中添加 API Key 和 Secret Key")
+            raise ValueError(
+                "百度云 OCR 凭证未配置，请在设置中添加 API Key 和 Secret Key"
+            )
 
         # 验证凭证格式
-        if 'api_key' not in credentials or 'secret_key' not in credentials:
+        if "api_key" not in credentials or "secret_key" not in credentials:
             raise ValueError("百度云 OCR 凭证格式错误，需要 api_key 和 secret_key")
 
         return {
-            'api_key': credentials['api_key'],
-            'secret_key': credentials['secret_key']
+            "api_key": credentials["api_key"],
+            "secret_key": credentials["secret_key"],
         }
 
     def _build_request(self, image_data: str, ocr_type: CloudOCRType) -> Dict[str, Any]:
@@ -175,7 +179,7 @@ class BaiduOCREngine(BaseCloudEngine):
                 - data: 请求体
         """
         # 获取 Access Token
-        token = self._get_access_token()
+        self._get_access_token()
 
         # 获取 API 端点
         url = self.API_ENDPOINTS.get(ocr_type)
@@ -183,27 +187,22 @@ class BaiduOCREngine(BaseCloudEngine):
             raise ValueError(f"不支持的 OCR 类型: {ocr_type}")
 
         # 构建请求体
-        data = {
-            'image': image_data
-        }
+        data = {"image": image_data}
 
         # 可选参数（可根据配置添加）
-        if self.config.get('detect_direction', False):
-            data['detect_direction'] = 'true'
-        if self.config.get('detect_language', False):
-            data['detect_language'] = 'true'
+        if self.config.get("detect_direction", False):
+            data["detect_direction"] = "true"
+        if self.config.get("detect_language", False):
+            data["detect_language"] = "true"
 
         # 构建请求头（已包含 Content-Type）
         headers = self._http_session.headers.copy()
 
-        return {
-            'url': url,
-            'method': 'POST',
-            'headers': headers,
-            'data': data
-        }
+        return {"url": url, "method": "POST", "headers": headers, "data": data}
 
-    def _parse_response(self, response: Dict, ocr_type: CloudOCRType) -> List[CloudOCRResult]:
+    def _parse_response(
+        self, response: Dict, ocr_type: CloudOCRType
+    ) -> List[CloudOCRResult]:
         """
         解析百度响应为统一格式
 
@@ -225,54 +224,50 @@ class BaiduOCREngine(BaseCloudEngine):
         #   "words_result_num": 10
         # }
 
-        error_code = response.get('error_code')
-        error_msg = response.get('error_msg', '')
+        error_code = response.get("error_code")
 
         if error_code:
             # 百度错误码处理
             error_map = {
-                1: '用户或密码错误',
-                2: '认证失败',
-                3: 'Token 不存在',
-                4: 'Token 无效',
-                5: 'Token 过期',
-                17: '每日请求量超限额',
-                18: 'QPS 超限额',
-                19: '请求总量超限额',
-                100: '无效参数',
-                110: 'Access Token 不存在',
-                111: 'Access Token 过期',
-                216015: '图片格式错误',
-                216100: '非法参数',
-                216101: '图片超限',
-                216102: 'OCR 失败',
-                216200: '系统错误',
-                216201: '系统错误',
-                216202: '系统错误',
-                216203: '系统错误',
-                216500: '未知错误',
+                1: "用户或密码错误",
+                2: "认证失败",
+                3: "Token 不存在",
+                4: "Token 无效",
+                5: "Token 过期",
+                17: "每日请求量超限额",
+                18: "QPS 超限额",
+                19: "请求总量超限额",
+                100: "无效参数",
+                110: "Access Token 不存在",
+                111: "Access Token 过期",
+                216015: "图片格式错误",
+                216100: "非法参数",
+                216101: "图片超限",
+                216102: "OCR 失败",
+                216200: "系统错误",
+                216201: "系统错误",
+                216202: "系统错误",
+                216203: "系统错误",
+                216500: "未知错误",
             }
 
             error_msg_cn = error_map.get(error_code, f"错误码 {error_code}")
             raise Exception(f"百度云 OCR 错误: {error_msg_cn} ({error_code})")
 
         # 解析识别结果
-        words_result = response.get('words_result', [])
+        words_result = response.get("words_result", [])
 
         if not words_result:
             # 无识别结果，返回空结果
-            return [CloudOCRResult(
-                text='',
-                confidence=0.0,
-                location=None,
-                extra=response
-            )]
+            return [
+                CloudOCRResult(text="", confidence=0.0, location=None, extra=response)
+            ]
 
         # 转换为统一格式
         results = []
         for item in words_result:
-            text = item.get('words', '')
-            location = item.get('location', {})
+            text = item.get("words", "")
+            location = item.get("location", {})
 
             # 提取坐标和置信度
             # 百度的置信度在 extra 中（某些接口）
@@ -281,21 +276,20 @@ class BaiduOCREngine(BaseCloudEngine):
             # 构建位置信息 [x, y, width, height]
             coords = None
             if location:
-                x = location.get('left', 0)
-                y = location.get('top', 0)
-                width = location.get('width', 0)
-                height = location.get('height', 0)
+                x = location.get("left", 0)
+                y = location.get("top", 0)
+                width = location.get("width", 0)
+                height = location.get("height", 0)
                 coords = [x, y, width, height]
 
-            results.append(CloudOCRResult(
-                text=text,
-                confidence=confidence,
-                location=coords,
-                extra={
-                    'provider': 'baidu',
-                    'raw_location': location
-                }
-            ))
+            results.append(
+                CloudOCRResult(
+                    text=text,
+                    confidence=confidence,
+                    location=coords,
+                    extra={"provider": "baidu", "raw_location": location},
+                )
+            )
 
         return results
 
@@ -310,7 +304,7 @@ class BaiduOCREngine(BaseCloudEngine):
             bool: 是否为认证错误
         """
         # 百度认证错误码：1-5
-        auth_errors = ['1', '2', '3', '4', '5', '110', '111']
+        auth_errors = ["1", "2", "3", "4", "5", "110", "111"]
         return error_code in auth_errors
 
     def _is_quota_error(self, error_code: str) -> bool:
@@ -324,7 +318,7 @@ class BaiduOCREngine(BaseCloudEngine):
             bool: 是否为配额超限
         """
         # 百度配额错误码：17-19
-        quota_errors = ['17', '18', '19']
+        quota_errors = ["17", "18", "19"]
         return error_code in quota_errors
 
     # -------------------------------------------------------------------------
@@ -349,15 +343,15 @@ class BaiduOCREngine(BaseCloudEngine):
 
         # 获取新 Token
         credentials = self._get_credentials()
-        api_key = credentials['api_key']
-        secret_key = credentials['secret_key']
+        api_key = credentials["api_key"]
+        secret_key = credentials["secret_key"]
 
         logging.info("百度云 Token 即将过期或不存在，正在刷新...")
 
         params = {
-            'grant_type': 'client_credentials',
-            'client_id': api_key,
-            'client_secret': secret_key
+            "grant_type": "client_credentials",
+            "client_id": api_key,
+            "client_secret": secret_key,
         }
 
         try:
@@ -366,16 +360,16 @@ class BaiduOCREngine(BaseCloudEngine):
 
             data = response.json()
 
-            if 'access_token' not in data:
+            if "access_token" not in data:
                 raise Exception(f"Token 响应格式错误: {data}")
 
-            self._access_token = data['access_token']
+            self._access_token = data["access_token"]
 
             # 设置过期时间（29天后）
             self._token_expires_at = time.time() + self.TOKEN_TTL
 
             # 获取 Token 有效期（如果有）
-            expires_in = data.get('expires_in', self.TOKEN_TTL)
+            expires_in = data.get("expires_in", self.TOKEN_TTL)
             logging.info(f"百度云 Token 刷新成功，有效期: {expires_in} 秒")
 
             return self._access_token

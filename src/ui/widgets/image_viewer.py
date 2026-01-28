@@ -17,23 +17,26 @@ Date: 2026-01-27
 """
 
 from typing import Optional, List, Dict, Any
-from pathlib import Path
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGraphicsView,
-    QGraphicsScene, QGraphicsRectItem, QGraphicsTextItem,
-    QPushButton, QLabel, QSlider, QSizePolicy
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGraphicsView,
+    QGraphicsScene,
+    QGraphicsRectItem,
+    QGraphicsTextItem,
+    QPushButton,
+    QLabel,
+    QSlider,
 )
 from PySide6.QtCore import Signal, Qt, QRectF, QPointF
-from PySide6.QtGui import (
-    QPixmap, QImage, QPen, QBrush, QColor,
-    QWheelEvent, QMouseEvent, QPainter, QTransform
-)
-
+from PySide6.QtGui import QPixmap, QImage, QPen, QBrush, QColor, QWheelEvent, QPainter
 
 # =============================================================================
 # 图片查看器控件
 # =============================================================================
+
 
 class ImageViewer(QWidget):
     """
@@ -65,7 +68,7 @@ class ImageViewer(QWidget):
     # 缩放配置
     # -------------------------------------------------------------------------
 
-    MIN_ZOOM = 0.1   # 最小缩放比例
+    MIN_ZOOM = 0.1  # 最小缩放比例
     MAX_ZOOM = 10.0  # 最大缩放比例
     ZOOM_STEP = 0.1  # 缩放步长
 
@@ -278,7 +281,9 @@ class ImageViewer(QWidget):
                 else:
                     # 更新位置显示
                     scene_pos = self._view.mapToScene(event.pos())
-                    self._pos_label.setText(f"位置: ({int(scene_pos.x())}, {int(scene_pos.y())})")
+                    self._pos_label.setText(
+                        f"位置: ({int(scene_pos.x())}, {int(scene_pos.y())})"
+                    )
 
         return super().eventFilter(obj, event)
 
@@ -330,7 +335,7 @@ class ImageViewer(QWidget):
 
             return True
 
-        except Exception as e:
+        except Exception:
             self._show_placeholder()
             return False
 

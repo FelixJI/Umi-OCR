@@ -21,8 +21,7 @@ import logging
 import asyncio
 import tempfile
 import time
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import List, Optional
 
 from aiohttp import web
 
@@ -35,6 +34,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # 工具函数
 # =============================================================================
+
 
 async def wait_for_group_completion(group_id: str, timeout: float = 30.0) -> bool:
     """
@@ -97,7 +97,9 @@ def cleanup_temp_files(file_paths: List[str]) -> None:
             logger.warning(f"清理临时文件失败: {path}, {e}")
 
 
-def error_response(message: str, code: str = "ERROR", status: int = 500) -> web.Response:
+def error_response(
+    message: str, code: str = "ERROR", status: int = 500
+) -> web.Response:
     """
     生成错误响应
 
@@ -109,16 +111,15 @@ def error_response(message: str, code: str = "ERROR", status: int = 500) -> web.
     Returns:
         web.Response: JSON 响应
     """
-    return web.json_response({
-        "success": False,
-        "error_code": code,
-        "error_message": message
-    }, status=status)
+    return web.json_response(
+        {"success": False, "error_code": code, "error_message": message}, status=status
+    )
 
 
 # =============================================================================
 # API 路由处理
 # =============================================================================
+
 
 async def handle_ocr(request: web.Request) -> web.Response:
     """
@@ -158,10 +159,7 @@ async def handle_ocr(request: web.Request) -> web.Response:
         # 通过 TaskManager 提交任务（强制路由原则）
         task_manager = TaskManager.instance()
         group_id = task_manager.submit_ocr_tasks(
-            image_paths=[tmp_path],
-            title="HTTP-OCR",
-            priority=10,
-            max_concurrency=1
+            image_paths=[tmp_path], title="HTTP-OCR", priority=10, max_concurrency=1
         )
 
         logger.info(f"OCR 任务已提交: {group_id}")
@@ -186,21 +184,12 @@ async def handle_ocr(request: web.Request) -> web.Response:
         task = tasks[0]
 
         if task.status == TaskStatus.COMPLETED and task.result:
-            return web.json_response({
-                "success": True,
-                "result": task.result
-            })
+            return web.json_response({"success": True, "result": task.result})
         elif task.status == TaskStatus.FAILED:
-            return error_response(
-                task.error or "OCR 识别失败",
-                "OCR_FAILED",
-                500
-            )
+            return error_response(task.error or "OCR 识别失败", "OCR_FAILED", 500)
         else:
             return error_response(
-                f"任务状态异常: {task.status.value}",
-                "UNEXPECTED_STATUS",
-                500
+                f"任务状态异常: {task.status.value}", "UNEXPECTED_STATUS", 500
             )
 
     except Exception as e:
@@ -261,7 +250,7 @@ async def handle_ocr_batch(request: web.Request) -> web.Response:
             image_paths=tmp_paths,
             title=title,
             priority=5,
-            max_concurrency=max_concurrency
+            max_concurrency=max_concurrency,
         )
 
         logger.info(f"批量 OCR 任务已提交: {group_id}, 共 {len(tmp_paths)} 张")
@@ -270,11 +259,9 @@ async def handle_ocr_batch(request: web.Request) -> web.Response:
         # 这里简化处理，实际应该在任务完成回调中清理
         # 或者使用带清理机制的临时目录
 
-        return web.json_response({
-            "success": True,
-            "group_id": group_id,
-            "total_count": len(tmp_paths)
-        })
+        return web.json_response(
+            {"success": True, "group_id": group_id, "total_count": len(tmp_paths)}
+        )
 
     except Exception as e:
         logger.error(f"批量 OCR 请求处理失败: {e}", exc_info=True)
@@ -300,23 +287,25 @@ async def handle_task_status(request: web.Request) -> web.Response:
         "failed_tasks": 0
     }
     """
-    task_id = request.match_info['task_id']
+    task_id = request.match_info["task_id"]
     task_manager = TaskManager.instance()
     group = task_manager.get_group(task_id)
 
     if not group:
         return error_response("任务不存在", "TASK_NOT_FOUND", 404)
 
-    return web.json_response({
-        "success": True,
-        "id": group.id,
-        "status": group.status.value,
-        "progress": group.progress,
-        "title": group.title,
-        "total_tasks": group.total_tasks,
-        "completed_tasks": group.completed_tasks,
-        "failed_tasks": group.failed_tasks
-    })
+    return web.json_response(
+        {
+            "success": True,
+            "id": group.id,
+            "status": group.status.value,
+            "progress": group.progress,
+            "title": group.title,
+            "total_tasks": group.total_tasks,
+            "completed_tasks": group.completed_tasks,
+            "failed_tasks": group.failed_tasks,
+        }
+    )
 
 
 async def handle_task_result(request: web.Request) -> web.Response:
@@ -340,7 +329,7 @@ async def handle_task_result(request: web.Request) -> web.Response:
         ]
     }
     """
-    task_id = request.match_info['task_id']
+    task_id = request.match_info["task_id"]
     task_manager = TaskManager.instance()
     group = task_manager.get_group(task_id)
 
@@ -350,20 +339,24 @@ async def handle_task_result(request: web.Request) -> web.Response:
     # 收集所有任务结果
     results = []
     for task in group.get_all_tasks():
-        results.append({
-            "task_id": task.id,
-            "status": task.status.value,
-            "result": task.result,
-            "error": task.error
-        })
+        results.append(
+            {
+                "task_id": task.id,
+                "status": task.status.value,
+                "result": task.result,
+                "error": task.error,
+            }
+        )
 
-    return web.json_response({
-        "success": True,
-        "group_id": group.id,
-        "status": group.status.value,
-        "progress": group.progress,
-        "results": results
-    })
+    return web.json_response(
+        {
+            "success": True,
+            "group_id": group.id,
+            "status": group.status.value,
+            "progress": group.progress,
+            "results": results,
+        }
+    )
 
 
 async def handle_task_cancel(request: web.Request) -> web.Response:
@@ -377,7 +370,7 @@ async def handle_task_cancel(request: web.Request) -> web.Response:
         "message": "任务已取消"
     }
     """
-    task_id = request.match_info['task_id']
+    task_id = request.match_info["task_id"]
     task_manager = TaskManager.instance()
     group = task_manager.get_group(task_id)
 
@@ -389,10 +382,7 @@ async def handle_task_cancel(request: web.Request) -> web.Response:
 
     task_manager.cancel_group(task_id)
 
-    return web.json_response({
-        "success": True,
-        "message": "任务已取消"
-    })
+    return web.json_response({"success": True, "message": "任务已取消"})
 
 
 async def handle_health(request: web.Request) -> web.Response:
@@ -406,15 +396,13 @@ async def handle_health(request: web.Request) -> web.Response:
         "version": "2.0.0"
     }
     """
-    return web.json_response({
-        "status": "ok",
-        "version": "2.0.0"
-    })
+    return web.json_response({"status": "ok", "version": "2.0.0"})
 
 
 # =============================================================================
 # 路由注册
 # =============================================================================
+
 
 def setup_routes(app: web.Application):
     """

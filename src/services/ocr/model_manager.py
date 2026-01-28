@@ -22,12 +22,12 @@ from .models.model_manager_core import PaddleModelManager, get_model_manager
 
 __all__ = [
     # 类型定义
-    'ModelType',
-    'ModelStatus',
-    'ModelInfo',
+    "ModelType",
+    "ModelStatus",
+    "ModelInfo",
     # 仓库
-    'ModelRepository',
+    "ModelRepository",
     # 管理器
-    'PaddleModelManager',
-    'get_model_manager',
+    "PaddleModelManager",
+    "get_model_manager",
 ]

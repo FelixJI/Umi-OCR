@@ -14,12 +14,11 @@ import time
 import logging
 from typing import Optional, List
 
-from PySide6.QtCore import QThread, Signal, QObject
+from PySide6.QtCore import QThread, Signal
 
 from .task_model import Task, TaskStatus, CancelMode
 from .task_handler import TaskHandler, TaskHandlerRegistry, TaskCancelledException
 from .task_queue import TaskQueue
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +26,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # 任务执行器
 # =============================================================================
+
 
 class TaskWorker(QThread):
     """
@@ -37,14 +37,14 @@ class TaskWorker(QThread):
     """
 
     # Qt 信号
-    task_started = Signal(str, str)           # (task_id, group_id)
-    task_progress = Signal(str, float)        # (task_id, progress) - 节流后
-    task_completed = Signal(str, object)      # (task_id, result)
-    task_failed = Signal(str, str)            # (task_id, error_message)
-    task_cancelled = Signal(str)              # (task_id)
-    group_paused_by_failure = Signal(str)     # (group_id) 因失败暂停
+    task_started = Signal(str, str)  # (task_id, group_id)
+    task_progress = Signal(str, float)  # (task_id, progress) - 节流后
+    task_completed = Signal(str, object)  # (task_id, result)
+    task_failed = Signal(str, str)  # (task_id, error_message)
+    task_cancelled = Signal(str)  # (task_id)
+    group_paused_by_failure = Signal(str)  # (group_id) 因失败暂停
 
-    PROGRESS_THROTTLE_MS = 100                # 进度节流间隔（毫秒）
+    PROGRESS_THROTTLE_MS = 100  # 进度节流间隔（毫秒）
 
     def __init__(self, task_queue: TaskQueue, worker_id: int):
         """
@@ -105,7 +105,9 @@ class TaskWorker(QThread):
                     time.sleep(0.1)
 
             except Exception as e:
-                logger.error(f"任务执行器异常: Worker-{self._worker_id}, {e}", exc_info=True)
+                logger.error(
+                    f"任务执行器异常: Worker-{self._worker_id}, {e}", exc_info=True
+                )
 
         logger.info(f"任务执行器停止: Worker-{self._worker_id}")
 
@@ -181,6 +183,7 @@ class TaskWorker(QThread):
         Args:
             handler: 任务处理器
         """
+
         # 通过轮询方式实现节流
         def progress_watcher():
             if self._current_task and self._current_handler:
@@ -232,9 +235,14 @@ class TaskWorker(QThread):
         if task.is_retryable():
             # 可重试: 状态 -> PENDING
             task.transition_to(TaskStatus.PENDING)
-            self.task_failed.emit(task.id, f"任务失败，将重试 ({task.retry_count}/{task.max_retries}): {error}")
+            self.task_failed.emit(
+                task.id,
+                f"任务失败，将重试 ({task.retry_count}/{task.max_retries}): {error}",
+            )
 
-            logger.info(f"任务将重试: {task.id} ({task.retry_count}/{task.max_retries})")
+            logger.info(
+                f"任务将重试: {task.id} ({task.retry_count}/{task.max_retries})"
+            )
 
         else:
             # 不可重试: 状态 -> FAILED
@@ -265,7 +273,10 @@ class TaskWorker(QThread):
         if self._current_handler:
             self._current_handler.request_cancel()
 
-        logger.info(f"请求取消任务: {self._current_task.id if self._current_task else 'None'} (mode={mode.value})")
+        logger.info(
+            f"请求取消任务: {self._current_task.id if self._current_task else 'None'} "
+            f"(mode={mode.value})"
+        )
 
     # -------------------------------------------------------------------------
     # 生命周期管理
@@ -314,6 +325,7 @@ class TaskWorker(QThread):
 # =============================================================================
 # Worker 管理器
 # =============================================================================
+
 
 class WorkerManager:
     """

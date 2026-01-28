@@ -36,46 +36,44 @@ WS_VISIBLE = 0x10000000
 WS_BORDER = 0x00800000
 
 # 回调函数类型
-WNDENUMPROC = ctypes.WINFUNCTYPE(
-    ctypes.c_bool,
-    ctypes.c_int,
-    ctypes.c_long
-)
+WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_int, ctypes.c_long)
 
 
 @dataclass
 class WindowInfo:
     """窗口信息"""
-    hwnd: int                      # 窗口句柄
-    title: str                     # 窗口标题
-    rect: QRect                    # 窗口矩形
-    class_name: str                # 窗口类名
+
+    hwnd: int  # 窗口句柄
+    title: str  # 窗口标题
+    rect: QRect  # 窗口矩形
+    class_name: str  # 窗口类名
 
 
 # =============================================================================
 # 窗口结构体
 # =============================================================================
 
+
 class RECT(ctypes.Structure):
     """Windows RECT 结构体"""
+
     _fields_ = [
         ("left", ctypes.c_long),
         ("top", ctypes.c_long),
         ("right", ctypes.c_long),
-        ("bottom", ctypes.c_long)
+        ("bottom", ctypes.c_long),
     ]
 
     def to_qrect(self) -> QRect:
         """转换为 QRect"""
         return QRect(
-            self.left, self.top,
-            self.right - self.left,
-            self.bottom - self.top
+            self.left, self.top, self.right - self.left, self.bottom - self.top
         )
 
 
 class WINDOWINFO(ctypes.Structure):
     """Windows WINDOWINFO 结构体"""
+
     _fields_ = [
         ("cbSize", ctypes.c_ulong),
         ("rcWindow", RECT),
@@ -86,13 +84,14 @@ class WINDOWINFO(ctypes.Structure):
         ("cxWindowBorders", ctypes.c_uint),
         ("cyWindowBorders", ctypes.c_uint),
         ("atomWindowType", ctypes.c_ushort),
-        ("wCreatorVersion", ctypes.c_ushort)
+        ("wCreatorVersion", ctypes.c_ushort),
     ]
 
 
 # =============================================================================
 # Windows API 函数声明
 # =============================================================================
+
 
 def _get_window_rect(hwnd: int) -> Optional[RECT]:
     """
@@ -166,6 +165,7 @@ def _is_window_visible(hwnd: int) -> bool:
 # 窗口检测器
 # =============================================================================
 
+
 class WindowDetector:
     """
     窗口检测器
@@ -203,7 +203,7 @@ class WindowDetector:
             hwnd=hwnd,
             title=_get_window_text(hwnd),
             rect=rect.to_qrect(),
-            class_name=_get_window_class_name(hwnd)
+            class_name=_get_window_class_name(hwnd),
         )
 
     def get_all_windows(self) -> List[WindowInfo]:
@@ -242,12 +242,11 @@ class WindowDetector:
                 return True
 
             # 添加到列表
-            self._all_windows.append(WindowInfo(
-                hwnd=hwnd,
-                title=title,
-                rect=rect.to_qrect(),
-                class_name=class_name
-            ))
+            self._all_windows.append(
+                WindowInfo(
+                    hwnd=hwnd, title=title, rect=rect.to_qrect(), class_name=class_name
+                )
+            )
 
             return True
 
@@ -260,7 +259,9 @@ class WindowDetector:
         logger.debug(f"枚举到 {len(self._all_windows)} 个可见窗口")
         return self._all_windows
 
-    def find_windows_by_title(self, title: str, exact: bool = False) -> List[WindowInfo]:
+    def find_windows_by_title(
+        self, title: str, exact: bool = False
+    ) -> List[WindowInfo]:
         """
         按标题查找窗口
 
@@ -293,5 +294,5 @@ class WindowDetector:
             hwnd=hwnd,
             title="Desktop",
             rect=rect.to_qrect() if rect else QRect(),
-            class_name="Desktop"
+            class_name="Desktop",
         )

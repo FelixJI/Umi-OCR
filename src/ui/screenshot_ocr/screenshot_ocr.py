@@ -7,9 +7,14 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QPushButton
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTextEdit,
+    QPushButton,
+)
 
 from src.utils.logger import get_logger
 
@@ -29,6 +34,7 @@ class ScreenshotOCRView(QWidget):
         # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
         try:
             from controllers.screenshot_controller import ScreenshotController
+
             self._controller = ScreenshotController.instance()
         except ModuleNotFoundError as e:
             logger.warning(f"截图控制器加载失败，部分功能不可用: {e}")
@@ -60,7 +66,8 @@ class ScreenshotOCRView(QWidget):
             <head>
             <style>
                 body { font-family: Arial, sans-serif; padding: 10px; }
-                .result { margin: 10px; padding: 10px; border: 1px solid #ddd; background: #f5f5f5; }
+                .result { margin: 10px; padding: 10px; border: 1px solid #ddd; }
+                .result { background: #f5f5f5; }
                 .empty { text-align: center; color: #666; padding: 50px; }
             </style>
             </head>
@@ -151,7 +158,8 @@ class ScreenshotOCRView(QWidget):
                 <head>
                 <style>
                     body {{ font-family: Arial, sans-serif; padding: 10px; }}
-                    .result {{ margin: 10px; padding: 10px; border: 1px solid #ddd; background: #f5f5f5; }}
+                    .result {{ margin: 10px; padding: 10px; border: 1px solid #ddd; }}
+                    .result {{ background: #f5f5f5; }}
                     .text {{ line-height: 1.6; }}
                 </style>
                 </head>
@@ -161,7 +169,9 @@ class ScreenshotOCRView(QWidget):
                         <p>{text}</p>
                     </div>
                     <div class="metadata">
-                        <p><strong>引擎:</strong> {result.get('engine_name', 'Unknown')}</p>
+                        <p><strong>引擎:</strong> 
+                            {result.get('engine_name', 'Unknown')}
+                        </p>
                         <p><strong>置信度:</strong> {result.get('confidence', 0):.0}</p>
                         <p><strong>耗时:</strong> {result.get('duration_ms', 0)}ms</p>
                     </div>
@@ -195,7 +205,8 @@ class ScreenshotOCRView(QWidget):
             <head>
             <style>
                 body {{ font-family: Arial, sans-serif; padding: 10px; }}
-                    .result {{ margin: 10px; padding: 10px; border: 1px solid #ddd; background: #fffee; }}
+                    .result {{ margin: 10px; padding: 10px; border: 1px solid #ddd; }}
+                .result {{ background: #fffee; }}
                 .error {{ color: #ff666; }}
                 </style>
                 </head>

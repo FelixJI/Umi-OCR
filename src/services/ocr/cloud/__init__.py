@@ -22,13 +22,12 @@ from .baidu_ocr import BaiduOCREngine
 from .tencent_ocr import TencentOCREngine
 from .aliyun_ocr import AliyunOCREngine
 
-
 __all__ = [
-    'BaseCloudEngine',
-    'CloudOCRType',
-    'CloudOCRResult',
-    'RequestQueue',
-    'BaiduOCREngine',
-    'TencentOCREngine',
-    'AliyunOCREngine',
+    "BaseCloudEngine",
+    "CloudOCRType",
+    "CloudOCRResult",
+    "RequestQueue",
+    "BaiduOCREngine",
+    "TencentOCREngine",
+    "AliyunOCREngine",
 ]

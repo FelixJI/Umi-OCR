@@ -7,9 +7,11 @@ from . import app_opengl
 from .i18n_configs import I18n
 from ..platforms import Platform
 from .pre_configs import getErrorStr
+
 # from ..server import web_server  # TODO: server 模块未实现
 # from ..server.cmd_server import CmdActuator  # TODO: server 模块未实现
 # from umi_log import change_save_log_level, open_logs_dir  # TODO: 导入路径问题
+
 
 # 临时占位符，直到 server 模块实现
 class web_server:
@@ -20,6 +22,7 @@ class web_server:
     @staticmethod
     def setPort(port):
         print(f"[GlobalConfigs] Set port: {port}")
+
 
 class CmdActuator:
     @staticmethod
@@ -64,12 +67,27 @@ class GlobalConfigsConnector(QObject):
     # 修改日志级别，成功返回T
     @Slot(str, result=bool)
     def change_save_log_level(self, levelname):
-        return change_save_log_level(levelname)
+        from src.utils.logger import get_logger
+
+        logger = get_logger()
+        return logger.set_file_log_level(levelname)
 
     # 打开日志保存目录
     @Slot()
     def open_logs_dir(self):
-        open_logs_dir()
+        import os
+        import subprocess
+        import platform
+        from src.utils.logger import get_logger
+
+        logger = get_logger()
+        logs_dir = os.path.abspath(logger.LOGS_DIR)
+        if platform.system() == "Windows":
+            os.startfile(logs_dir)
+        elif platform.system() == "Darwin":  # macOS
+            subprocess.run(["open", logs_dir])
+        else:  # Linux
+            subprocess.run(["xdg-open", logs_dir])
 
     # 启动web服务器，传入qml对象及回调函数名。
     @Slot("QVariant", str, str, result=int)
@@ -93,9 +111,11 @@ class GlobalConfigsConnector(QObject):
         err = getErrorStr()  # 读写异常情况
         if not err:  # 没有异常，则再检查一遍权限
             if not os.access(cwd, os.R_OK):
-                err += "在当前路径不具有可读权限。\nDo not have read permission on the current path."
+                err += "在当前路径不具有可读权限。\n"
+                err += "Do not have read permission on the current path."
             if not os.access(cwd, os.W_OK):
-                err += "在当前路径不具有可写权限。\nDo not have write permission on the current path."
+                err += "在当前路径不具有可写权限。\n"
+                err += "Do not have write permission on the current path."
         if err:
             err = cwd + "\n" + err
         return err

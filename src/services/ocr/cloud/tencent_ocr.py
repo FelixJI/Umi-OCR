@@ -17,7 +17,7 @@ Date: 2026-01-27
 import hashlib
 import hmac
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 import json
 import requests
@@ -25,10 +25,13 @@ import requests
 from .base_cloud import BaseCloudEngine, CloudOCRType, CloudOCRResult
 from ...utils.credential_manager import CredentialManager
 
+# 默认区域
+REGION = "ap-guangzhou"
 
 # =============================================================================
 # 腾讯云签名算法
 # =============================================================================
+
 
 class TencentCloudSignature:
     """
@@ -37,7 +40,13 @@ class TencentCloudSignature:
     官方文档: https://cloud.tencent.com/document/product/866
     """
 
-    def __init__(self, secret_id: str, secret_key: str, service: str = "ocr", region: str = "ap-guangzhou"):
+    def __init__(
+        self,
+        secret_id: str,
+        secret_key: str,
+        service: str = "ocr",
+        region: str = "ap-guangzhou",
+    ):
         """
         初始化签名器
 
@@ -55,12 +64,12 @@ class TencentCloudSignature:
     @staticmethod
     def sha256_hex(data: str) -> str:
         """计算字符串的 SHA256 哈希值（十六进制）"""
-        return hashlib.sha256(data.encode('utf-8')).hexdigest()
+        return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
     @staticmethod
     def hmac_sha256(key: bytes, data: str) -> bytes:
         """计算 HMAC-SHA256 签名"""
-        return hmac.new(key, data.encode('utf-8'), hashlib.sha256).digest()
+        return hmac.new(key, data.encode("utf-8"), hashlib.sha256).digest()
 
     def _get_signing_key(self, date: str) -> bytes:
         """
@@ -79,10 +88,7 @@ class TencentCloudSignature:
             bytes: 最终签名密钥
         """
         # 步骤1: 生成日期密钥
-        secret_date = self.hmac_sha256(
-            f"TC3{self.secret_key}".encode('utf-8'),
-            date
-        )
+        secret_date = self.hmac_sha256(f"TC3{self.secret_key}".encode("utf-8"), date)
 
         # 步骤2: 生成日期-区域密钥
         secret_region = self.hmac_sha256(secret_date, self.region)
@@ -96,12 +102,7 @@ class TencentCloudSignature:
         return secret_signing
 
     def build_authorization_header(
-        self,
-        method: str,
-        endpoint: str,
-        action: str,
-        version: str,
-        payload: str
+        self, method: str, endpoint: str, action: str, version: str, payload: str
     ) -> Dict[str, str]:
         """
         构建Authorization头和请求头
@@ -139,26 +140,25 @@ class TencentCloudSignature:
         payload_hash = self.sha256_hex(payload)
 
         # 拼接规范请求串
-        canonical_request = "\n".join([
-            method,
-            canonical_uri,
-            canonical_querystring,
-            canonical_headers,
-            signed_headers,
-            payload_hash
-        ])
+        canonical_request = "\n".join(
+            [
+                method,
+                canonical_uri,
+                canonical_querystring,
+                canonical_headers,
+                signed_headers,
+                payload_hash,
+            ]
+        )
 
         # 步骤2: 创建待签名字符串
         credential_scope = f"{date}/{self.service}/tc3_request"
 
         hashed_canonical_request = self.sha256_hex(canonical_request)
 
-        string_to_sign = "\n".join([
-            algorithm,
-            str(timestamp),
-            credential_scope,
-            hashed_canonical_request
-        ])
+        string_to_sign = "\n".join(
+            [algorithm, str(timestamp), credential_scope, hashed_canonical_request]
+        )
 
         # 步骤3: 计算签名
         signing_key = self._get_signing_key(date)
@@ -180,7 +180,7 @@ class TencentCloudSignature:
             "X-TC-Action": action,
             "X-TC-Timestamp": str(timestamp),
             "X-TC-Version": version,
-            "X-TC-Region": self.region
+            "X-TC-Region": self.region,
         }
 
         return headers
@@ -189,6 +189,7 @@ class TencentCloudSignature:
 # =============================================================================
 # 腾讯云 OCR 引擎
 # =============================================================================
+
 
 class TencentOCREngine(BaseCloudEngine):
     """
@@ -241,7 +242,7 @@ class TencentOCREngine(BaseCloudEngine):
         super().__init__(config, qps_limit)
 
         # 从配置读取区域
-        self._region = config.get('region', REGION)
+        self._region = config.get("region", REGION)
 
         # HTTP 会话
         self._http_session: Optional[requests.Session] = None
@@ -258,16 +259,18 @@ class TencentOCREngine(BaseCloudEngine):
         Returns:
             List[str]: ['secret_id', 'secret_key']
         """
-        return ['secret_id', 'secret_key']
+        return ["secret_id", "secret_key"]
 
     def _init_session(self) -> None:
         """初始化 HTTP 会话"""
         self._http_session = requests.Session()
-        self._http_session.headers.update({
-            'Content-Type': 'application/json; charset=utf-8',
-            'Accept': 'application/json',
-            'User-Agent': f'Umi-OCR/{self.ENGINE_VERSION}'
-        })
+        self._http_session.headers.update(
+            {
+                "Content-Type": "application/json; charset=utf-8",
+                "Accept": "application/json",
+                "User-Agent": f"Umi-OCR/{self.ENGINE_VERSION}",
+            }
+        )
 
     def _test_connection(self) -> bool:
         """
@@ -284,10 +287,10 @@ class TencentOCREngine(BaseCloudEngine):
 
             # 初始化签名器
             self._signature = TencentCloudSignature(
-                secret_id=credentials['secret_id'],
-                secret_key=credentials['secret_key'],
-                service=SERVICE,
-                region=self._region
+                secret_id=credentials["secret_id"],
+                secret_key=credentials["secret_key"],
+                service="ocr",
+                region=self._region,
             )
 
             # 构建一个最小测试请求
@@ -295,23 +298,27 @@ class TencentOCREngine(BaseCloudEngine):
 
             # 生成签名
             headers = self._signature.build_authorization_header(
-                method='POST',
+                method="POST",
                 endpoint=self.API_HOST,
-                action='GeneralBasicOCR',
+                action="GeneralBasicOCR",
                 version=self.API_VERSION,
-                payload=payload
+                payload=payload,
             )
 
             # 发送测试请求（即使失败也能验证签名是否正确）
             url = f"https://{self.API_HOST}"
-            response = self._http_session.post(url, headers=headers, data=payload, timeout=10)
+            response = self._http_session.post(
+                url, headers=headers, data=payload, timeout=10
+            )
 
             # 检查是否为认证错误（签名错误通常是 401）
             if response.status_code == 401:
                 logging.warning("腾讯云连接测试失败：签名错误或凭证无效")
                 return False
             elif response.status_code >= 500:
-                logging.warning(f"腾讯云连接测试失败：服务器错误 {response.status_code}")
+                logging.warning(
+                    f"腾讯云连接测试失败：服务器错误 {response.status_code}"
+                )
                 return False
             else:
                 return True
@@ -329,18 +336,20 @@ class TencentOCREngine(BaseCloudEngine):
         """
         # 从 CredentialManager 加载凭证
         cred_manager = CredentialManager()
-        credentials = cred_manager.load('tencent')
+        credentials = cred_manager.load("tencent")
 
         if not credentials:
-            raise ValueError("腾讯云 OCR 凭证未配置，请在设置中添加 SecretId 和 SecretKey")
+            raise ValueError(
+                "腾讯云 OCR 凭证未配置，请在设置中添加 SecretId 和 SecretKey"
+            )
 
         # 验证凭证格式
-        if 'secret_id' not in credentials or 'secret_key' not in credentials:
+        if "secret_id" not in credentials or "secret_key" not in credentials:
             raise ValueError("腾讯云 OCR 凭证格式错误，需要 secret_id 和 secret_key")
 
         return {
-            'secret_id': credentials['secret_id'],
-            'secret_key': credentials['secret_key']
+            "secret_id": credentials["secret_id"],
+            "secret_key": credentials["secret_key"],
         }
 
     def _build_request(self, image_data: str, ocr_type: CloudOCRType) -> Dict[str, Any]:
@@ -364,30 +373,25 @@ class TencentOCREngine(BaseCloudEngine):
             raise ValueError(f"不支持的 OCR 类型: {ocr_type}")
 
         # 构建请求体
-        payload = json.dumps({
-            "ImageBase64": image_data
-        })
+        payload = json.dumps({"ImageBase64": image_data})
 
         # 生成签名和请求头
         headers = self._signature.build_authorization_header(
-            method='POST',
+            method="POST",
             endpoint=self.API_HOST,
             action=action,
             version=self.API_VERSION,
-            payload=payload
+            payload=payload,
         )
 
         # 构建完整 URL
         url = f"https://{self.API_HOST}/{action}"
 
-        return {
-            'url': url,
-            'method': 'POST',
-            'headers': headers,
-            'data': payload
-        }
+        return {"url": url, "method": "POST", "headers": headers, "data": payload}
 
-    def _parse_response(self, response: Dict, ocr_type: CloudOCRType) -> List[CloudOCRResult]:
+    def _parse_response(
+        self, response: Dict, ocr_type: CloudOCRType
+    ) -> List[CloudOCRResult]:
         """
         解析腾讯云响应为统一格式
 
@@ -418,50 +422,47 @@ class TencentOCREngine(BaseCloudEngine):
             List[CloudOCRResult]: 统一格式的识别结果列表
         """
         # 检查是否有错误
-        if 'Error' in response:
-            error = response['Error']
-            error_code = error.get('Code', '')
-            error_msg = error.get('Message', f"错误码 {error_code}")
+        if "Error" in response:
+            error = response["Error"]
+            error_code = error.get("Code", "")
+            error_msg = error.get("Message", f"错误码 {error_code}")
 
             # 腾讯云错误码处理
-            if error_code == 'AuthFailure':
+            if error_code == "AuthFailure":
                 raise Exception(f"认证失败: {error_msg}")
-            elif error_code == 'InvalidParameter':
+            elif error_code == "InvalidParameter":
                 raise Exception(f"参数错误: {error_msg}")
             else:
                 raise Exception(f"腾讯云 OCR 错误: {error_msg} ({error_code})")
 
         # 解析识别结果
-        response_data = response.get('Response', {})
-        text_detections = response_data.get('TextDetections', [])
+        response_data = response.get("Response", {})
+        text_detections = response_data.get("TextDetections", [])
 
         if not text_detections:
             # 无识别结果，返回空结果
-            return [CloudOCRResult(
-                text='',
-                confidence=0.0,
-                location=None,
-                extra=response
-            )]
+            return [
+                CloudOCRResult(text="", confidence=0.0, location=None, extra=response)
+            ]
 
         # 转换为统一格式
         results = []
         for item in text_detections:
-            text = item.get('DetectedText', '')
-            confidence = item.get('Confidence', 0.0) / 100.0  # 转换为 0-1
+            text = item.get("DetectedText", "")
+            confidence = item.get("Confidence", 0.0) / 100.0  # 转换为 0-1
 
             # 提取坐标（腾讯云使用 Polygon）
-            polygon = item.get('Polygon', {})
+            polygon = item.get("Polygon", {})
             location = None
 
             if polygon:
                 # Polygon 格式: {'X': x, 'Y': y}
                 # 需要提取四个顶点：左上、右上、右下、左下
                 coords = []
-                points = polygon.get('Points', [])
+                points = polygon.get("Points", [])
                 if points:
                     # 转换为列表格式 [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-                    coords = [[p.get('X', 0), p.get('Y', 0)] for p in points[:4]]
+                    coords = [[p.get("X", 0), p.get("Y", 0)] for p in points[:4]]
 
                     if len(coords) == 4:
                         # 计算边界框
@@ -473,15 +474,14 @@ class TencentOCREngine(BaseCloudEngine):
                         height = int(max(y_coords) - y)
                         location = [x, y, width, height]
 
-            results.append(CloudOCRResult(
-                text=text,
-                confidence=confidence,
-                location=location,
-                extra={
-                    'provider': 'tencent',
-                    'raw_polygon': polygon
-                }
-            ))
+            results.append(
+                CloudOCRResult(
+                    text=text,
+                    confidence=confidence,
+                    location=location,
+                    extra={"provider": "tencent", "raw_polygon": polygon},
+                )
+            )
 
         return results
 
@@ -497,7 +497,7 @@ class TencentOCREngine(BaseCloudEngine):
         Returns:
             bool: 是否为认证错误
         """
-        return error_code == 'AuthFailure'
+        return error_code == "AuthFailure"
 
     def _is_quota_error(self, error_code: str) -> bool:
         """
@@ -512,8 +512,8 @@ class TencentOCREngine(BaseCloudEngine):
             bool: 是否为配额超限
         """
         quota_errors = [
-            'RequestLimitExceeded',  # 请求频率超限
-            'RequestSizeLimitExceeded',  # 请求大小超限
+            "RequestLimitExceeded",  # 请求频率超限
+            "RequestSizeLimitExceeded",  # 请求大小超限
         ]
         return error_code in quota_errors
 

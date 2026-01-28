@@ -3,18 +3,18 @@
 # =======================================
 
 import re
-import os
-from PySide6.QtGui import QClipboard
 from PySide6.QtCore import QFileInfo
-from PySide6.QtQml import QJSValue
 from urllib.parse import unquote  # 路径解码
 
 from umi_log import logger
 
+
 # PySide6 中 QClipboard 不能直接实例化，需要从 QApplication 获取
 def getClipboard():
     from PySide6.QtWidgets import QApplication
+
     return QApplication.clipboard()
+
 
 Clipboard = getClipboard  # 剪贴板（改为函数调用）
 
@@ -53,7 +53,7 @@ def initConfigDict(dic):
         # 类型：指定type
         if not config["type"] == "":
             if config["type"] == "file":  # 文件选择
-                config["default"] = "" if not config["default"] is None else None
+                config["default"] = "" if config["default"] is not None else None
             elif config["type"] == "var" and config["default"] is None:  # 任意类型
                 config["default"] = ""
         # 类型：省略type

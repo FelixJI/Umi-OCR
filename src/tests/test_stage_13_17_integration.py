@@ -10,24 +10,18 @@ Date: 2026-01-27
 """
 
 import sys
-import os
-import tempfile
 from pathlib import Path
 
 # 添加src到路径
 sys.path.insert(0, str(Path(__file__).parent))
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
 
 from services.screenshot.screen_capture import ScreenCaptureService
 from services.screenshot.region_selector import RegionSelector
-from services.screenshot.window_detector import WindowDetector
-from services.screenshot.magnifier import Magnifier
 from services.pdf.pdf_parser import PDFParser
 from services.qrcode.qrcode_scanner import QRCodeScanner
 from services.qrcode.qrcode_generator import QRCodeGenerator
-from services.export.base_exporter import BaseExporter
 from services.export.text_exporter import TextExporter
 from services.export.json_exporter import JsonExporter
 from services.export.excel_exporter import ExcelExporter
@@ -142,25 +136,25 @@ class IntegrationTest:
             # 测试截图OCR UI
             screenshot_ui = ScreenshotOCRView()
             assert screenshot_ui is not None
-            assert hasattr(screenshot_ui, '_controller')
+            assert hasattr(screenshot_ui, "_controller")
             print("  ✅ ScreenshotOCRView 初始化成功")
 
             # 测试批量OCR UI
             batch_ocr_ui = BatchOCRView()
             assert batch_ocr_ui is not None
-            assert hasattr(batch_ocr_ui, '_controller')
+            assert hasattr(batch_ocr_ui, "_controller")
             print("  ✅ BatchOCRView 初始化成功")
 
             # 测试批量文档 UI
             batch_doc_ui = BatchDocView()
             assert batch_doc_ui is not None
-            assert hasattr(batch_doc_ui, '_controller')
+            assert hasattr(batch_doc_ui, "_controller")
             print("  ✅ BatchDocView 初始化成功")
 
             # 测试二维码 UI
             qrcode_ui = QRCodeView()
             assert qrcode_ui is not None
-            assert hasattr(qrcode_ui, '_controller')
+            assert hasattr(qrcode_ui, "_controller")
             print("  ✅ QRCodeView 初始化成功")
 
             self.test_results.append(("UI层", True))
@@ -176,23 +170,23 @@ class IntegrationTest:
         try:
             # 测试BatchOcrController方法
             batch_ocr_controller = BatchOcrController()
-            assert hasattr(batch_ocr_controller, 'add_files')
-            assert hasattr(batch_ocr_controller, 'pause_ocr')
-            assert hasattr(batch_ocr_controller, 'resume_ocr')
+            assert hasattr(batch_ocr_controller, "add_files")
+            assert hasattr(batch_ocr_controller, "pause_ocr")
+            assert hasattr(batch_ocr_controller, "resume_ocr")
             print("  ✅ BatchOcrController 方法完整")
 
             # 测试BatchDocController方法
             batch_doc_controller = BatchDocController()
-            assert hasattr(batch_doc_controller, 'process_pdfs')
-            assert hasattr(batch_doc_controller, 'export_as_searchable_pdf')
-            assert hasattr(batch_doc_controller, 'export_as_word')
-            assert hasattr(batch_doc_controller, 'export_as_excel')
+            assert hasattr(batch_doc_controller, "process_pdfs")
+            assert hasattr(batch_doc_controller, "export_as_searchable_pdf")
+            assert hasattr(batch_doc_controller, "export_as_word")
+            assert hasattr(batch_doc_controller, "export_as_excel")
             print("  ✅ BatchDocController 方法完整")
 
             # 测试QRCodeController方法
             qrcode_controller = QRCodeController()
-            assert hasattr(qrcode_controller, 'scan_qr_code')
-            assert hasattr(qrcode_controller, 'batch_generate_qr_codes')
+            assert hasattr(qrcode_controller, "scan_qr_code")
+            assert hasattr(qrcode_controller, "batch_generate_qr_codes")
             print("  ✅ QRCodeController 方法完整")
 
             self.test_results.append(("控制器方法", True))
@@ -208,24 +202,24 @@ class IntegrationTest:
         try:
             # 测试控制器信号
             batch_ocr_controller = BatchOcrController()
-            assert hasattr(batch_ocr_controller, 'tasks_submitted')
-            assert hasattr(batch_ocr_controller, 'progress_updated')
-            assert hasattr(batch_ocr_controller, 'tasks_completed')
-            assert hasattr(batch_ocr_controller, 'tasks_failed')
+            assert hasattr(batch_ocr_controller, "tasks_submitted")
+            assert hasattr(batch_ocr_controller, "progress_updated")
+            assert hasattr(batch_ocr_controller, "tasks_completed")
+            assert hasattr(batch_ocr_controller, "tasks_failed")
             print("  ✅ BatchOcrController 信号定义完整")
 
             batch_doc_controller = BatchDocController()
-            assert hasattr(batch_doc_controller, 'tasks_submitted')
-            assert hasattr(batch_doc_controller, 'progress_updated')
-            assert hasattr(batch_doc_controller, 'tasks_completed')
-            assert hasattr(batch_doc_controller, 'tasks_failed')
+            assert hasattr(batch_doc_controller, "tasks_submitted")
+            assert hasattr(batch_doc_controller, "progress_updated")
+            assert hasattr(batch_doc_controller, "tasks_completed")
+            assert hasattr(batch_doc_controller, "tasks_failed")
             print("  ✅ BatchDocController 信号定义完整")
 
             qrcode_controller = QRCodeController()
-            assert hasattr(qrcode_controller, 'scan_started')
-            assert hasattr(qrcode_controller, 'scan_completed')
-            assert hasattr(qrcode_controller, 'generate_started')
-            assert hasattr(qrcode_controller, 'generate_completed')
+            assert hasattr(qrcode_controller, "scan_started")
+            assert hasattr(qrcode_controller, "scan_completed")
+            assert hasattr(qrcode_controller, "generate_started")
+            assert hasattr(qrcode_controller, "generate_completed")
             print("  ✅ QRCodeController 信号定义完整")
 
             self.test_results.append(("信号连接", True))

@@ -14,10 +14,10 @@ from typing import List, Optional
 
 from ..ocr_result import TextBlock, TextBlockType, BoundingBox
 
-
 # =============================================================================
 # 文本块类型推断器
 # =============================================================================
+
 
 class TextBlockInference:
     """
@@ -41,7 +41,7 @@ class TextBlockInference:
         TextBlockType.FORMULA: [
             r"[A-Za-z]+\s*[=≠<>≤≥]+\s*[\d.]+",
             r"[\d.]+\s*[+\-×÷]\s*[\d.]+",
-        ]
+        ],
     }
 
     @classmethod
@@ -104,38 +104,61 @@ class TextBlockInference:
             bool: 是否像表格
         """
         # 检查是否有HTML表格标签
-        if '<table>' in text.lower() or '</table>' in text.lower():
+        if "<table>" in text.lower() or "</table>" in text.lower():
             return True
-        
+
         # 检查是否有大量制表符或管道符
-        tab_count = text.count('\t')
-        pipe_count = text.count('|')
+        tab_count = text.count("\t")
+        pipe_count = text.count("|")
         if tab_count >= 2 or pipe_count >= 2:
             return True
 
         # 检查是否有大量数字对齐
-        lines = text.split('\n')
+        lines = text.split("\n")
         if len(lines) > 1:
             # 检查每行的数字数量
-            num_counts = [len([c for c in line if c.isdigit()]) for line in lines if line.strip()]
+            num_counts = [
+                len([c for c in line if c.isdigit()]) for line in lines if line.strip()
+            ]
             if num_counts:
                 avg_num_count = sum(num_counts) / len(num_counts)
                 # 如果平均每行有多个数字，可能是表格
                 if avg_num_count >= 2:
                     return True
-        
+
         # 检查是否包含表格关键词
-        table_keywords = ['姓名', '年龄', '性别', '部门', '工资', '日期', '金额', '数量', '产品', '价格',
-                         'name', 'age', 'sex', 'department', 'salary', 'date', 'amount', 'quantity', 'price', 'product']
+        table_keywords = [
+            "姓名",
+            "年龄",
+            "性别",
+            "部门",
+            "工资",
+            "日期",
+            "金额",
+            "数量",
+            "产品",
+            "价格",
+            "name",
+            "age",
+            "sex",
+            "department",
+            "salary",
+            "date",
+            "amount",
+            "quantity",
+            "price",
+            "product",
+        ]
         if any(keyword in text for keyword in table_keywords):
             return True
-        
+
         return False
 
 
 # =============================================================================
 # 文本后处理器
 # =============================================================================
+
 
 class TextPostprocessor:
     """
@@ -148,7 +171,7 @@ class TextPostprocessor:
     def merge_adjacent_lines(
         text_blocks: List[TextBlock],
         vertical_threshold: int = 10,
-        horizontal_threshold: int = 20
+        horizontal_threshold: int = 20,
     ) -> List[TextBlock]:
         """
         合并相邻的文本行
@@ -178,15 +201,27 @@ class TextPostprocessor:
 
             # 检查是否在同一行（Y坐标接近）
             y_diff = abs(block.bbox.y - current_block.bbox.y)
-            x_overlap = max(0, min(current_block.bbox.x + current_block.bbox.width, block.bbox.x + block.bbox.width) -
-                          max(current_block.bbox.x, block.bbox.x))
+            x_overlap = max(
+                0,
+                min(
+                    current_block.bbox.x + current_block.bbox.width,
+                    block.bbox.x + block.bbox.width,
+                )
+                - max(current_block.bbox.x, block.bbox.x),
+            )
 
             if y_diff < vertical_threshold and x_overlap > 0:
                 # 合并到同一行
                 current_block.text += " " + block.text
                 # 更新边界框
                 new_x = min(current_block.bbox.x, block.bbox.x)
-                new_width = max(current_block.bbox.x + current_block.bbox.width, block.bbox.x + block.bbox.width) - new_x
+                new_width = (
+                    max(
+                        current_block.bbox.x + current_block.bbox.width,
+                        block.bbox.x + block.bbox.width,
+                    )
+                    - new_x
+                )
                 current_block.bbox.x = new_x
                 current_block.bbox.width = new_width
             else:
@@ -221,8 +256,7 @@ class TextPostprocessor:
 
     @staticmethod
     def sort_by_position(
-        text_blocks: List[TextBlock],
-        reading_order: str = "left_to_right"
+        text_blocks: List[TextBlock], reading_order: str = "left_to_right"
     ) -> List[TextBlock]:
         """
         按位置排序文本块
@@ -238,19 +272,18 @@ class TextPostprocessor:
             # 先按 Y 排序，再按 X 排序
             return sorted(
                 text_blocks,
-                key=lambda b: (b.bbox.y if b.bbox else 0, b.bbox.x if b.bbox else 0)
+                key=lambda b: (b.bbox.y if b.bbox else 0, b.bbox.x if b.bbox else 0),
             )
         else:
             # 先按 X 排序，再按 Y 排序
             return sorted(
                 text_blocks,
-                key=lambda b: (b.bbox.x if b.bbox else 0, b.bbox.y if b.bbox else 0)
+                key=lambda b: (b.bbox.x if b.bbox else 0, b.bbox.y if b.bbox else 0),
             )
 
     @staticmethod
     def filter_by_confidence(
-        text_blocks: List[TextBlock],
-        threshold: float = 0.5
+        text_blocks: List[TextBlock], threshold: float = 0.5
     ) -> List[TextBlock]:
         """
         按置信度过滤文本块
@@ -276,7 +309,7 @@ class TextPostprocessor:
             str: 清理后的文本
         """
         # 替换多个空白为单个空格
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
         # 去除首尾空白
         text = text.strip()
         return text

@@ -13,15 +13,13 @@ import unittest
 import json
 import tempfile
 from pathlib import Path
-from PySide6.QtCore import QCoreApplication, QObject, Signal
+from PySide6.QtCore import QCoreApplication, QObject
 
 from src.models.config_model import (
     AppConfig,
-    OcrConfig,
     PaddleEngineConfig,
     BaiduOcrConfig,
     OcrEngineType,
-    OutputFormat,
     LogLevel,
     ConfigChangeEvent,
 )
@@ -65,18 +63,18 @@ class TestConfigModel(unittest.TestCase):
                 "baidu": {"api_key": "test_key"},
                 "tencent": {},
                 "aliyun": {},
-                "preprocessing": {}
+                "preprocessing": {},
             },
             "ui": {
                 "language": "en_US",
                 "main_window": {"width": 1200},
-                "theme": {"mode": "dark"}
+                "theme": {"mode": "dark"},
             },
             "hotkeys": {},
             "export": {},
             "task": {},
             "system": {},
-            "extra": {}
+            "extra": {},
         }
 
         config = AppConfig.from_dict(data)
@@ -183,10 +181,7 @@ class TestConfigManager(unittest.TestCase):
         """每个测试前的设置"""
         # 创建临时配置文件
         self.temp_file = tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".json",
-            delete=False,
-            encoding="utf-8"
+            mode="w", suffix=".json", delete=False, encoding="utf-8"
         )
         self.temp_path = Path(self.temp_file.name)
         self.temp_file.close()
@@ -238,14 +233,14 @@ class TestConfigManager(unittest.TestCase):
                 "baidu": {},
                 "tencent": {},
                 "aliyun": {},
-                "preprocessing": {}
+                "preprocessing": {},
             },
             "ui": {"language": "en_US", "main_window": {}, "theme": {}},
             "hotkeys": {},
             "export": {},
             "task": {},
             "system": {},
-            "extra": {}
+            "extra": {},
         }
 
         with open(self.temp_path, "w", encoding="utf-8") as f:

@@ -1,8 +1,6 @@
 # 负责 keyboard 库的按键转换
 # 将 keyboard 库的键名转换为统一格式
 
-from umi_log import logger
-
 
 # 键名映射表：将 keyboard 库的键名映射到项目使用的格式
 _KEY_MAPPING = {

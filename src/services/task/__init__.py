@@ -25,10 +25,14 @@ from .task_model import (
 )
 
 from .task_queue import TaskQueue
-from .task_handler import TaskHandler, TaskHandlerRegistry, TaskCancelledException, OCRTaskHandler
+from .task_handler import (
+    TaskHandler,
+    TaskHandlerRegistry,
+    TaskCancelledException,
+    OCRTaskHandler,
+)
 from .task_worker import TaskWorker, WorkerManager
 from .task_manager import TaskManager, get_task_manager
-
 
 __all__ = [
     # 数据模型
@@ -41,20 +45,16 @@ __all__ = [
     "InvalidTaskStructure",
     "create_simple_task",
     "create_simple_task_group",
-    
     # 任务队列
     "TaskQueue",
-    
     # 任务处理器
     "TaskHandler",
     "TaskHandlerRegistry",
     "TaskCancelledException",
     "OCRTaskHandler",
-    
     # 任务执行器
     "TaskWorker",
     "WorkerManager",
-    
     # 任务管理器
     "TaskManager",
     "get_task_manager",

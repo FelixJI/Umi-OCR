@@ -17,33 +17,43 @@ Date: 2026-01-27
 """
 
 import json
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from enum import Enum
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTextEdit,
-    QPushButton, QComboBox, QLabel, QLineEdit,
-    QApplication, QMenu, QFileDialog, QMessageBox,
-    QSizePolicy
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTextEdit,
+    QPushButton,
+    QComboBox,
+    QLabel,
+    QLineEdit,
+    QApplication,
+    QMenu,
+    QFileDialog,
+    QMessageBox,
 )
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QTextCursor, QTextCharFormat, QColor, QAction
-
 
 # =============================================================================
 # 视图模式枚举
 # =============================================================================
 
+
 class ResultViewMode(Enum):
     """结果视图模式"""
-    TEXT = "text"         # 纯文本模式
-    JSON = "json"         # JSON 模式
-    TABLE = "table"       # 表格模式（HTML 表格）
+
+    TEXT = "text"  # 纯文本模式
+    JSON = "json"  # JSON 模式
+    TABLE = "table"  # 表格模式（HTML 表格）
 
 
 # =============================================================================
 # 结果面板控件
 # =============================================================================
+
 
 class ResultPanel(QWidget):
     """
@@ -382,7 +392,11 @@ class ResultPanel(QWidget):
             if isinstance(block, dict):
                 text = block.get("text", "")
                 confidence = block.get("confidence", 0)
-                conf_str = f"{confidence:.2f}" if isinstance(confidence, (int, float)) else str(confidence)
+                conf_str = (
+                    f"{confidence:.2f}"
+                    if isinstance(confidence, (int, float))
+                    else str(confidence)
+                )
             else:
                 text = str(block)
                 conf_str = "-"
@@ -430,7 +444,9 @@ class ResultPanel(QWidget):
         else:
             self._status_label.setText("识别完成")
 
-        self._stats_label.setText(f"{char_count} 字符 | {line_count} 行 | {block_count} 块")
+        self._stats_label.setText(
+            f"{char_count} 字符 | {line_count} 行 | {block_count} 块"
+        )
 
     def _highlight_search(self, text: str) -> None:
         """
@@ -509,7 +525,7 @@ class ResultPanel(QWidget):
         filter_map = {
             "txt": "文本文件 (*.txt)",
             "json": "JSON 文件 (*.json)",
-            "html": "HTML 文件 (*.html)"
+            "html": "HTML 文件 (*.html)",
         }
 
         file_path, _ = QFileDialog.getSaveFileName(

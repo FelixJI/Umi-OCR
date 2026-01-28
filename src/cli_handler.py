@@ -13,7 +13,6 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import sys
 import json
 import logging
 import asyncio
@@ -28,7 +27,7 @@ from services.ocr.engine_manager import EngineManager, set_config_manager
 from utils.config_manager import get_config_manager
 
 # 配置日志输出到控制台
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("CLI")
 
 
@@ -142,8 +141,8 @@ class CliHandler:
             int: 退出码
         """
         images: List[str] = self.args.image
-        output_format = getattr(self.args, 'format', 'txt')
-        output_file = getattr(self.args, 'output', None)
+        output_format = getattr(self.args, "format", "txt")
+        output_file = getattr(self.args, "output", None)
 
         # 验证文件
         valid_images = []
@@ -162,10 +161,7 @@ class CliHandler:
 
         # 通过 TaskManager 提交任务（强制路由原则）
         group_id = self._task_manager.submit_ocr_tasks(
-            image_paths=valid_images,
-            title="CLI-OCR",
-            priority=10,
-            max_concurrency=1
+            image_paths=valid_images, title="CLI-OCR", priority=10, max_concurrency=1
         )
 
         logger.info(f"任务已提交: {group_id}")
@@ -181,7 +177,9 @@ class CliHandler:
             # 显示进度
             current_progress = int(group.progress * 100)
             if current_progress != last_progress:
-                logger.info(f"进度: {current_progress}% ({group.completed_tasks}/{group.total_tasks})")
+                logger.info(
+                    f"进度: {current_progress}% ({group.completed_tasks}/{group.total_tasks})"
+                )
                 last_progress = current_progress
 
             # 检查是否完成
@@ -206,7 +204,9 @@ class CliHandler:
 
         return 0
 
-    def _output_results(self, group, output_format: str, output_file: Optional[str]) -> None:
+    def _output_results(
+        self, group, output_format: str, output_file: Optional[str]
+    ) -> None:
         """
         输出识别结果
 
@@ -217,7 +217,7 @@ class CliHandler:
         """
         tasks = group.get_all_tasks()
 
-        if output_format == 'json':
+        if output_format == "json":
             # JSON 格式输出
             results = []
             for task in tasks:
@@ -234,7 +234,7 @@ class CliHandler:
             json_output = json.dumps(results, ensure_ascii=False, indent=2)
 
             if output_file:
-                with open(output_file, 'w', encoding='utf-8') as f:
+                with open(output_file, "w", encoding="utf-8") as f:
                     f.write(json_output)
                 logger.info(f"结果已保存到: {output_file}")
             else:
@@ -277,7 +277,7 @@ class CliHandler:
             text_output = "\n".join(output_lines)
 
             if output_file:
-                with open(output_file, 'w', encoding='utf-8') as f:
+                with open(output_file, "w", encoding="utf-8") as f:
                     f.write(text_output)
                 logger.info(f"结果已保存到: {output_file}")
             else:

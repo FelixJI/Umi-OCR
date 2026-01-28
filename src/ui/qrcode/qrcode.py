@@ -7,8 +7,16 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTextEdit,
-                            QLabel, QComboBox, QPushButton, QFileDialog)
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QTextEdit,
+    QLabel,
+    QComboBox,
+    QPushButton,
+    QFileDialog,
+)
 from PySide6.QtCore import Qt
 
 from src.utils.logger import get_logger
@@ -27,6 +35,7 @@ class QRCodeView(QWidget):
         # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
         try:
             from controllers.qrcode_controller import QRCodeController
+
             self._controller = QRCodeController()
         except ModuleNotFoundError as e:
             logger.warning(f"二维码控制器加载失败，部分功能不可用: {e}")
@@ -99,18 +108,20 @@ class QRCodeView(QWidget):
         type_layout.addWidget(type_label)
 
         self.combo_type = QComboBox()
-        self.combo_type.addItems([
-            "QR Code",
-            "CODE 128",
-            "CODE 39",
-            "EAN 13",
-            "EAN 8",
-            "UPC A",
-            "UPC E",
-            "Data Matrix",
-            "PDF 417",
-            "Aztec"
-        ])
+        self.combo_type.addItems(
+            [
+                "QR Code",
+                "CODE 128",
+                "CODE 39",
+                "EAN 13",
+                "EAN 8",
+                "UPC A",
+                "UPC E",
+                "Data Matrix",
+                "PDF 417",
+                "Aztec",
+            ]
+        )
         self.combo_type.setCurrentIndex(0)
         self.combo_type.currentTextChanged.connect(self._on_type_changed)
         type_layout.addWidget(self.combo_type)
@@ -126,12 +137,7 @@ class QRCodeView(QWidget):
         correction_layout.addWidget(correction_label)
 
         self.combo_correction = QComboBox()
-        self.combo_correction.addItems([
-            "L (7%)",
-            "M (15%)",
-            "Q (25%)",
-            "H (30%)"
-        ])
+        self.combo_correction.addItems(["L (7%)", "M (15%)", "Q (25%)", "H (30%)"])
         self.combo_correction.setCurrentIndex(1)
         self.combo_correction.currentTextChanged.connect(self._on_correction_changed)
         correction_layout.addWidget(self.combo_correction)
@@ -179,13 +185,12 @@ class QRCodeView(QWidget):
 
     def _on_load_image(self):
         """加载图片"""
-        from PySide6.QtGui import QImage
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "选择图片",
             "",
-            "Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp);;All Files (*.*)"
+            "Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp);;All Files (*.*)",
         )
 
         if file_path:
@@ -207,7 +212,9 @@ class QRCodeView(QWidget):
 
         # 通过控制器生成
         if self._controller:
-            self._controller.generate_qr_code(data, code_type=code_type, correction=correction)
+            self._controller.generate_qr_code(
+                data, code_type=code_type, correction=correction
+            )
 
     def _on_clear(self):
         """清空输入"""
@@ -233,18 +240,13 @@ class QRCodeView(QWidget):
             "UPC E": "UPCE_E",
             "Data Matrix": "DATA_MATRIX",
             "PDF 417": "PDF_417",
-            "Aztec": "AZTEC"
+            "Aztec": "AZTEC",
         }
         return code_type_map.get(self.combo_type.currentText(), "QR_CODE")
 
     def _get_correction_level(self) -> str:
         """获取纠错级别"""
-        correction_map = {
-            "L (7%)": "L",
-            "M (15%)": "M",
-            "Q (25%)": "Q",
-            "H (30%)": "H"
-        }
+        correction_map = {"L (7%)": "L", "M (15%)": "M", "Q (25%)": "Q", "H (30%)": "H"}
         return correction_map.get(self.combo_correction.currentText(), "M")
 
     def _on_scan_started(self):

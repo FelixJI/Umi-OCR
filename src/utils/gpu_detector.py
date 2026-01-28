@@ -30,17 +30,20 @@ logger = logging.getLogger(__name__)
 # GPU厂商枚举
 # =============================================================================
 
+
 class GPUVendor(Enum):
     """GPU厂商"""
-    NVIDIA = "nvidia"      # NVIDIA
-    AMD = "amd"           # AMD
-    INTEL = "intel"        # Intel
-    UNKNOWN = "unknown"    # 未知
+
+    NVIDIA = "nvidia"  # NVIDIA
+    AMD = "amd"  # AMD
+    INTEL = "intel"  # Intel
+    UNKNOWN = "unknown"  # 未知
 
 
 # =============================================================================
 # GPU信息数据类
 # =============================================================================
+
 
 @dataclass
 class GPUInfo:
@@ -49,15 +52,16 @@ class GPUInfo:
 
     包含显卡的硬件信息和CUDA支持情况。
     """
-    vendor: GPUVendor                      # 厂商
-    name: str                             # 显卡型号
-    memory_mb: int                         # 显存大小（MB）
+
+    vendor: GPUVendor  # 厂商
+    name: str  # 显卡型号
+    memory_mb: int  # 显存大小（MB）
     compute_capability: Optional[Tuple[int, int]] = None  # 计算能力 (major, minor)
-    cuda_support: bool = False             # 是否支持CUDA
-    cuda_version: Optional[str] = None     # CUDA版本
-    driver_version: Optional[str] = None    # 驱动版本
-    is_available: bool = False            # 是否可用
-    recommendation: str = ""                # 安装建议
+    cuda_support: bool = False  # 是否支持CUDA
+    cuda_version: Optional[str] = None  # CUDA版本
+    driver_version: Optional[str] = None  # 驱动版本
+    is_available: bool = False  # 是否可用
+    recommendation: str = ""  # 安装建议
 
     def to_dict(self) -> Dict:
         """转换为字典"""
@@ -66,18 +70,23 @@ class GPUInfo:
             "name": self.name,
             "memory_mb": self.memory_mb,
             "memory_gb": round(self.memory_mb / 1024, 1),
-            "compute_capability": f"{self.compute_capability[0]}.{self.compute_capability[1]}" if self.compute_capability else None,
+            "compute_capability": (
+                f"{self.compute_capability[0]}.{self.compute_capability[1]}"
+                if self.compute_capability
+                else None
+            ),
             "cuda_support": self.cuda_support,
             "cuda_version": self.cuda_version,
             "driver_version": self.driver_version,
             "is_available": self.is_available,
-            "recommendation": self.recommendation
+            "recommendation": self.recommendation,
         }
 
 
 # =============================================================================
 # GPU检测器
 # =============================================================================
+
 
 class GPUDetector:
     """
@@ -161,9 +170,9 @@ class GPUDetector:
                 ["wmic", "path", "win32_VideoController", "get", "name,AdapterRAM"],
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='ignore',
-                timeout=10
+                encoding="utf-8",
+                errors="ignore",
+                timeout=10,
             )
 
             if result.returncode != 0:
@@ -171,14 +180,14 @@ class GPUDetector:
                 return
 
             # 解析输出
-            lines = result.stdout.strip().split('\n')
+            lines = result.stdout.strip().split("\n")
             for line in lines[1:]:  # 跳过表头
-                parts = [p.strip() for p in line.split('  ') if p.strip()]
+                parts = [p.strip() for p in line.split("  ") if p.strip()]
                 if len(parts) >= 2:
                     name = parts[0]
                     try:
                         # 内存值可能是"xxxx bytes"
-                        memory_str = parts[1].replace(' bytes', '').replace(',', '')
+                        memory_str = parts[1].replace(" bytes", "").replace(",", "")
                         memory_mb = int(int(memory_str) / (1024 * 1024))
                     except (ValueError, IndexError):
                         memory_mb = 0
@@ -188,10 +197,7 @@ class GPUDetector:
 
                     # 创建GPU信息
                     gpu_info = GPUInfo(
-                        vendor=vendor,
-                        name=name,
-                        memory_mb=memory_mb,
-                        is_available=True
+                        vendor=vendor, name=name, memory_mb=memory_mb, is_available=True
                     )
 
                     # 生成建议
@@ -209,19 +215,23 @@ class GPUDetector:
         try:
             # 方法1: 使用nvidia-smi命令
             result = subprocess.run(
-                ["nvidia-smi", "--query-gpu=name,driver_version,cuda_version,memory.total", "--format=csv,noheader"],
+                [
+                    "nvidia-smi",
+                    "--query-gpu=name,driver_version,cuda_version,memory.total",
+                    "--format=csv,noheader",
+                ],
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='ignore',
-                timeout=10
+                encoding="utf-8",
+                errors="ignore",
+                timeout=10,
             )
 
             if result.returncode == 0:
                 # 解析nvidia-smi输出
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 for line in lines:
-                    parts = [p.strip() for p in line.split(',')]
+                    parts = [p.strip() for p in line.split(",")]
                     if len(parts) >= 4:
                         name = parts[0]
                         driver_version = parts[1]
@@ -244,9 +254,13 @@ class GPUDetector:
                                     gpu_info.memory_mb = memory_mb
 
                                 # 更新建议
-                                gpu_info.recommendation = self._generate_recommendation(gpu_info)
+                                gpu_info.recommendation = self._generate_recommendation(
+                                    gpu_info
+                                )
 
-                        logger.info(f"检测到NVIDIA GPU: {name}, CUDA {cuda_version}, {memory_mb}MB")
+                        logger.info(
+                            f"检测到NVIDIA GPU: {name}, CUDA {cuda_version}, {memory_mb}MB"
+                        )
                         return
 
         except subprocess.TimeoutExpired:
@@ -264,9 +278,9 @@ class GPUDetector:
                 ["lspci", "-nn", "-d", "::0300"],
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='ignore',
-                timeout=10
+                encoding="utf-8",
+                errors="ignore",
+                timeout=10,
             )
 
             if result.returncode == 0:
@@ -291,10 +305,11 @@ class GPUDetector:
             import re
 
             # 正则表达式匹配GPU信息
-            # 示例: "VGA compatible controller: NVIDIA Corporation GP107M [GeForce GTX 1050 Mobile]"
-            pattern = r'(\w+(?:\s+\w+)*)\s*:\s*([\w\s]+)\s+\[([^\]]+)\]'
+            # 示例: "VGA compatible controller: NVIDIA Corporation GP107M"
+            # "[GeForce GTX 1050 Mobile]"
+            pattern = r"(\w+(?:\s+\w+)*)\s*:\s*([\w\s]+)\s+\[([^\]]+)\]"
 
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 match = re.search(pattern, line)
                 if match:
                     vendor_name = match.group(1)
@@ -308,7 +323,7 @@ class GPUDetector:
                         vendor=vendor,
                         name=name,
                         memory_mb=0,  # lspci无法直接获取显存
-                        is_available=True
+                        is_available=True,
                     )
 
                     # 尝试从dmesg获取显存信息
@@ -345,13 +360,16 @@ class GPUDetector:
                     capture_output=True,
                     text=True,
                     shell=True,
-                    timeout=5
+                    timeout=5,
                 )
 
                 if result.returncode == 0:
                     # 解析显存大小
                     import re
-                    memory_match = re.search(r'(\d+)\s*[MG]B', result.stdout, re.IGNORECASE)
+
+                    memory_match = re.search(
+                        r"(\d+)\s*[MG]B", result.stdout, re.IGNORECASE
+                    )
                     if memory_match:
                         memory_mb = int(memory_match.group(1))
                         if memory_mb < 1000:  # 可能是MB
@@ -372,13 +390,14 @@ class GPUDetector:
                 ["system_profiler", "SPDisplaysDataType", "-json"],
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='ignore',
-                timeout=10
+                encoding="utf-8",
+                errors="ignore",
+                timeout=10,
             )
 
             if result.returncode == 0:
                 import json
+
                 data = json.loads(result.stdout)
 
                 # 解析GPU信息
@@ -402,11 +421,13 @@ class GPUDetector:
                             vendor=vendor,
                             name=name,
                             memory_mb=memory_mb,
-                            is_available=True
+                            is_available=True,
                         )
 
                         # 生成建议
-                        gpu_info.recommendation = self._generate_recommendation(gpu_info)
+                        gpu_info.recommendation = self._generate_recommendation(
+                            gpu_info
+                        )
 
                         self._gpu_info_list.append(gpu_info)
 
@@ -487,7 +508,7 @@ class GPUDetector:
             "gpu_count": len(self._gpu_info_list),
             "nvidia_gpu_available": nvidia_gpu is not None,
             "best_gpu": best_gpu.to_dict() if best_gpu else None,
-            "recommend_gpu": best_gpu.recommendation if best_gpu else "建议使用CPU版本"
+            "recommend_gpu": best_gpu.recommendation if best_gpu else "建议使用CPU版本",
         }
 
 

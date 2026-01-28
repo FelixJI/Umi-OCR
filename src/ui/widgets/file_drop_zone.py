@@ -20,25 +20,41 @@ from typing import Optional, List, Set
 from pathlib import Path
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
-    QPushButton, QLabel, QListWidgetItem, QFileDialog,
-    QAbstractItemView, QMenu, QSizePolicy
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidget,
+    QPushButton,
+    QLabel,
+    QListWidgetItem,
+    QFileDialog,
+    QAbstractItemView,
+    QMenu,
 )
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QDragEnterEvent, QDropEvent, QAction
-
 
 # =============================================================================
 # 默认支持的文件类型
 # =============================================================================
 
-DEFAULT_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff", ".tif"}
+DEFAULT_IMAGE_SUFFIXES = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".bmp",
+    ".gif",
+    ".webp",
+    ".tiff",
+    ".tif",
+}
 DEFAULT_DOC_SUFFIXES = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"}
 
 
 # =============================================================================
 # 文件拖拽区域控件
 # =============================================================================
+
 
 class FileDropZone(QWidget):
     """
@@ -374,12 +390,18 @@ class FileDropZone(QWidget):
         files = []
 
         if p.is_file():
-            if not self._accepted_suffixes or p.suffix.lower() in self._accepted_suffixes:
+            if (
+                not self._accepted_suffixes
+                or p.suffix.lower() in self._accepted_suffixes
+            ):
                 files.append(str(p))
         elif p.is_dir():
             for item in p.rglob("*"):
                 if item.is_file():
-                    if not self._accepted_suffixes or item.suffix.lower() in self._accepted_suffixes:
+                    if (
+                        not self._accepted_suffixes
+                        or item.suffix.lower() in self._accepted_suffixes
+                    ):
                         files.append(str(item))
 
         return files
@@ -430,9 +452,7 @@ class FileDropZone(QWidget):
         else:
             filter_str = "所有文件 (*)"
 
-        files, _ = QFileDialog.getOpenFileNames(
-            self, "选择文件", "", filter_str
-        )
+        files, _ = QFileDialog.getOpenFileNames(self, "选择文件", "", filter_str)
 
         if files:
             self.add_files(files)

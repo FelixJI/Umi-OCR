@@ -15,7 +15,6 @@ from typing import Dict, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
-
 # =============================================================================
 # 模型类型枚举
 # =============================================================================
@@ -97,9 +96,9 @@ class ModelInfo:
             "local_path": str(self.local_path) if self.local_path else None,
             "status": self.status.value,
             "last_used": self.last_used.isoformat() if self.last_used else None,
-            "download_time": self.download_time.isoformat()
-            if self.download_time
-            else None,
+            "download_time": (
+                self.download_time.isoformat() if self.download_time else None
+            ),
             "required": self.required,
             "enabled": self.enabled,
         }
@@ -129,12 +128,16 @@ class ModelInfo:
             md5=data.get("md5"),
             local_path=Path(data["local_path"]) if data.get("local_path") else None,
             status=ModelStatus(data.get("status", "not_downloaded")),
-            last_used=datetime.fromisoformat(data["last_used"])
-            if data.get("last_used")
-            else None,
-            download_time=datetime.fromisoformat(data["download_time"])
-            if data.get("download_time")
-            else None,
+            last_used=(
+                datetime.fromisoformat(data["last_used"])
+                if data.get("last_used")
+                else None
+            ),
+            download_time=(
+                datetime.fromisoformat(data["download_time"])
+                if data.get("download_time")
+                else None
+            ),
             required=data.get("required", True),
             enabled=data.get("enabled", True),
             display_name=data.get("display_name"),

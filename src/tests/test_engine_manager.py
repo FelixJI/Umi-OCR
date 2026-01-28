@@ -20,31 +20,22 @@ import unittest
 import time
 import threading
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, PropertyMock
 
-from PySide6.QtCore import QObject, Signal
 
 import sys
-from pathlib import Path
+
 # 添加项目根目录到 Python 路径
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from services.ocr.base_engine import BaseOCREngine, OCRErrorCode
+from services.ocr.base_engine import BaseOCREngine
 from services.ocr.ocr_result import OCRResult
-from services.ocr.engine_manager import (
-    EngineManager,
-    EngineInfo,
-    EngineState,
-    get_engine_manager,
-    set_config_manager
-)
-from services.ocr.paddle_engine import PaddleOCREngine
-
+from services.ocr.engine_manager import EngineManager
 
 # =============================================================================
 # Mock 引擎（用于测试）
 # =============================================================================
+
 
 class MockOCREngine(BaseOCREngine):
     """Mock OCR 引擎（用于测试）"""
@@ -72,7 +63,7 @@ class MockOCREngine(BaseOCREngine):
             text_blocks=[],
             full_text="Mock recognition result",
             engine_type=self.ENGINE_TYPE,
-            engine_name=self.ENGINE_NAME
+            engine_name=self.ENGINE_NAME,
         )
 
     def _do_cleanup(self) -> None:
@@ -112,6 +103,7 @@ class FailingOCREngine(BaseOCREngine):
 # 引擎管理器测试
 # =============================================================================
 
+
 class TestEngineManager(unittest.TestCase):
     """引擎管理器单元测试"""
 
@@ -120,6 +112,7 @@ class TestEngineManager(unittest.TestCase):
         """测试类初始化"""
         # 重置全局引擎管理器
         import services.ocr.engine_manager as em_module
+
         em_module._global_engine_manager = None
 
     def setUp(self):
@@ -133,7 +126,7 @@ class TestEngineManager(unittest.TestCase):
             engine_class=MockOCREngine,
             factory=MockOCREngine,
             is_local=True,
-            priority=1
+            priority=1,
         )
 
         self.manager.register_engine(
@@ -141,7 +134,7 @@ class TestEngineManager(unittest.TestCase):
             engine_class=FailingOCREngine,
             factory=FailingOCREngine,
             is_local=False,
-            priority=10
+            priority=10,
         )
 
     def tearDown(self):
@@ -332,7 +325,8 @@ class TestEngineManager(unittest.TestCase):
 
         # 执行识别（使用PIL Image对象）
         from PIL import Image
-        fake_image = Image.new('RGB', (100, 100), color='white')
+
+        fake_image = Image.new("RGB", (100, 100), color="white")
         result = self.manager.recognize(fake_image)
 
         # 调试输出
@@ -355,7 +349,8 @@ class TestEngineManager(unittest.TestCase):
 
         # 执行识别（应该自动加载默认引擎）
         from PIL import Image
-        fake_image = Image.new('RGB', (100, 100), color='white')
+
+        fake_image = Image.new("RGB", (100, 100), color="white")
         result = self.manager.recognize(fake_image)
 
         # 调试输出

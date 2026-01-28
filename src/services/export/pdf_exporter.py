@@ -11,7 +11,6 @@ Date: 2026-01-27
 
 import logging
 from typing import List, Dict, Any
-from pathlib import Path
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
@@ -33,11 +32,10 @@ class PDFExporter(BaseExporter):
         # 理想情况下，我们应该捆绑一个字体或使用系统字体。
         # 这是字体注册的占位符。
         try:
-             # 尝试加载常用的 Windows 字体
-             pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttc'))
-             self.font_name = 'SimSun'
-        except:
-             self.font_name = 'Helvetica' # 回退字体
+            pdfmetrics.registerFont(TTFont("SimSun", "simsun.ttc"))
+            self.font_name = "SimSun"
+        except Exception:
+            self.font_name = "Helvetica"  # 回退字体
 
     def export(
         self,
@@ -46,7 +44,7 @@ class PDFExporter(BaseExporter):
         font_name: str = None,
         font_size: int = 12,
         margin: int = 50,
-        **kwargs
+        **kwargs,
     ) -> bool:
         """
         导出为 PDF
@@ -65,11 +63,11 @@ class PDFExporter(BaseExporter):
         try:
             c = canvas.Canvas(output_path, pagesize=A4)
             width, height = A4
-            
+
             used_font = font_name or self.font_name
             try:
                 c.setFont(used_font, font_size)
-            except:
+            except Exception:
                 c.setFont("Helvetica", font_size)
 
             y = height - margin
@@ -80,26 +78,29 @@ class PDFExporter(BaseExporter):
                 # 如果有图片，则绘制图片（简化版）
                 # image_path = item.get("image_path")
                 # if image_path and Path(image_path).exists():
-                #     c.drawImage(image_path, margin, y - 200, width=400, preserveAspectRatio=True)
+                #     c.drawImage(
+                #         image_path, margin, y - 200, width=400, 
+                #         preserveAspectRatio=True
+                #     )
                 #     y -= 220
-                
+
                 # 绘制文本
-                lines = text.split('\n')
+                lines = text.split("\n")
                 for line in lines:
                     if y < margin:
                         c.showPage()
                         y = height - margin
                         try:
                             c.setFont(used_font, font_size)
-                        except:
+                        except Exception:
                             c.setFont("Helvetica", font_size)
-                    
+
                     c.drawString(margin, y, line)
                     y -= line_height
-                
+
                 # 项目之间添加间距
                 y -= line_height
-            
+
             c.save()
             logger.info(f"PDF导出成功: {output_path}")
 

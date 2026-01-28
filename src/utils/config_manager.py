@@ -41,7 +41,7 @@ Date: 2025-01-25
 import json
 import threading
 from pathlib import Path
-from typing import Any, Callable, Optional, Dict, List, Union
+from typing import Any, Callable, Optional, List
 from PySide6.QtCore import QObject, Signal
 
 from src.models.config_model import AppConfig, ConfigChangeEvent
@@ -342,10 +342,7 @@ class ConfigManager(QObject):
 
             # 通知监听器
             event = ConfigChangeEvent(
-                key_path=key_path,
-                old_value=old_value,
-                new_value=value,
-                source="user"
+                key_path=key_path, old_value=old_value, new_value=value, source="user"
             )
             self._notify_listeners(event)
 

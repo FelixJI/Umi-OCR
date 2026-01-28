@@ -18,7 +18,6 @@ Date: 2025-01-26
 """
 
 import sys
-import os
 from pathlib import Path
 
 # 添加项目根目录到 Python 路径
@@ -29,7 +28,6 @@ import unittest
 import tempfile
 import json
 import shutil
-from unittest.mock import Mock, patch
 
 # 需要先导入 PySide6，否则会报错
 from PySide6.QtWidgets import QApplication
@@ -51,7 +49,7 @@ class TestI18nManager(unittest.TestCase):
     def tearDownClass(cls):
         """测试类清理"""
         # 清理 QApplication
-        if hasattr(cls, 'app'):
+        if hasattr(cls, "app"):
             cls.app.quit()
 
     def setUp(self):
@@ -75,7 +73,7 @@ class TestI18nManager(unittest.TestCase):
 
         # 创建语言管理器实例（用于测试，不使用单例）
         # 先重置单例标志
-        if hasattr(I18nManager, '_instance'):
+        if hasattr(I18nManager, "_instance"):
             old_instance = I18nManager._instance
             I18nManager._instance = None
 
@@ -84,7 +82,7 @@ class TestI18nManager(unittest.TestCase):
         self.i18n.set_i18n_dir(Path(self.temp_dir))
 
         # 恢复旧的单例（用于其他测试）
-        if 'old_instance' in locals():
+        if "old_instance" in locals():
             I18nManager._instance = old_instance
 
     def tearDown(self):
@@ -101,36 +99,18 @@ class TestI18nManager(unittest.TestCase):
         zh_cn = {
             "language": "简体中文",
             "locale": "zh_CN",
-            "app": {
-                "name": "Umi-OCR",
-                "description": "测试描述"
-            },
-            "test": {
-                "key1": "测试值1",
-                "key2": "测试值2"
-            },
-            "messages": {
-                "welcome": "欢迎来到{name}",
-                "goodbye": "再见{name}"
-            }
+            "app": {"name": "Umi-OCR", "description": "测试描述"},
+            "test": {"key1": "测试值1", "key2": "测试值2"},
+            "messages": {"welcome": "欢迎来到{name}", "goodbye": "再见{name}"},
         }
 
         # 英文语言包
         en_us = {
             "language": "English",
             "locale": "en_US",
-            "app": {
-                "name": "Umi-OCR",
-                "description": "Test description"
-            },
-            "test": {
-                "key1": "Test value 1",
-                "key2": "Test value 2"
-            },
-            "messages": {
-                "welcome": "Welcome to {name}",
-                "goodbye": "Goodbye {name}"
-            }
+            "app": {"name": "Umi-OCR", "description": "Test description"},
+            "test": {"key1": "Test value 1", "key2": "Test value 2"},
+            "messages": {"welcome": "Welcome to {name}", "goodbye": "Goodbye {name}"},
         }
 
         # 写入文件
@@ -195,7 +175,9 @@ class TestI18nManager(unittest.TestCase):
 
         # 模拟语言变更信号
         self.language_changed_calls = []
-        self.i18n.language_changed.connect(lambda lang: self.language_changed_calls.append(lang))
+        self.i18n.language_changed.connect(
+            lambda lang: self.language_changed_calls.append(lang)
+        )
 
         # 切换到中文
         result = self.i18n.set_language("zh_CN")
@@ -262,9 +244,7 @@ class TestI18nManager(unittest.TestCase):
         partial_lang = {
             "language": "Partial",
             "locale": "partial",
-            "app": {
-                "name": "Partial App"
-            }
+            "app": {"name": "Partial App"},
             # 没有 test.key1
         }
 

@@ -18,23 +18,23 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from abc import abstractmethod
-from typing import Dict, Any, List, Optional, Callable
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Dict, Any, List, Optional
 from enum import Enum
 import threading
-import time
 import asyncio
 from io import BytesIO
-
-from PySide6.QtCore import QObject, Signal
-
+import logging
 from ..base_engine import BaseOCREngine, OCRErrorCode, OCRResult
 from ..ocr_result import TextBlock, BoundingBox, TextBlockType
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # 云 OCR 识别类型枚举
 # =============================================================================
+
 
 class CloudOCRType(Enum):
     """
@@ -42,16 +42,17 @@ class CloudOCRType(Enum):
 
     支持多种专业识别场景，如通用文字、身份证、银行卡、发票等。
     """
-    GENERAL = "general"                # 通用文字识别
-    GENERAL_ACCURATE = "accurate"      # 高精度版
-    IDCARD = "idcard"                  # 身份证
-    BANK_CARD = "bank_card"              # 银行卡
-    BUSINESS_LICENSE = "license"           # 营业执照
-    INVOICE = "invoice"                 # 发票
-    TRAIN_TICKET = "train_ticket"         # 火车票
-    TABLE = "table"                     # 表格
-    FORMULA = "formula"                 # 公式
-    HANDWRITING = "handwriting"           # 手写体
+
+    GENERAL = "general"  # 通用文字识别
+    GENERAL_ACCURATE = "accurate"  # 高精度版
+    IDCARD = "idcard"  # 身份证
+    BANK_CARD = "bank_card"  # 银行卡
+    BUSINESS_LICENSE = "license"  # 营业执照
+    INVOICE = "invoice"  # 发票
+    TRAIN_TICKET = "train_ticket"  # 火车票
+    TABLE = "table"  # 表格
+    FORMULA = "formula"  # 公式
+    HANDWRITING = "handwriting"  # 手写体
 
 
 @dataclass
@@ -64,10 +65,11 @@ class CloudOCRResult:
 
     设计理念：在保证统一接口的同时，保留各云服务商的特有功能。
     """
-    text: str                              # 识别文本
-    confidence: float                      # 置信度 (0.0 ~ 1.0)
-    location: Optional[List[int]] = None      # 坐标 [x, y, width, height]
-    extra: Dict[str, Any] = None           # 厂商特有数据
+
+    text: str  # 识别文本
+    confidence: float  # 置信度 (0.0 ~ 1.0)
+    location: Optional[List[int]] = None  # 坐标 [x, y, width, height]
+    extra: Dict[str, Any] = None  # 厂商特有数据
 
     # extra 示例:
     # - 百度: {"words_result_num": 10, "direction": 0}
@@ -78,6 +80,7 @@ class CloudOCRResult:
 # =============================================================================
 # 云 OCR 引擎基类
 # =============================================================================
+
 
 class BaseCloudEngine(BaseOCREngine, ABC):
     """
@@ -100,9 +103,9 @@ class BaseCloudEngine(BaseOCREngine, ABC):
     # 重试配置
     # -------------------------------------------------------------------------
 
-    MAX_RETRIES = 3                          # 最大重试次数
-    RETRY_DELAYS = [1, 2, 4]              # 指数退避：1s, 2s, 4s
-    REQUEST_TIMEOUT = 30                       # 请求超时（秒）
+    MAX_RETRIES = 3  # 最大重试次数
+    RETRY_DELAYS = [1, 2, 4]  # 指数退避：1s, 2s, 4s
+    REQUEST_TIMEOUT = 30  # 请求超时（秒）
 
     # -------------------------------------------------------------------------
     # 初始化
@@ -120,6 +123,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
 
         # 请求队列（QPS控制）
         from .request_queue import RequestQueue
+
         self._request_queue = RequestQueue(qps_limit)
 
         # 降级链（备用引擎列表）
@@ -170,7 +174,9 @@ class BaseCloudEngine(BaseOCREngine, ABC):
         pass
 
     @abstractmethod
-    def _parse_response(self, response: Dict, ocr_type: CloudOCRType) -> List[CloudOCRResult]:
+    def _parse_response(
+        self, response: Dict, ocr_type: CloudOCRType
+    ) -> List[CloudOCRResult]:
         """
         解析云厂商响应为统一格式
 
@@ -268,7 +274,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             OCRResult: 识别结果
         """
         # 解析参数
-        ocr_type = kwargs.get('ocr_type', CloudOCRType.GENERAL)
+        ocr_type = kwargs.get("ocr_type", CloudOCRType.GENERAL)
 
         # 编码图片为 Base64
         try:
@@ -280,7 +286,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                 error_code=OCRErrorCode.IMAGE_FORMAT_UNSUPPORTED.value,
                 error_message=f"图片编码失败: {str(e)}",
                 engine_type=self.ENGINE_TYPE,
-                engine_name=self.ENGINE_NAME
+                engine_name=self.ENGINE_NAME,
             )
 
         # 通过请求队列发送（QPS控制 + 重试）
@@ -298,7 +304,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                     error_code=OCRErrorCode.NETWORK_ERROR.value,
                     error_message=f"云 OCR 失败: {str(e)}",
                     engine_type=self.ENGINE_TYPE,
-                    engine_name=self.ENGINE_NAME
+                    engine_name=self.ENGINE_NAME,
                 )
 
         # 解析响应
@@ -312,7 +318,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                 error_code=OCRErrorCode.RECOGNITION_FAILED.value,
                 error_message=f"响应解析失败: {str(e)}",
                 engine_type=self.ENGINE_TYPE,
-                engine_name=self.ENGINE_NAME
+                engine_name=self.ENGINE_NAME,
             )
 
     # -------------------------------------------------------------------------
@@ -340,10 +346,9 @@ class BaseCloudEngine(BaseOCREngine, ABC):
     def _init_session(self) -> None:
         """初始化 HTTP 会话"""
         import requests
+
         self._session = requests.Session()
-        self._session.headers.update({
-            'User-Agent': f'Umi-OCR/{self.ENGINE_VERSION}'
-        })
+        self._session.headers.update({"User-Agent": f"Umi-OCR/{self.ENGINE_VERSION}"})
 
     def _test_connection(self) -> bool:
         """
@@ -367,7 +372,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             bytes: 图片字节数据
         """
         img_byte_arr = BytesIO()
-        image.save(img_byte_arr, format='PNG')
+        image.save(img_byte_arr, format="PNG")
         return img_byte_arr.getvalue()
 
     def _encode_image(self, image_bytes: bytes) -> str:
@@ -381,9 +386,12 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             str: Base64 编码字符串
         """
         import base64
-        return base64.b64encode(image_bytes).decode('utf-8')
 
-    async def _send_request_with_retry(self, image_base64: str, ocr_type: CloudOCRType) -> Dict:
+        return base64.b64encode(image_bytes).decode("utf-8")
+
+    async def _send_request_with_retry(
+        self, image_base64: str, ocr_type: CloudOCRType
+    ) -> Dict:
         """
         带重试的请求发送（异步）
 
@@ -416,11 +424,11 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                 response = await send()
 
                 # 检查响应
-                if response.get('success'):
+                if response.get("success"):
                     return response
 
                 # 云厂商返回错误
-                error_code = response.get('error_code', '')
+                error_code = response.get("error_code", "")
                 if self._is_auth_error(error_code):
                     # 认证错误，清除凭证缓存
                     self._clear_credentials_cache()
@@ -453,23 +461,23 @@ class BaseCloudEngine(BaseOCREngine, ABC):
 
         with self._session_lock:
             response = requests.request(
-                method=request_config.get('method', 'POST'),
-                url=request_config['url'],
-                headers=request_config.get('headers', {}),
-                data=request_config.get('data'),
-                timeout=self.REQUEST_TIMEOUT
+                method=request_config.get("method", "POST"),
+                url=request_config["url"],
+                headers=request_config.get("headers", {}),
+                data=request_config.get("data"),
+                timeout=self.REQUEST_TIMEOUT,
             )
 
         # 解析响应
         result = {
-            'success': response.status_code == 200,
-            'status_code': response.status_code,
-            'data': response.json() if response.content else {}
+            "success": response.status_code == 200,
+            "status_code": response.status_code,
+            "data": response.json() if response.content else {},
         }
 
-        if not result['success']:
-            result['error_code'] = str(response.status_code)
-            result['error_message'] = response.text or f"HTTP {response.status_code}"
+        if not result["success"]:
+            result["error_code"] = str(response.status_code)
+            result["error_message"] = response.text or f"HTTP {response.status_code}"
 
         return result
 
@@ -502,7 +510,9 @@ class BaseCloudEngine(BaseOCREngine, ABC):
         self._credentials_cache = None
         self._credentials_cache_time = 0.0
 
-    def _convert_to_ocr_result(self, cloud_results: List[CloudOCRResult], raw_response: Dict) -> OCRResult:
+    def _convert_to_ocr_result(
+        self, cloud_results: List[CloudOCRResult], raw_response: Dict
+    ) -> OCRResult:
         """
         转换 CloudOCRResult 为 OCRResult
 
@@ -525,9 +535,18 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                 bbox = BoundingBox(
                     points=[
                         [cloud_result.location[0], cloud_result.location[1]],
-                        [cloud_result.location[0] + cloud_result.location[2], cloud_result.location[1]],
-                        [cloud_result.location[0] + cloud_result.location[2], cloud_result.location[1] + cloud_result.location[3]],
-                        [cloud_result.location[0], cloud_result.location[1] + cloud_result.location[3]]
+                        [
+                            cloud_result.location[0] + cloud_result.location[2],
+                            cloud_result.location[1],
+                        ],
+                        [
+                            cloud_result.location[0] + cloud_result.location[2],
+                            cloud_result.location[1] + cloud_result.location[3],
+                        ],
+                        [
+                            cloud_result.location[0],
+                            cloud_result.location[1] + cloud_result.location[3],
+                        ],
                     ]
                 )
 
@@ -536,13 +555,13 @@ class BaseCloudEngine(BaseOCREngine, ABC):
                 text=cloud_result.text,
                 confidence=cloud_result.confidence,
                 bbox=bbox,
-                block_type=TextBlockType.PARAGRAPH
+                block_type=TextBlockType.PARAGRAPH,
             )
             text_blocks.append(text_block)
             full_text_lines.append(cloud_result.text)
 
         # 合并完整文本
-        full_text = '\n'.join(full_text_lines)
+        full_text = "\n".join(full_text_lines)
 
         # 构建结果
         return OCRResult(
@@ -553,12 +572,14 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             engine_name=self.ENGINE_NAME,
             engine_version=self.ENGINE_VERSION,
             extra={
-                'raw_response': raw_response,
-                'cloud_results': [r.__dict__ for r in cloud_results]
-            }
+                "raw_response": raw_response,
+                "cloud_results": [r.__dict__ for r in cloud_results],
+            },
         )
 
-    def _try_fallback_engines(self, image, ocr_type: CloudOCRType, **kwargs) -> OCRResult:
+    def _try_fallback_engines(
+        self, image, ocr_type: CloudOCRType, **kwargs
+    ) -> OCRResult:
         """
         尝试降级引擎
 
@@ -575,13 +596,15 @@ class BaseCloudEngine(BaseOCREngine, ABC):
 
             try:
                 # 直接调用降级引擎的识别方法
-                result = fallback_engine._do_recognize(image, ocr_type=ocr_type, **kwargs)
+                result = fallback_engine._do_recognize(
+                    image, ocr_type=ocr_type, **kwargs
+                )
 
                 if result.success:
                     logger.info(f"降级引擎 {fallback_engine.ENGINE_NAME} 识别成功")
                     # 标记为降级结果
-                    result.extra['fallback_from'] = self.ENGINE_TYPE
-                    result.extra['fallback_to'] = fallback_engine.ENGINE_TYPE
+                    result.extra["fallback_from"] = self.ENGINE_TYPE
+                    result.extra["fallback_to"] = fallback_engine.ENGINE_TYPE
                     return result
 
             except Exception as e:
@@ -594,7 +617,7 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             error_code=OCRErrorCode.RECOGNITION_FAILED.value,
             error_message="所有云引擎（包括降级）均失败",
             engine_type=self.ENGINE_TYPE,
-            engine_name=self.ENGINE_NAME
+            engine_name=self.ENGINE_NAME,
         )
 
     def set_fallback_chain(self, engines: List["BaseCloudEngine"]) -> None:
@@ -605,12 +628,11 @@ class BaseCloudEngine(BaseOCREngine, ABC):
             engines: 降级引擎列表（如：百度 → 腾讯 → 本地）
         """
         self._fallback_engines = engines
-        logger.info(f"{self.ENGINE_NAME} 降级链已设置: {[e.ENGINE_NAME for e in engines]}")
+        logger.info(
+            f"{self.ENGINE_NAME} 降级链已设置: {[e.ENGINE_NAME for e in engines]}"
+        )
 
 
 # =============================================================================
 # 日志记录器
 # =============================================================================
-
-import logging
-logger = logging.getLogger(__name__)

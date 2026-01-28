@@ -31,7 +31,7 @@ class JSONExporter(BaseExporter):
         output_path: str,
         indent: int = 2,
         ensure_ascii: bool = False,
-        **kwargs
+        **kwargs,
     ) -> bool:
         """
         导出为 JSON
@@ -49,10 +49,7 @@ class JSONExporter(BaseExporter):
         try:
             # 序列化 JSON
             json_content = json.dumps(
-                data,
-                indent=indent,
-                ensure_ascii=ensure_ascii,
-                default=str
+                data, indent=indent, ensure_ascii=ensure_ascii, default=str
             )
 
             # 写入文件

@@ -20,7 +20,7 @@ import tempfile
 from pathlib import Path
 from PySide6.QtCore import QCoreApplication, QBuffer, QIODevice
 from PySide6.QtGui import QImage, QPixmap, QPainter
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 from src.services.qrcode.qrcode_scanner import QRCodeScanner
 
@@ -51,7 +51,7 @@ class TestQRCodeScannerPerformance(unittest.TestCase):
             buffer.open(QIODevice.ReadWrite)
             qimage.save(buffer, "PNG")
             buffer_data = buffer.data()
-            pil_image = Image.open(__import__('io').BytesIO(bytes(buffer_data)))
+            pil_image = Image.open(__import__("io").BytesIO(bytes(buffer_data)))
 
         end_time = time.time()
         avg_time = (end_time - start_time) / iterations * 1000  # 转换为毫秒
@@ -162,7 +162,6 @@ class TestQRCodeScannerPerformance(unittest.TestCase):
 
     def test_file_vs_pixmap_performance(self):
         """测试文件路径扫描 vs QPixmap 扫描性能"""
-        import io
 
         # 创建临时图像文件
         qimage = QImage(1920, 1080, QImage.Format.Format_RGB32)
@@ -174,7 +173,7 @@ class TestQRCodeScannerPerformance(unittest.TestCase):
         qimage.save(buffer, "PNG")
         buffer_data = bytes(buffer.data())
 
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             f.write(buffer_data)
             temp_file = f.name
 
@@ -248,7 +247,7 @@ class TestQRCodeScannerPerformance(unittest.TestCase):
 
         # 记录当前临时文件数量
         temp_dir = tempfile.gettempdir()
-        before_files = set(Path(temp_dir).glob('*.png'))
+        before_files = set(Path(temp_dir).glob("*.png"))
 
         # 执行多次扫描
         for _ in range(20):
@@ -258,7 +257,7 @@ class TestQRCodeScannerPerformance(unittest.TestCase):
             results = self.scanner.scan_from_pixmap(pixmap)
 
         # 检查临时文件数量
-        after_files = set(Path(temp_dir).glob('*.png'))
+        after_files = set(Path(temp_dir).glob("*.png"))
         new_files = after_files - before_files
 
         print(f"\n新创建的临时文件数量: {len(new_files)}")
@@ -303,9 +302,9 @@ def run_performance_benchmarks():
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("性能基准测试完成")
-    print("="*70)
+    print("=" * 70)
 
     return result.wasSuccessful()
 
@@ -313,4 +312,5 @@ def run_performance_benchmarks():
 if __name__ == "__main__":
     success = run_performance_benchmarks()
     import sys
+
     sys.exit(0 if success else 1)

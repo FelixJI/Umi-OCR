@@ -13,9 +13,7 @@ class PluginsConnector(QObject):
     def init(self):
         """Initialize placeholder - returns empty"""
         return {
-            "options": {
-                "ocr": None  # No plugin system, OCR is built-in
-            },
+            "options": {"ocr": None},  # No plugin system, OCR is built-in
             "errors": {},
         }
 

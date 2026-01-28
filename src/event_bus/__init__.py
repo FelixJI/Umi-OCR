@@ -9,4 +9,4 @@ Date: 2026-01-28
 
 from .pubsub_service import PubSubService, get_pubsub_instance
 
-__all__ = ['PubSubService', 'get_pubsub_instance']
+__all__ = ["PubSubService", "get_pubsub_instance"]

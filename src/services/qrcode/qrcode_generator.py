@@ -40,7 +40,7 @@ class QRCodeGenerator:
 
     # 纠错等级
     ERROR_CORRECTION_LEVELS = ["L", "M", "Q", "H"]
-    
+
     _ERROR_MAPPING = {
         "L": qrcode.constants.ERROR_CORRECT_L,
         "M": qrcode.constants.ERROR_CORRECT_M,
@@ -58,7 +58,7 @@ class QRCodeGenerator:
         code_type: str = "QR_CODE",
         output_path: Optional[str] = None,
         error_correction: str = "M",
-        size: int = 300
+        size: int = 300,
     ) -> Optional[bytes]:
         """
         生成二维码
@@ -80,9 +80,10 @@ class QRCodeGenerator:
                 if output_path:
                     with open(output_path, "rb") as f:
                         return f.read()
-                return None # Should return bytes if output_path is None, but generate_qr_code saves to file.
-                            # I will modify generate_qr_code to return image object or bytes later.
-                            # For now, let's stick to saving to file if path is provided.
+                return None  # Should return bytes if output_path is None, \
+                # but generate_qr_code saves to file.
+                # I will modify generate_qr_code to return image object or bytes later.
+                # For now, let's stick to saving to file if path is provided.
         else:
             logger.warning(f"暂不支持生成码型: {code_type}")
             return None
@@ -90,11 +91,7 @@ class QRCodeGenerator:
         return None
 
     def generate_qr_code(
-        self,
-        data: str,
-        output_path: str,
-        error_correction: str = "M",
-        size: int = 300
+        self, data: str, output_path: str, error_correction: str = "M", size: int = 300
     ) -> bool:
         """
         生成QR码(专用方法)
@@ -113,10 +110,12 @@ class QRCodeGenerator:
             if output_path:
                 Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-            ec_level = self._ERROR_MAPPING.get(error_correction, qrcode.constants.ERROR_CORRECT_M)
-            
+            ec_level = self._ERROR_MAPPING.get(
+                error_correction, qrcode.constants.ERROR_CORRECT_M
+            )
+
             qr = qrcode.QRCode(
-                version=None, # Auto
+                version=None,  # Auto
                 error_correction=ec_level,
                 box_size=10,
                 border=4,
@@ -125,7 +124,7 @@ class QRCodeGenerator:
             qr.make(fit=True)
 
             img = qr.make_image(fill_color="black", back_color="white")
-            
+
             # Resize if needed (box_size controls size, but we can resize final image)
             if size > 0:
                 img = img.resize((size, size), Image.Resampling.LANCZOS)
@@ -133,7 +132,7 @@ class QRCodeGenerator:
             if output_path:
                 img.save(output_path)
                 logger.info(f"QR码生成成功: {output_path}")
-            
+
             return True
 
         except Exception as e:

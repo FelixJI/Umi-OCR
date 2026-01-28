@@ -16,10 +16,10 @@ Date: 2025-01-25
 
 import sys
 import os
+import socket
+import urllib.request
 from pathlib import Path
-from PySide6.QtWidgets import QApplication, QDialog
-from PySide6.QtCore import Qt, QLocale, QTranslator
-
+from PySide6.QtWidgets import QApplication
 
 
 class UmiApplication(QApplication):
@@ -59,7 +59,6 @@ class UmiApplication(QApplication):
         # 初始化多语言支持
         self._init_i18n()
 
-
     def _setup_application_attributes(self):
         """设置应用程序的基本属性"""
         self.setApplicationName("Umi-OCR")
@@ -90,9 +89,6 @@ class UmiApplication(QApplication):
         2. 下载超时配置
         3. 模型缓存目录设置
         """
-        import socket
-        import urllib.request
-        import threading
 
         # 模型源配置（主备顺序）
         self._model_sources = ["BOS", "HuggingFace"]
@@ -122,10 +118,14 @@ class UmiApplication(QApplication):
         self._apply_model_source()
 
         # 设置下载超时
-        os.environ.setdefault("PADDLE_PDX_DOWNLOAD_TIMEOUT", str(self._download_timeout))
+        os.environ.setdefault(
+            "PADDLE_PDX_DOWNLOAD_TIMEOUT", str(self._download_timeout)
+        )
 
         self.logger.info(f"PaddleX 模型源: {os.environ.get('PADDLE_PDX_MODEL_SOURCE')}")
-        self.logger.info(f"模型缓存目录: {os.environ.get('PADDLE_PDX_MODEL_CACHE_DIR')}")
+        self.logger.info(
+            f"模型缓存目录: {os.environ.get('PADDLE_PDX_MODEL_CACHE_DIR')}"
+        )
 
     def _select_best_model_source(self):
         """
@@ -200,10 +200,14 @@ class UmiApplication(QApplication):
             self._current_source_index = self._model_sources.index(source)
         else:
             # 切换到备用源
-            self._current_source_index = (self._current_source_index + 1) % len(self._model_sources)
+            self._current_source_index = (self._current_source_index + 1) % len(
+                self._model_sources
+            )
 
         self._apply_model_source()
-        self.logger.info(f"模型源已切换至: {self._model_sources[self._current_source_index]}")
+        self.logger.info(
+            f"模型源已切换至: {self._model_sources[self._current_source_index]}"
+        )
         return True
 
     def get_current_model_source(self) -> str:
@@ -286,6 +290,7 @@ class UmiApplication(QApplication):
 
         # 安装 Qt 消息处理器，将 Qt 日志重定向到日志系统
         from PySide6.QtCore import qInstallMessageHandler
+
         qInstallMessageHandler(self.logger.get_qt_message_handler())
 
     def _init_config(self):
@@ -355,7 +360,10 @@ class UmiApplication(QApplication):
         如果未安装，显示安装向导对话框。
         """
         try:
-            from src.utils.check_dependencies import check_ocr_dependencies, DependencyStatus
+            from src.utils.check_dependencies import (
+                check_ocr_dependencies,
+                DependencyStatus,
+            )
             from src.ui.dialogs import OCREngineInstallDialog
 
             # 检查依赖
@@ -363,8 +371,8 @@ class UmiApplication(QApplication):
 
             # 检查是否需要安装
             needs_install = (
-                dep_info.paddlepaddle.status != DependencyStatus.INSTALLED or
-                dep_info.paddleocr.status != DependencyStatus.INSTALLED
+                dep_info.paddlepaddle.status != DependencyStatus.INSTALLED
+                or dep_info.paddleocr.status != DependencyStatus.INSTALLED
             )
 
             if not needs_install:
@@ -435,7 +443,6 @@ class UmiApplication(QApplication):
         # 连接语言变更信号
         self.i18n.language_changed.connect(self._on_language_changed)
         self.i18n.load_error.connect(self._on_i18n_load_error)
-
 
     def _on_language_changed(self, lang_code: str):
         """

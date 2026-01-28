@@ -10,7 +10,7 @@ Date: 2026-01-27
 from .pdf_parser import PDFParser, PDFPage, PDFInfo
 
 __all__ = [
-    'PDFParser',
-    'PDFPage',
-    'PDFInfo',
+    "PDFParser",
+    "PDFPage",
+    "PDFInfo",
 ]

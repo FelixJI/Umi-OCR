@@ -21,28 +21,30 @@ from .file_drop_zone import FileDropZone
 from .progress_card import ProgressCard, ProgressStatus
 from .image_viewer import ImageViewer
 
+
 # 原有控件（可能有外部依赖，延迟导入）
 # EngineSelector 依赖 EngineManager，在需要时再导入
 def get_engine_selector():
     """获取 EngineSelector（延迟导入避免循环依赖）"""
     from .engine_selector import EngineSelector
+
     return EngineSelector
 
 
 __all__ = [
     # 引擎选择（延迟导入）
-    'get_engine_selector',
+    "get_engine_selector",
     # 快捷键输入
-    'HotkeyInput',
-    'HotkeyInputWithClear',
+    "HotkeyInput",
+    "HotkeyInputWithClear",
     # 结果面板
-    'ResultPanel',
-    'ResultViewMode',
+    "ResultPanel",
+    "ResultViewMode",
     # 文件拖拽
-    'FileDropZone',
+    "FileDropZone",
     # 进度卡片
-    'ProgressCard',
-    'ProgressStatus',
+    "ProgressCard",
+    "ProgressStatus",
     # 图片查看
-    'ImageViewer',
+    "ImageViewer",
 ]

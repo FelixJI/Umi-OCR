@@ -85,7 +85,11 @@ class ModelRepository:
         for model_id, model in ALL_MODELS.items():
             if model.language == language or model.language == "multilingual":
                 if model.language == "ch" and language in [
-                    "ch", "en", "japan", "korean", "cyrillic",
+                    "ch",
+                    "en",
+                    "japan",
+                    "korean",
+                    "cyrillic",
                 ]:
                     language_models.append(model.name)
                 elif model.language == language:
@@ -132,32 +136,90 @@ class ModelRepository:
         """验证语言代码是否有效"""
         # 统一模型
         VALID_UNIFIED_MODELS = ["ch", "en", "japan", "korean"]
-        
+
         # 语言组
         VALID_LANGUAGE_GROUPS = ["cyrillic", "latin", "arabic", "devanagari"]
-        
+
         # 单一语言模型
         VALID_SINGLE_LANGUAGES = [
-            "af", "az", "bs", "cs", "cy", "da", "de", "es", "et", "fi", "fr",
-            "ga", "hr", "hu", "is", "it", "lt", "lv", "mi", "ms", "nl", "no",
-            "oc", "pi", "pl", "pt", "ro", "rs_latin", "sk", "sl", "sq", "sv",
-            "tr", "vi", "be", "bg", "mk", "ru", "uk", "sr", "id", "ku", "la",
-            "ta", "te", "ar", "fa", "ug", "ur", "hi", "mr", "ne", "bh", "mai",
-            "ang", "bho", "mah", "sw", "uz", "th", "el",
+            "af",
+            "az",
+            "bs",
+            "cs",
+            "cy",
+            "da",
+            "de",
+            "es",
+            "et",
+            "fi",
+            "fr",
+            "ga",
+            "hr",
+            "hu",
+            "is",
+            "it",
+            "lt",
+            "lv",
+            "mi",
+            "ms",
+            "nl",
+            "no",
+            "oc",
+            "pi",
+            "pl",
+            "pt",
+            "ro",
+            "rs_latin",
+            "sk",
+            "sl",
+            "sq",
+            "sv",
+            "tr",
+            "vi",
+            "be",
+            "bg",
+            "mk",
+            "ru",
+            "uk",
+            "sr",
+            "id",
+            "ku",
+            "la",
+            "ta",
+            "te",
+            "ar",
+            "fa",
+            "ug",
+            "ur",
+            "hi",
+            "mr",
+            "ne",
+            "bh",
+            "mai",
+            "ang",
+            "bho",
+            "mah",
+            "sw",
+            "uz",
+            "th",
+            "el",
         ]
-        
+
         # 已弃用的语言
         DEPRECATED_LANGUAGES = ["flemish", "german", "english", "chinese", "japanese"]
 
-        all_valid = list(set(
-            VALID_UNIFIED_MODELS + VALID_LANGUAGE_GROUPS + VALID_SINGLE_LANGUAGES
-        ))
+        all_valid = list(
+            set(VALID_UNIFIED_MODELS + VALID_LANGUAGE_GROUPS + VALID_SINGLE_LANGUAGES)
+        )
 
         if language not in all_valid:
             if language in DEPRECATED_LANGUAGES:
                 suggestions = {
-                    "flemish": "nl", "german": "de", "english": "en",
-                    "chinese": "ch", "japanese": "japan",
+                    "flemish": "nl",
+                    "german": "de",
+                    "english": "en",
+                    "chinese": "ch",
+                    "japanese": "japan",
                 }
                 suggestion = suggestions.get(language)
                 return False, f"语言代码 '{language}' 已弃用，建议使用 '{suggestion}'"
@@ -173,7 +235,10 @@ class ModelRepository:
                     similar.append("korean")
 
                 if similar:
-                    return False, f"未知的语言代码 '{language}'，可能想使用：{', '.join(similar)}"
+                    return (
+                        False,
+                        f"未知的语言代码 '{language}'，可能想使用：{', '.join(similar)}",
+                    )
                 else:
                     return False, f"未知的语言代码 '{language}'"
 
@@ -210,7 +275,13 @@ class ModelRepository:
             "cyrillic": {
                 "name": "Cyrillic Languages",
                 "family": "Slavic",
-                "supported": ["俄语", "乌克兰语", "白俄罗斯语", "保加利亚语", "等 20+ 种语言"],
+                "supported": [
+                    "俄语",
+                    "乌克兰语",
+                    "白俄罗斯语",
+                    "保加利亚语",
+                    "等 20+ 种语言",
+                ],
                 "model_type": "optimized_group",
             },
             "latin": {

@@ -27,15 +27,15 @@ from .paddle_engine_core import PaddleOCREngine, PaddleBatchOCREngine, LANGUAGE_
 
 __all__ = [
     # 配置
-    'PaddleConfig',
+    "PaddleConfig",
     # 预处理
-    'ImagePreprocessor',
+    "ImagePreprocessor",
     # 后处理
-    'TextPostprocessor',
-    'TextBlockInference',
+    "TextPostprocessor",
+    "TextBlockInference",
     # 引擎
-    'PaddleOCREngine',
-    'PaddleBatchOCREngine',
+    "PaddleOCREngine",
+    "PaddleBatchOCREngine",
     # 映射
-    'LANGUAGE_MAP',
+    "LANGUAGE_MAP",
 ]

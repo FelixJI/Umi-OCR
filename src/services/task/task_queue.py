@@ -25,13 +25,7 @@ from datetime import datetime
 
 from PySide6.QtCore import QObject, Signal
 
-from .task_model import (
-    Task,
-    TaskGroup,
-    TaskStatus,
-    CancelMode
-)
-
+from .task_model import Task, TaskGroup, TaskStatus, CancelMode
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +33,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # 任务队列
 # =============================================================================
+
 
 class TaskQueue(QObject):
     """
@@ -50,9 +45,9 @@ class TaskQueue(QObject):
     """
 
     # Qt 信号
-    queue_changed = Signal()              # 队列变化
-    group_paused = Signal(str)            # (group_id)
-    group_resumed = Signal(str)           # (group_id)
+    queue_changed = Signal()  # 队列变化
+    group_paused = Signal(str)  # (group_id)
+    group_resumed = Signal(str)  # (group_id)
 
     def __init__(self, storage_path: Path):
         """
@@ -64,7 +59,7 @@ class TaskQueue(QObject):
         super().__init__()
 
         self._lock = threading.RLock()
-        self._heap: List[tuple] = []      # (-priority, created_at, group)
+        self._heap: List[tuple] = []  # (-priority, created_at, group)
         self._groups: Dict[str, TaskGroup] = {}
         self._paused_groups: Set[str] = set()
         self._storage_path = storage_path
@@ -91,7 +86,11 @@ class TaskQueue(QObject):
             self._groups[group.id] = group
 
             # 计算入队时间戳（确保优先级相同时按创建时间排序）
-            created_at_timestamp = group.created_at.timestamp() if group.created_at else datetime.now().timestamp()
+            created_at_timestamp = (
+                group.created_at.timestamp()
+                if group.created_at
+                else datetime.now().timestamp()
+            )
 
             # 使用负优先级实现最大堆（priority 越大越优先）
             heap_item = (-group.priority, created_at_timestamp, group)
@@ -121,7 +120,7 @@ class TaskQueue(QObject):
         with self._lock:
             temp_popped = []
             found_task = None
-            
+
             while self._heap:
                 # 获取最高优先级任务组
                 item = self._heap[0]
@@ -145,7 +144,7 @@ class TaskQueue(QObject):
             # 将暂时弹出的暂停组放回堆中
             for item in temp_popped:
                 heapq.heappush(self._heap, item)
-                
+
             return found_task
 
     def _find_next_pending_task(self, group: TaskGroup) -> Optional[Task]:
@@ -196,7 +195,9 @@ class TaskQueue(QObject):
             # 发射信号
             self.queue_changed.emit()
 
-            logger.info(f"任务组优先级更新: {group_id} {old_priority} -> {new_priority}")
+            logger.info(
+                f"任务组优先级更新: {group_id} {old_priority} -> {new_priority}"
+            )
 
     def _rebuild_heap(self) -> None:
         """重建堆（用于优先级更新后）"""
@@ -208,7 +209,11 @@ class TaskQueue(QObject):
 
         # 重新入队
         for group in groups:
-            created_at_timestamp = group.created_at.timestamp() if group.created_at else datetime.now().timestamp()
+            created_at_timestamp = (
+                group.created_at.timestamp()
+                if group.created_at
+                else datetime.now().timestamp()
+            )
             heap_item = (-group.priority, created_at_timestamp, group)
             heapq.heappush(self._heap, heap_item)
 
@@ -376,7 +381,7 @@ class TaskQueue(QObject):
             # 保存队列数据
             queue_data = {
                 "queue_group_ids": queue_group_ids,
-                "paused_groups": list(self._paused_groups)
+                "paused_groups": list(self._paused_groups),
             }
 
             # 写入文件
@@ -423,11 +428,18 @@ class TaskQueue(QObject):
                             task.started_at = None
 
                     # 入队
-                    created_at_timestamp = group.created_at.timestamp() if group.created_at else datetime.now().timestamp()
+                    created_at_timestamp = (
+                        group.created_at.timestamp()
+                        if group.created_at
+                        else datetime.now().timestamp()
+                    )
                     heap_item = (-group.priority, created_at_timestamp, group)
                     heapq.heappush(self._heap, heap_item)
 
-            logger.info(f"队列恢复完成: {len(self._groups)} 个任务组, {len(self._paused_groups)} 个已暂停")
+            logger.info(
+                f"队列恢复完成: {len(self._groups)} 个任务组, "
+                f"{len(self._paused_groups)} 个已暂停"
+            )
 
         except Exception as e:
             logger.error(f"队列恢复失败: {e}", exc_info=True)

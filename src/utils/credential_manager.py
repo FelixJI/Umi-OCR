@@ -15,7 +15,7 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from typing import Dict, Any, Optional, List, Callable
+from typing import Dict, Optional, List, Callable
 import logging
 
 from PySide6.QtCore import QObject, Signal
@@ -34,10 +34,12 @@ except ImportError:
 # Windows API 导入
 # =============================================================================
 
+
 def _import_win32cred():
     try:
         import win32cred
         from win32cred import CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+
         return True, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
     except ImportError:
         # 尝试修复 DLL 路径
@@ -45,12 +47,12 @@ def _import_win32cred():
         import os
         import site
         from pathlib import Path
-        
+
         try:
             site_packages = site.getsitepackages()
             if not site_packages:
-                site_packages = [p for p in sys.path if 'site-packages' in p]
-            
+                site_packages = [p for p in sys.path if "site-packages" in p]
+
             for sp in site_packages:
                 paths_to_add = [
                     Path(sp) / "pywin32_system32",
@@ -59,18 +61,22 @@ def _import_win32cred():
                 ]
                 for p in paths_to_add:
                     if p.exists():
-                        if hasattr(os, 'add_dll_directory'):
+                        if hasattr(os, "add_dll_directory"):
                             os.add_dll_directory(str(p))
-                        os.environ['PATH'] = str(p) + os.pathsep + os.environ['PATH']
-            
+                        os.environ["PATH"] = str(p) + os.pathsep + os.environ["PATH"]
+
             # 重试导入
             import win32cred
             from win32cred import CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
+
             return True, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE
         except Exception:
             return False, None, None, None
 
-WIN32CRED_AVAILABLE, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE = _import_win32cred()
+
+WIN32CRED_AVAILABLE, win32cred, CRED_TYPE_GENERIC, CRED_PERSIST_ENTERPRISE = (
+    _import_win32cred()
+)
 
 if not WIN32CRED_AVAILABLE:
     logging.warning("win32cred 模块不可用，凭证管理功能将受限")
@@ -80,26 +86,35 @@ if not WIN32CRED_AVAILABLE:
 # 凭证管理器异常
 # =============================================================================
 
+
 class CredentialError(Exception):
     """凭证管理异常"""
+
     pass
+
 
 class CredentialNotFoundError(CredentialError):
     """凭证未找到异常"""
+
     pass
+
 
 class CredentialReadError(CredentialError):
     """凭证读取异常"""
+
     pass
+
 
 class CredentialWriteError(CredentialError):
     """凭证写入异常"""
+
     pass
 
 
 # =============================================================================
 # Windows 凭证管理器
 # =============================================================================
+
 
 class CredentialManager(QObject):
     """
@@ -177,8 +192,8 @@ class CredentialManager(QObject):
                 cred = {
                     "Type": CRED_TYPE_GENERIC,
                     "TargetName": target_name,
-                    "CredentialBlob": credential_blob.encode('utf-8'),
-                    "Persist": CRED_PERSIST_ENTERPRISE
+                    "CredentialBlob": credential_blob.encode("utf-8"),
+                    "Persist": CRED_PERSIST_ENTERPRISE,
                 }
 
                 # 写入凭证
@@ -191,7 +206,7 @@ class CredentialManager(QObject):
                 logging.warning(f"凭证已保存到内存（不安全）: {provider}")
 
             # 发送信号
-            self.credentials_changed.emit(provider, 'saved')
+            self.credentials_changed.emit(provider, "saved")
 
         except Exception as e:
             logging.error(f"凭证保存失败: {provider}, {e}", exc_info=True)
@@ -213,13 +228,12 @@ class CredentialManager(QObject):
             if WIN32CRED_AVAILABLE:
                 # 读取凭证
                 cred = win32cred.CredRead(
-                    Type=CRED_TYPE_GENERIC,
-                    TargetName=target_name
+                    Type=CRED_TYPE_GENERIC, TargetName=target_name
                 )
 
-                if cred and cred.get('CredentialBlob'):
+                if cred and cred.get("CredentialBlob"):
                     # 反序列化凭证
-                    credential_blob = cred['CredentialBlob'].decode('utf-8')
+                    credential_blob = cred["CredentialBlob"].decode("utf-8")
                     credentials = self._deserialize_credentials(credential_blob)
 
                     logging.info(f"凭证已加载: {provider}")
@@ -258,13 +272,12 @@ class CredentialManager(QObject):
             if WIN32CRED_AVAILABLE:
                 # 删除凭证
                 result = win32cred.CredDelete(
-                    Type=CRED_TYPE_GENERIC,
-                    TargetName=target_name
+                    Type=CRED_TYPE_GENERIC, TargetName=target_name
                 )
 
                 if result:
                     logging.info(f"凭证已删除: {provider}")
-                    self.credentials_changed.emit(provider, 'deleted')
+                    self.credentials_changed.emit(provider, "deleted")
                 else:
                     logging.warning(f"凭证未找到，无法删除: {provider}")
             else:
@@ -305,21 +318,17 @@ class CredentialManager(QObject):
         try:
             if WIN32CRED_AVAILABLE:
                 # 枚举所有凭证
-                count = win32cred.CredEnumerate(
-                    Filter=self.TARGET_PREFIX,
-                    Flags=0
-                )
+                count = win32cred.CredEnumerate(Filter=self.TARGET_PREFIX, Flags=0)
 
                 for i in range(count):
                     cred = win32cred.CredRead(
-                        Type=CRED_TYPE_GENERIC,
-                        TargetName=f"{self.TARGET_PREFIX}{i}"
+                        Type=CRED_TYPE_GENERIC, TargetName=f"{self.TARGET_PREFIX}{i}"
                     )
                     if cred:
                         # 从目标名称提取提供商标识
-                        target_name = cred.get('TargetName', '')
+                        target_name = cred.get("TargetName", "")
                         if target_name.startswith(self.TARGET_PREFIX):
-                            provider = target_name[len(self.TARGET_PREFIX):]
+                            provider = target_name[len(self.TARGET_PREFIX) :]
                             providers.append(provider)
             else:
                 # 从内存存储列表
@@ -374,6 +383,7 @@ class CredentialManager(QObject):
             str: 序列化后的字符串
         """
         import json
+
         return json.dumps(credentials, ensure_ascii=False)
 
     def _deserialize_credentials(self, data: str) -> Dict[str, str]:
@@ -387,9 +397,12 @@ class CredentialManager(QObject):
             Dict[str, str]: 凭证字典
         """
         import json
+
         return json.loads(data)
 
-    def validate_credentials(self, provider: str, credentials: Dict[str, str]) -> List[str]:
+    def validate_credentials(
+        self, provider: str, credentials: Dict[str, str]
+    ) -> List[str]:
         """
         验证凭证格式和完整性
 
@@ -409,28 +422,28 @@ class CredentialManager(QObject):
                 errors.append(f"缺少必要字段: {field}")
 
         # 验证字段格式
-        if 'api_key' in credentials:
-            api_key = credentials['api_key']
+        if "api_key" in credentials:
+            api_key = credentials["api_key"]
             if len(api_key) < 10:
                 errors.append("API Key 长度过短（至少10个字符）")
 
-        if 'secret_key' in credentials:
-            secret_key = credentials['secret_key']
+        if "secret_key" in credentials:
+            secret_key = credentials["secret_key"]
             if len(secret_key) < 10:
                 errors.append("Secret Key 长度过短（至少10个字符）")
 
-        if 'secret_id' in credentials:
-            secret_id = credentials['secret_id']
+        if "secret_id" in credentials:
+            secret_id = credentials["secret_id"]
             if len(secret_id) < 10:
                 errors.append("SecretId 长度过短（至少10个字符）")
 
-        if 'access_key_id' in credentials:
-            access_key_id = credentials['access_key_id']
+        if "access_key_id" in credentials:
+            access_key_id = credentials["access_key_id"]
             if len(access_key_id) < 10:
                 errors.append("AccessKeyId 长度过短（至少10个字符）")
 
-        if 'access_key_secret' in credentials:
-            access_key_secret = credentials['access_key_secret']
+        if "access_key_secret" in credentials:
+            access_key_secret = credentials["access_key_secret"]
             if len(access_key_secret) < 10:
                 errors.append("AccessKeySecret 长度过短（至少10个字符）")
 
@@ -447,9 +460,9 @@ class CredentialManager(QObject):
             List[str]: 必填字段列表
         """
         required_fields_map = {
-            'baidu': ['api_key', 'secret_key'],
-            'tencent': ['secret_id', 'secret_key'],
-            'aliyun': ['access_key_id', 'access_key_secret']
+            "baidu": ["api_key", "secret_key"],
+            "tencent": ["secret_id", "secret_key"],
+            "aliyun": ["access_key_id", "access_key_secret"],
         }
 
         return required_fields_map.get(provider, [])

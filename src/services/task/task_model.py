@@ -20,53 +20,59 @@ Date: 2026-01-27
 """
 
 from dataclasses import dataclass, field, asdict
-from typing import Dict, Any, List, Optional, Union, Set
+from typing import Dict, Any, List, Optional, Union
 from enum import Enum
 from datetime import datetime
 import uuid
 import json
 
-
 # =============================================================================
 # 枚举类型定义
 # =============================================================================
 
+
 class TaskStatus(Enum):
     """任务状态枚举"""
-    PENDING = "pending"        # 等待执行
-    RUNNING = "running"        # 执行中
-    PAUSED = "paused"          # 已暂停（仅 TaskGroup 支持）
-    COMPLETED = "completed"    # 已完成
-    FAILED = "failed"          # 失败（重试耗尽）
-    CANCELLED = "cancelled"    # 已取消
+
+    PENDING = "pending"  # 等待执行
+    RUNNING = "running"  # 执行中
+    PAUSED = "paused"  # 已暂停（仅 TaskGroup 支持）
+    COMPLETED = "completed"  # 已完成
+    FAILED = "failed"  # 失败（重试耗尽）
+    CANCELLED = "cancelled"  # 已取消
 
 
 class CancelMode(Enum):
     """取消模式"""
-    GRACEFUL = "graceful"      # 优雅取消：等待当前 Task 完成
-    FORCE = "force"            # 强制取消：立即中断
+
+    GRACEFUL = "graceful"  # 优雅取消：等待当前 Task 完成
+    FORCE = "force"  # 强制取消：立即中断
 
 
 class TaskType(Enum):
     """任务类型（用于处理器注册分发）"""
-    OCR = "ocr"                # OCR 识别
-    EXPORT = "export"          # 导出任务
-    QRCODE = "qrcode"          # 二维码识别/生成
-    PDF_PARSE = "pdf_parse"    # PDF 解析
-    CUSTOM = "custom"          # 自定义扩展
+
+    OCR = "ocr"  # OCR 识别
+    EXPORT = "export"  # 导出任务
+    QRCODE = "qrcode"  # 二维码识别/生成
+    PDF_PARSE = "pdf_parse"  # PDF 解析
+    CUSTOM = "custom"  # 自定义扩展
 
 
 # =============================================================================
 # 异常类定义
 # =============================================================================
 
+
 class InvalidStateTransition(Exception):
     """非法状态转换异常"""
+
     pass
 
 
 class InvalidTaskStructure(Exception):
     """非法任务结构异常"""
+
     pass
 
 
@@ -81,6 +87,7 @@ TaskGroupType = "TaskGroup"
 # =============================================================================
 # 任务数据模型
 # =============================================================================
+
 
 @dataclass
 class Task:
@@ -101,15 +108,15 @@ class Task:
     """
 
     # 基本字段
-    id: str                              # 唯一标识 (UUID)
-    task_type: TaskType                  # 任务类型
-    input_data: Dict[str, Any]           # 输入数据
+    id: str  # 唯一标识 (UUID)
+    task_type: TaskType  # 任务类型
+    input_data: Dict[str, Any]  # 输入数据
 
     # 状态字段
     status: TaskStatus = TaskStatus.PENDING
-    progress: float = 0.0                # 进度 0.0 ~ 1.0
-    result: Optional[Any] = None        # 执行结果
-    error: Optional[str] = None         # 错误信息
+    progress: float = 0.0  # 进度 0.0 ~ 1.0
+    result: Optional[Any] = None  # 执行结果
+    error: Optional[str] = None  # 错误信息
 
     # 重试配置
     retry_count: int = 0
@@ -138,7 +145,11 @@ class Task:
 
     def is_terminal(self) -> bool:
         """是否处于终态"""
-        return self.status in (TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED)
+        return self.status in (
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.CANCELLED,
+        )
 
     def is_retryable(self) -> bool:
         """是否可重试"""
@@ -154,7 +165,11 @@ class Task:
 
     _VALID_TRANSITIONS = {
         TaskStatus.PENDING: {TaskStatus.RUNNING, TaskStatus.CANCELLED},
-        TaskStatus.RUNNING: {TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED},
+        TaskStatus.RUNNING: {
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.CANCELLED,
+        },
         TaskStatus.FAILED: {TaskStatus.PENDING},  # 重试时回到 PENDING
         TaskStatus.PAUSED: {TaskStatus.PENDING},  # 恢复时回到 PENDING
     }
@@ -197,7 +212,11 @@ class Task:
         now = datetime.now()
         if new_status == TaskStatus.RUNNING and self.started_at is None:
             self.started_at = now
-        elif new_status in (TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED):
+        elif new_status in (
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.CANCELLED,
+        ):
             self.finished_at = now
 
         # 重置进度（如果回到 PENDING）
@@ -284,6 +303,7 @@ class Task:
 # 任务组数据模型
 # =============================================================================
 
+
 @dataclass
 class TaskGroup:
     """
@@ -305,15 +325,15 @@ class TaskGroup:
     """
 
     # 基本字段
-    id: str                              # 唯一标识 (UUID)
-    title: str                            # 任务组标题
+    id: str  # 唯一标识 (UUID)
+    title: str  # 任务组标题
 
     # 树形结构
     children: List[Union[TaskGroupType, Task]] = field(default_factory=list)
 
     # 优先级和并发控制
-    priority: int = 0                    # 动态优先级（运行时可调，数字越大优先级越高）
-    max_concurrency: int = 1             # 组内最大并发数
+    priority: int = 0  # 动态优先级（运行时可调，数字越大优先级越高）
+    max_concurrency: int = 1  # 组内最大并发数
 
     # 状态字段
     status: TaskStatus = TaskStatus.PENDING
@@ -455,7 +475,9 @@ class TaskGroup:
     @property
     def completed_tasks(self) -> int:
         """已完成任务数"""
-        return len([t for t in self.get_all_tasks() if t.status == TaskStatus.COMPLETED])
+        return len(
+            [t for t in self.get_all_tasks() if t.status == TaskStatus.COMPLETED]
+        )
 
     @property
     def failed_tasks(self) -> int:
@@ -499,7 +521,11 @@ class TaskGroup:
         statuses = [t.status for t in all_tasks]
 
         # 检查是否有任务失败且重试耗尽
-        failed_no_retry = [t for t in all_tasks if t.status == TaskStatus.FAILED and not t.is_retryable()]
+        failed_no_retry = [
+            t
+            for t in all_tasks
+            if t.status == TaskStatus.FAILED and not t.is_retryable()
+        ]
         if failed_no_retry:
             return TaskStatus.PAUSED
 
@@ -526,14 +552,17 @@ class TaskGroup:
         """更新组状态"""
         new_status = self.compute_status()
         if new_status != self.status:
-            old_status = self.status
             self.status = new_status
 
             # 更新时间戳
             now = datetime.now()
             if new_status == TaskStatus.RUNNING and self.started_at is None:
                 self.started_at = now
-            elif new_status in (TaskStatus.COMPLETED, TaskStatus.PAUSED, TaskStatus.CANCELLED):
+            elif new_status in (
+                TaskStatus.COMPLETED,
+                TaskStatus.PAUSED,
+                TaskStatus.CANCELLED,
+            ):
                 self.finished_at = now
 
     # -------------------------------------------------------------------------
@@ -542,11 +571,18 @@ class TaskGroup:
 
     def is_terminal(self) -> bool:
         """是否处于终态"""
-        return self.status in (TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED)
+        return self.status in (
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.CANCELLED,
+        )
 
     def is_complete(self) -> bool:
         """是否完全完成（所有子任务都完成）"""
-        return self.status == TaskStatus.COMPLETED and self.completed_tasks == self.total_tasks
+        return (
+            self.status == TaskStatus.COMPLETED
+            and self.completed_tasks == self.total_tasks
+        )
 
     # -------------------------------------------------------------------------
     # 序列化方法
@@ -569,21 +605,15 @@ class TaskGroup:
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
             "metadata": self.metadata,
-            "children": []
+            "children": [],
         }
 
         # 递归序列化子节点
         for child in self.children:
             if isinstance(child, Task):
-                result["children"].append({
-                    "type": "task",
-                    "data": child.to_dict()
-                })
+                result["children"].append({"type": "task", "data": child.to_dict()})
             elif isinstance(child, TaskGroup):
-                result["children"].append({
-                    "type": "group",
-                    "data": child.to_dict()
-                })
+                result["children"].append({"type": "group", "data": child.to_dict()})
 
         return result
 
@@ -599,9 +629,21 @@ class TaskGroup:
             TaskGroup: 任务组对象
         """
         # 转换 datetime 对象
-        created_at = datetime.fromisoformat(data["created_at"]) if data.get("created_at") else datetime.now()
-        started_at = datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None
-        finished_at = datetime.fromisoformat(data["finished_at"]) if data.get("finished_at") else None
+        created_at = (
+            datetime.fromisoformat(data["created_at"])
+            if data.get("created_at")
+            else datetime.now()
+        )
+        started_at = (
+            datetime.fromisoformat(data["started_at"])
+            if data.get("started_at")
+            else None
+        )
+        finished_at = (
+            datetime.fromisoformat(data["finished_at"])
+            if data.get("finished_at")
+            else None
+        )
 
         # 创建任务组
         group = cls(
@@ -613,7 +655,7 @@ class TaskGroup:
             created_at=created_at,
             started_at=started_at,
             finished_at=finished_at,
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
         )
 
         # 递归反序列化子节点
@@ -658,11 +700,9 @@ class TaskGroup:
 # 辅助函数
 # =============================================================================
 
+
 def create_simple_task(
-    task_type: TaskType,
-    input_data: Dict[str, Any],
-    max_retries: int = 3,
-    **kwargs
+    task_type: TaskType, input_data: Dict[str, Any], max_retries: int = 3, **kwargs
 ) -> Task:
     """
     创建简单任务的便捷函数
@@ -678,23 +718,20 @@ def create_simple_task(
     """
     # 生成唯一ID
     import uuid
-    task_id = kwargs.pop('id', str(uuid.uuid4()))
-    
+
+    task_id = kwargs.pop("id", str(uuid.uuid4()))
+
     return Task(
         id=task_id,
         task_type=task_type,
         input_data=input_data,
         max_retries=max_retries,
-        **kwargs
+        **kwargs,
     )
 
 
 def create_simple_task_group(
-    title: str,
-    tasks: List[Task],
-    priority: int = 0,
-    max_concurrency: int = 1,
-    **kwargs
+    title: str, tasks: List[Task], priority: int = 0, max_concurrency: int = 1, **kwargs
 ) -> TaskGroup:
     """
     创建简单任务组的便捷函数
@@ -711,14 +748,15 @@ def create_simple_task_group(
     """
     # 生成唯一ID
     import uuid
-    group_id = kwargs.pop('id', str(uuid.uuid4()))
-    
+
+    group_id = kwargs.pop("id", str(uuid.uuid4()))
+
     group = TaskGroup(
         id=group_id,
         title=title,
         priority=priority,
         max_concurrency=max_concurrency,
-        **kwargs
+        **kwargs,
     )
     for task in tasks:
         group.add_task(task)

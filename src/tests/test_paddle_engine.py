@@ -14,34 +14,28 @@ Date: 2026-01-26
 """
 
 import sys
-import os
 import time
 import unittest
 from pathlib import Path
-from typing import List, Dict
 
 # 添加项目根目录到路径
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
 
 from services.ocr import (
     PaddleOCREngine,
     PaddleBatchOCREngine,
     PaddleConfig,
     OCRErrorCode,
-    OCRResult,
-    TextBlock,
-    TextBlockType
 )
-from services.ocr.model_manager import get_model_manager, ModelRepository
-
+from services.ocr.model_manager import ModelRepository
 
 # =============================================================================
 # 测试配置
 # =============================================================================
+
 
 class TestConfig:
     """测试配置"""
@@ -66,6 +60,7 @@ class TestConfig:
 # 基础功能测试（A）
 # =============================================================================
 
+
 class TestPaddleOCREngineBasic(unittest.TestCase):
     """
     PaddleOCR 引擎基础功能测试
@@ -81,9 +76,7 @@ class TestPaddleOCREngineBasic(unittest.TestCase):
 
         # 创建引擎配置
         cls.config = PaddleConfig(
-            lang="ch",
-            use_textline_orientation=True,
-            confidence_threshold=0.5
+            lang="ch", use_textline_orientation=True, confidence_threshold=0.5
         )
 
         # 创建引擎实例
@@ -200,10 +193,7 @@ class TestPaddleOCREngineBasic(unittest.TestCase):
         draw.text((10, 10), "Test", fill="black")
 
         # 使用高置信度阈值
-        config = PaddleConfig(
-            lang="ch",
-            confidence_threshold=0.9  # 高阈值
-        )
+        config = PaddleConfig(lang="ch", confidence_threshold=0.9)  # 高阈值
         engine = PaddleOCREngine(config.__dict__)
         engine.initialize()
 
@@ -232,6 +222,7 @@ class TestPaddleOCREngineBasic(unittest.TestCase):
 # =============================================================================
 # 边界情况测试（B）
 # =============================================================================
+
 
 class TestPaddleOCREngineBoundary(unittest.TestCase):
     """
@@ -269,7 +260,7 @@ class TestPaddleOCREngineBoundary(unittest.TestCase):
         if not result.success:
             self.assertIn(
                 result.error_code,
-                [OCRErrorCode.NO_CONTENT.value, OCRErrorCode.EMPTY_IMAGE.value]
+                [OCRErrorCode.NO_CONTENT.value, OCRErrorCode.EMPTY_IMAGE.value],
             )
 
     def test_too_large_image(self):
@@ -303,7 +294,7 @@ class TestPaddleOCREngineBoundary(unittest.TestCase):
     def test_corrupted_image(self):
         """测试损坏的图片"""
         # 使用有效的PNG头但损坏的数据
-        corrupted_data = b'\x89PNG\r\n\x1a\n' + b'\x00' * 100
+        corrupted_data = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
 
         result = self.engine.recognize(corrupted_data)
 
@@ -316,6 +307,7 @@ class TestPaddleOCREngineBoundary(unittest.TestCase):
         engine = PaddleOCREngine(PaddleConfig(lang="ch").__dict__)
 
         from PIL import Image
+
         image = Image.new("RGB", (100, 50), color="white")
 
         result = engine.recognize(image)
@@ -328,6 +320,7 @@ class TestPaddleOCREngineBoundary(unittest.TestCase):
 # =============================================================================
 # 性能基准测试（C）
 # =============================================================================
+
 
 class TestPaddleOCREnginePerformance(unittest.TestCase):
     """
@@ -376,7 +369,7 @@ class TestPaddleOCREnginePerformance(unittest.TestCase):
         self.assertLessEqual(
             duration,
             TestConfig.MAX_RECOGNITION_TIME,
-            f"识别耗时 {duration:.2f}s 超过基准 {TestConfig.MAX_RECOGNITION_TIME}s"
+            f"识别耗时 {duration:.2f}s 超过基准 {TestConfig.MAX_RECOGNITION_TIME}s",
         )
 
         print(f"识别耗时: {duration:.3f}s")
@@ -387,7 +380,10 @@ class TestPaddleOCREnginePerformance(unittest.TestCase):
         from PIL import Image
 
         # 创建测试图片
-        test_images = [Image.new("RGB", (200, 50), color="white") for _ in range(TestConfig.CONCURRENT_TASKS)]
+        test_images = [
+            Image.new("RGB", (200, 50), color="white")
+            for _ in range(TestConfig.CONCURRENT_TASKS)
+        ]
 
         # 并发识别
         results = []
@@ -407,14 +403,16 @@ class TestPaddleOCREnginePerformance(unittest.TestCase):
             thread.join(timeout=30)
 
         # 验证结果
-        self.assertEqual(len(results), TestConfig.CONCURRENT_TASKS, "并发任务未全部完成")
+        self.assertEqual(
+            len(results), TestConfig.CONCURRENT_TASKS, "并发任务未全部完成"
+        )
 
         # 所有任务应该成功
         success_count = sum(1 for r in results if r.success)
         self.assertGreater(
             success_count,
             TestConfig.CONCURRENT_TASKS // 2,
-            f"成功率过低: {success_count}/{TestConfig.CONCURRENT_TASKS}"
+            f"成功率过低: {success_count}/{TestConfig.CONCURRENT_TASKS}",
         )
 
         print(f"并发识别成功率: {success_count}/{TestConfig.CONCURRENT_TASKS}")
@@ -425,7 +423,9 @@ class TestPaddleOCREnginePerformance(unittest.TestCase):
 
         # 创建批量测试图片
         batch_size = 3
-        test_images = [Image.new("RGB", (200, 50), color="white") for _ in range(batch_size)]
+        test_images = [
+            Image.new("RGB", (200, 50), color="white") for _ in range(batch_size)
+        ]
 
         # 创建批量引擎
         batch_engine = PaddleBatchOCREngine(PaddleConfig(lang="ch").__dict__)
@@ -442,12 +442,15 @@ class TestPaddleOCREnginePerformance(unittest.TestCase):
         # 清理
         batch_engine.stop()
 
-        print(f"批量识别耗时: {total_duration:.3f}s (平均: {total_duration/batch_size:.3f}s/张)")
+        print(
+            f"批量识别耗时: {total_duration:.3f}s (平均: {total_duration/batch_size:.3f}s/张)"
+        )
 
 
 # =============================================================================
 # 集成测试（D）
 # =============================================================================
+
 
 class TestPaddleOCREngineIntegration(unittest.TestCase):
     """
@@ -485,6 +488,7 @@ class TestPaddleOCREngineIntegration(unittest.TestCase):
 
         # 执行识别
         from PIL import Image
+
         image = Image.new("RGB", (100, 50), color="white")
         result = engine.recognize(image)
 
@@ -505,11 +509,12 @@ class TestPaddleOCREngineIntegration(unittest.TestCase):
 
         # 创建引擎
         lang = config_manager.get("ocr.paddle.lang", "ch")
-        use_textline_orientation = config_manager.get("ocr.paddle.use_textline_orientation", True)
+        use_textline_orientation = config_manager.get(
+            "ocr.paddle.use_textline_orientation", True
+        )
 
         engine_config = PaddleConfig(
-            lang=lang,
-            use_textline_orientation=use_textline_orientation
+            lang=lang, use_textline_orientation=use_textline_orientation
         )
         engine = PaddleOCREngine(engine_config.__dict__)
 
@@ -550,6 +555,7 @@ class TestPaddleOCREngineIntegration(unittest.TestCase):
 # 测试套件
 # =============================================================================
 
+
 def create_test_suite():
     """
     创建测试套件
@@ -560,16 +566,24 @@ def create_test_suite():
     suite = unittest.TestSuite()
 
     # 添加基础功能测试
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineBasic))
+    suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineBasic)
+    )
 
     # 添加边界情况测试
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineBoundary))
+    suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineBoundary)
+    )
 
     # 添加性能测试
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREnginePerformance))
+    suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREnginePerformance)
+    )
 
     # 添加集成测试
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineIntegration))
+    suite.addTests(
+        unittest.TestLoader().loadTestsFromTestCase(TestPaddleOCREngineIntegration)
+    )
 
     return suite
 

@@ -1,12 +1,11 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Umi-OCR 主窗口
 
 主窗口类，负责：
 - 加载和管理主窗口 UI
-- 侧边栏导航和视图切换
-- 菜单栏和工具栏管理
+- 标签页导航和视图切换
 - 状态栏更新
 - 集成日志、配置、多语言等系统功能
 
@@ -15,15 +14,10 @@ Date: 2025-01-26
 """
 
 import sys
-from pathlib import Path
 from typing import Optional
 
-from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QListWidget, QStackedWidget,
-    QLabel, QMessageBox, QStatusBar, QToolBar, QVBoxLayout
-)
-from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtWidgets import QMainWindow, QWidget, QLabel, QMessageBox, QVBoxLayout
+from PySide6.QtCore import Qt, Signal
 from src.utils.logger import get_logger
 from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
@@ -40,7 +34,7 @@ class MainWindow(QMainWindow):
     """
     Umi-OCR 主窗口
 
-    负责管理整个应用程序的主界面，包括侧边栏导航、内容区域显示等。
+    负责管理整个应用程序的主界面，包括标签页导航、内容区域显示等。
     """
 
     # -------------------------------------------------------------------------
@@ -97,76 +91,68 @@ class MainWindow(QMainWindow):
 
     def _apply_ui_styles(self):
         """应用 UI 样式优化"""
-        # 工具栏已从UI移除
-
-        # 2. 隐藏分割线（使用背景色区分）
-        if hasattr(self.ui, "separatorLine"):
-            self.ui.separatorLine.setVisible(False)
-
-        # 3. 侧边栏样式
-        if self.sidebarListWidget:
-            self.sidebarListWidget.setStyleSheet("""
-                QListWidget {
+        # 1. 标签页样式
+        if hasattr(self.ui, "tabWidget"):
+            self.ui.tabWidget.setStyleSheet("""
+                QTabWidget::pane {
+                    border: none;
+                    background-color: #ffffff;
+                }
+                QTabBar::tab {
                     background-color: #f3f3f3;
                     border: none;
-                    outline: none;
-                }
-                QListWidget::item {
-                    height: 45px;
-                    padding-left: 8px;
-                    margin: 4px 8px;
-                    border-radius: 6px;
-                    color: #444;
+                    border-bottom: 2px solid transparent;
+                    padding: 10px 20px;
+                    margin-right: 2px;
                     font-size: 14px;
+                    color: #555;
                 }
-                QListWidget::item:selected {
+                QTabBar::tab:selected {
                     background-color: #ffffff;
-                    color: #000;
+                    border-bottom: 2px solid #0066cc;
+                    color: #0066cc;
                     font-weight: bold;
-                    border: 1px solid #e0e0e0;
                 }
-                QListWidget::item:hover:!selected {
+                QTabBar::tab:hover:!selected {
                     background-color: #e8e8e8;
+                    color: #333;
                 }
             """)
-            # 设置图标大小
-            self.sidebarListWidget.setIconSize(QSize(24, 24))
 
-        # 4. 设置页面侧边栏样式
+        # 2. 设置页面侧边栏样式
         if hasattr(self.ui, "listWidget_sidebar"):
             self.ui.listWidget_sidebar.setStyleSheet("""
                 QListWidget {
-                    background-color: transparent;
+                    background-color: #f8f8f8;
                     border-right: 1px solid #e0e0e0;
                     outline: none;
                     font-size: 13px;
                 }
                 QListWidget::item {
-                    height: 36px;
+                    height: 40px;
                     padding-left: 15px;
-                    margin: 1px 0;
-                    border-radius: 0;
+                    margin: 2px 8px;
+                    border-radius: 4px;
                     color: #555;
                 }
                 QListWidget::item:selected {
-                    background-color: #f0f7ff;
+                    background-color: #e3f2fd;
                     color: #0066cc;
-                    border-left: 3px solid #0066cc;
                 }
                 QListWidget::item:hover:!selected {
-                    background-color: #f5f5f5;
+                    background-color: #f0f0f0;
                 }
             """)
 
-        # 5. 优化滚动条策略
-        # 任务管理器滚动区域
+        # 3. 优化滚动条策略
         if hasattr(self.ui, "scrollArea"):
             self.ui.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
             self.ui.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            # 移除边框
-            self.ui.scrollArea.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
+            self.ui.scrollArea.setStyleSheet(
+                "QScrollArea { border: none; background-color: transparent; }"
+            )
 
-        # 6. 全局样式微调
+        # 4. 全局样式微调
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #ffffff;
@@ -183,7 +169,7 @@ class MainWindow(QMainWindow):
         try:
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
-            
+
             # 导入 UI 元素到实例属性
             self._import_ui_elements()
 
@@ -191,31 +177,13 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             self.logger.error(f"加载 UI 失败: {e}", exc_info=True)
-            QMessageBox.critical(
-                self,
-                "错误",
-                f"无法加载界面：\n{e}"
-            )
+            QMessageBox.critical(self, "错误", f"无法加载界面：\n{e}")
             sys.exit(1)
 
     def _import_ui_elements(self):
         """从 UI 对象导入常用元素到实例属性"""
-        # 直接从 self.ui 获取元素，不再使用 findChild
-        
-        # 侧边栏
-        self.sidebarListWidget = self.ui.sidebarListWidget
-
-        # 内容区域
-        self.contentStackedWidget = self.ui.contentStackedWidget
-
-        # 调试：检查contentStackedWidget
-        if self.contentStackedWidget:
-            self.logger.debug(f"contentStackedWidget found, count: {self.contentStackedWidget.count()}")
-            for i in range(self.contentStackedWidget.count()):
-                widget = self.contentStackedWidget.widget(i)
-                self.logger.debug(f"  Page {i}: {widget.objectName()} (type: {type(widget).__name__})")
-        else:
-            self.logger.error("contentStackedWidget not found!")
+        # 标签页容器
+        self.tabWidget = self.ui.tabWidget
 
         # 状态栏
         self.statusBarWidget = self.ui.statusBar
@@ -228,23 +196,8 @@ class MainWindow(QMainWindow):
         self.pageTaskManager = self.ui.pageTaskManager
         self.pageSettings = self.ui.pageSettings
 
-        # 动作（菜单项）
-        self.actionOpenFile = self.ui.actionOpenFile
-        self.actionExit = self.ui.actionExit
-        self.actionSettings = self.ui.actionSettings
-        self.actionToggleSidebar = self.ui.actionToggleSidebar
-        self.actionToggleToolbar = self.ui.actionToggleToolbar
-        self.actionFullscreen = self.ui.actionFullscreen
-        self.actionScreenshot = self.ui.actionScreenshot
-        self.actionTaskManager = self.ui.actionTaskManager
-        self.actionAbout = self.ui.actionAbout
-
     def _init_ui_components(self):
         """初始化 UI 组件"""
-        # 设置侧边栏样式
-        if self.sidebarListWidget:
-            self.sidebarListWidget.setCurrentRow(0)  # 默认选中第一项
-
         # 设置状态栏
         if self.statusBarWidget:
             self._init_status_bar()
@@ -296,7 +249,6 @@ class MainWindow(QMainWindow):
         if self.pageTaskManager:
             try:
                 self.taskManagerView = TaskManagerView(self.ui)
-                # 任务管理器页面的 UI 已在 ui 文件中定义，不需要添加到布局
                 self.logger.debug("任务管理视图初始化成功")
             except Exception as e:
                 self.logger.error(f"任务管理视图初始化失败: {e}", exc_info=True)
@@ -309,36 +261,19 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.logger.error(f"设置视图初始化失败: {e}", exc_info=True)
 
-        # 默认显示第一页，确保右侧不为空
-        if self.contentStackedWidget and self.contentStackedWidget.count() > 0:
-            self.contentStackedWidget.setCurrentIndex(0)
+        # 默认显示第一页
+        if self.tabWidget and self.tabWidget.count() > 0:
+            self.tabWidget.setCurrentIndex(0)
 
     # -------------------------------------------------------------------------
-    # 侧边栏导航
+    # 标签页导航
     # -------------------------------------------------------------------------
 
     def _connect_signals(self):
         """连接信号和槽"""
-        # 侧边栏点击事件
-        if self.sidebarListWidget:
-            # 使用 itemClicked 信号而不是 currentRowChanged
-            # 因为 focusPolicy 设置为 NoFocus 可能导致 currentRowChanged 不触发
-            self.sidebarListWidget.itemClicked.connect(self._on_sidebar_item_clicked)
-            # 同时保留 currentRowChanged 信号以处理编程式切换
-            self.sidebarListWidget.currentRowChanged.connect(self._on_sidebar_row_changed)
-
-        # 菜单动作事件
-        if self.actionToggleSidebar:
-            self.actionToggleSidebar.triggered.connect(self._toggle_sidebar)
-
-        if self.actionFullscreen:
-            self.actionFullscreen.triggered.connect(self._toggle_fullscreen)
-
-        if self.actionExit:
-            self.actionExit.triggered.connect(self.close)
-
-        if self.actionAbout:
-            self.actionAbout.triggered.connect(self._show_about_dialog)
+        # 标签页切换事件
+        if self.tabWidget:
+            self.tabWidget.currentChanged.connect(self._on_tab_changed)
 
         # 连接语言变更信号
         self.i18n.language_changed.connect(self._apply_translations)
@@ -360,51 +295,25 @@ class MainWindow(QMainWindow):
                 if w is not None:
                     w.deleteLater()
         layout.addWidget(widget)
-        self.logger.debug(f"已将 {type(widget).__name__} 添加到 {page_container.objectName()}，layout.count(): {layout.count()}")
+        self.logger.debug(
+            f"已将 {type(widget).__name__} 添加到 {page_container.objectName()}，"
+            f"layout.count(): {layout.count()}"
+        )
 
-    def _on_sidebar_item_clicked(self, item):
+    def _on_tab_changed(self, index: int):
         """
-        侧边栏项点击事件处理
+        标签页切换事件处理
 
         Args:
-            item: 点击的 QListWidgetItem
+            index: 当前标签页索引
         """
-        # 获取点击项的索引
-        row = self.sidebarListWidget.row(item)
-        self.logger.debug(f"侧边栏点击，行号: {row}")
+        self.logger.debug(f"切换到标签页: {index}")
 
-        if self.contentStackedWidget and 0 <= row < self.contentStackedWidget.count():
-            # 切换页面
-            self.contentStackedWidget.setCurrentIndex(row)
-            self.logger.debug(f"QStackedWidget 当前索引: {self.contentStackedWidget.currentIndex()}")
-            current_widget = self.contentStackedWidget.currentWidget()
-            self.logger.debug(f"QStackedWidget 当前 widget: {current_widget.objectName() if current_widget else 'None'}")
+        # 发送页面切换信号
+        self.page_changed.emit(index)
 
-            # 发送页面切换信号
-            self.page_changed.emit(row)
-
-            # 更新状态栏
-            self._update_status_bar_for_page(row)
-
-            self.logger.debug(f"切换到页面: {row}")
-        else:
-            self.logger.error(f"无效的页面索引: {row}, contentStackedWidget.count(): {self.contentStackedWidget.count() if self.contentStackedWidget else 'None'}")
-
-    def _on_sidebar_row_changed(self, row: int):
-        """
-        侧边栏行变化事件处理 (currentRowChanged)
-        """
-        if self.contentStackedWidget and 0 <= row < self.contentStackedWidget.count():
-            # 避免重复切换
-            if self.contentStackedWidget.currentIndex() != row:
-                self.contentStackedWidget.setCurrentIndex(row)
-                self.logger.debug(f"侧边栏行变化触发页面切换: {row}")
-                
-                # 发送页面切换信号
-                self.page_changed.emit(row)
-                
-                # 更新状态栏
-                self._update_status_bar_for_page(row)
+        # 更新状态栏
+        self._update_status_bar_for_page(index)
 
     def switch_to_page(self, page_index: int):
         """
@@ -413,14 +322,8 @@ class MainWindow(QMainWindow):
         Args:
             page_index: 页面索引（0-5）
         """
-        if self.sidebarListWidget and 0 <= page_index < self.sidebarListWidget.count():
-            self.sidebarListWidget.setCurrentRow(page_index)
-            # 触发点击事件以确保页面切换
-            item = self.sidebarListWidget.item(page_index)
-            if item:
-                self._on_sidebar_item_clicked(item)
-        elif self.contentStackedWidget and 0 <= page_index < self.contentStackedWidget.count():
-            self.contentStackedWidget.setCurrentIndex(page_index)
+        if self.tabWidget and 0 <= page_index < self.tabWidget.count():
+            self.tabWidget.setCurrentIndex(page_index)
 
     # -------------------------------------------------------------------------
     # 内容区域管理
@@ -433,9 +336,20 @@ class MainWindow(QMainWindow):
         Returns:
             Optional[QWidget]: 当前页面的 widget
         """
-        if self.contentStackedWidget:
-            return self.contentStackedWidget.currentWidget()
+        if self.tabWidget:
+            return self.tabWidget.currentWidget()
         return None
+
+    def get_current_page_index(self) -> int:
+        """
+        获取当前页面索引
+
+        Returns:
+            int: 当前页面索引
+        """
+        if self.tabWidget:
+            return self.tabWidget.currentIndex()
+        return -1
 
     def get_page_widget(self, page_name: str) -> Optional[QWidget]:
         """
@@ -467,7 +381,9 @@ class MainWindow(QMainWindow):
             return
 
         # 添加就绪标签
-        self.statusReadyLabel = QLabel(self.i18n.translate("main_window.statusbar.ready"))
+        self.statusReadyLabel = QLabel(
+            self.i18n.translate("main_window.statusbar.ready")
+        )
         self.statusBarWidget.addWidget(self.statusReadyLabel, 1)
 
         # 添加语言标签
@@ -486,14 +402,7 @@ class MainWindow(QMainWindow):
             return
 
         # 页面名称列表
-        page_names = [
-            "截图OCR",
-            "批量图片",
-            "批量文档",
-            "二维码",
-            "任务管理",
-            "设置"
-        ]
+        page_names = ["截图OCR", "批量图片", "批量文档", "二维码", "任务管理", "设置"]
 
         if 0 <= page_index < len(page_names):
             page_name = page_names[page_index]
@@ -511,48 +420,6 @@ class MainWindow(QMainWindow):
             self.statusBarWidget.showMessage(message, timeout)
 
     # -------------------------------------------------------------------------
-    # 菜单和工具栏
-    # -------------------------------------------------------------------------
-
-    def _toggle_sidebar(self, checked: bool):
-        """
-        切换侧边栏显示/隐藏
-
-        Args:
-            checked: 是否显示
-        """
-        if self.sidebarListWidget:
-            self.sidebarListWidget.setVisible(checked)
-
-            # 更新配置
-            self.config_manager.set("ui.main_window.sidebar_visible", checked)
-
-    def _toggle_fullscreen(self, checked: bool):
-        """
-        切换全屏模式
-
-        Args:
-            checked: 是否全屏
-        """
-        if checked:
-            self.showFullScreen()
-        else:
-            self.showNormal()
-
-    def _show_about_dialog(self):
-        """显示关于对话框"""
-        QMessageBox.about(
-            self,
-            "关于 Umi-OCR",
-            (
-                f"<h3>Umi-OCR {self.i18n.translate('app.version')}</h3>"
-                f"<p>{self.i18n.translate('app.description')}</p>"
-                "<p>版本: 2.0.0 (重构版)</p>"
-                "<p>© 2025 Umi-OCR Team</p>"
-            )
-        )
-
-    # -------------------------------------------------------------------------
     # 多语言支持
     # -------------------------------------------------------------------------
 
@@ -563,55 +430,33 @@ class MainWindow(QMainWindow):
 
         # 更新状态栏
         if hasattr(self, "statusReadyLabel"):
-            self.statusReadyLabel.setText(self.i18n.translate("main_window.statusbar.ready"))
+            self.statusReadyLabel.setText(
+                self.i18n.translate("main_window.statusbar.ready")
+            )
 
         if hasattr(self, "statusLanguageLabel"):
             self.statusLanguageLabel.setText(self.i18n.get_language_name())
 
-        # 更新侧边栏文本
-        self._update_sidebar_translations()
+        # 更新标签页文本
+        self._update_tab_translations()
 
-        # 更新菜单栏文本
-        self._update_menu_translations()
+    def _update_tab_translations(self):
+        """更新标签页文本翻译"""
+        if not self.tabWidget:
+            return
 
-    def _update_sidebar_translations(self):
-        """更新侧边栏文本翻译"""
-        sidebar_items = [
+        tab_translations = [
             "main_window.sidebar.screenshot_ocr",
             "main_window.sidebar.batch_ocr",
             "main_window.sidebar.batch_doc",
             "main_window.sidebar.qrcode",
             "main_window.sidebar.task_manager",
-            "main_window.sidebar.settings"
+            "main_window.sidebar.settings",
         ]
-        if self.sidebarListWidget:
-            for i, key_path in enumerate(sidebar_items):
-                item = self.sidebarListWidget.item(i)
-                if item:
-                    item.setText(self.i18n.translate(key_path))
 
-    def _update_menu_translations(self):
-        """更新菜单栏文本翻译"""
-        if not self.ui:
-            return
-
-        # 菜单标题翻译映射
-        menu_translations = {
-            "menuFile": "main_window.menu.file",
-            "menuEdit": "main_window.menu.edit",
-            "menuView": "main_window.menu.view",
-            "menuTools": "main_window.menu.tools",
-            "menuHelp": "main_window.menu.help"
-        }
-
-        # 遍历所有子菜单并更新标题
-        for menu_name, key_path in menu_translations.items():
-            menu = getattr(self.ui, menu_name, None)
-            if menu:
-                # 设置菜单标题（支持多语言）
-                new_title = self.i18n.translate(key_path)
-                # 移除Qt的助记符标记(&)并重新添加
-                menu.setTitle(new_title.replace("&", ""))
+        for i, key_path in enumerate(tab_translations):
+            if i < self.tabWidget.count():
+                self.tabWidget.setTabText(i, self.i18n.translate(key_path))
 
     # -------------------------------------------------------------------------
     # 配置管理
@@ -625,7 +470,7 @@ class MainWindow(QMainWindow):
         x = self.config_manager.get("ui.main_window.x", -1)
         y = self.config_manager.get("ui.main_window.y", -1)
         maximized = self.config_manager.get("ui.main_window.maximized", False)
-        sidebar_visible = self.config_manager.get("ui.main_window.sidebar_visible", True)
+        current_tab = self.config_manager.get("ui.main_window.current_tab", 0)
 
         # 设置窗口大小
         self.resize(width, height)
@@ -638,10 +483,9 @@ class MainWindow(QMainWindow):
         if maximized:
             self.showMaximized()
 
-        # 设置侧边栏可见性
-        if self.actionToggleSidebar:
-            self.actionToggleSidebar.setChecked(sidebar_visible)
-            self._toggle_sidebar(sidebar_visible)
+        # 恢复上次选中的标签页
+        if self.tabWidget and 0 <= current_tab < self.tabWidget.count():
+            self.tabWidget.setCurrentIndex(current_tab)
 
     def _save_window_state(self):
         """保存窗口状态"""
@@ -653,9 +497,11 @@ class MainWindow(QMainWindow):
         self.config_manager.set("ui.main_window.y", geometry.y())
         self.config_manager.set("ui.main_window.maximized", self.isMaximized())
 
-        # 保存侧边栏可见性
-        if self.sidebarListWidget:
-            self.config_manager.set("ui.main_window.sidebar_visible", self.sidebarListWidget.isVisible())
+        # 保存当前标签页索引
+        if self.tabWidget:
+            self.config_manager.set(
+                "ui.main_window.current_tab", self.tabWidget.currentIndex()
+            )
 
         # 保存配置
         self.config_manager.save()

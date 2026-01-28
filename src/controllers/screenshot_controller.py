@@ -15,7 +15,6 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import logging
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -42,10 +41,10 @@ class ScreenshotController(QObject):
     """
 
     # 信号定义
-    capture_started = Signal()           # 开始截图
-    capture_cancelled = Signal()         # 取消截图
-    ocr_result_ready = Signal(object)    # OCR结果就绪
-    ocr_failed = Signal(str)            # OCR失败
+    capture_started = Signal()  # 开始截图
+    capture_cancelled = Signal()  # 取消截图
+    ocr_result_ready = Signal(object)  # OCR结果就绪
+    ocr_failed = Signal(str)  # OCR失败
 
     _instance = None
 
@@ -55,12 +54,12 @@ class ScreenshotController(QObject):
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, parent: Optional[QObject] = None):
         """初始化截图OCR控制器"""
         if hasattr(self, "_initialized"):
             return
 
-        super().__init__()
+        super().__init__(parent)
         self._initialized = True
 
         # 创建服务组件

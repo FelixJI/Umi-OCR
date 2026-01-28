@@ -16,20 +16,20 @@ Date: 2026-01-26
 """
 
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from enum import Enum
 from datetime import datetime
-from pathlib import Path
 
 
 class TextBlockType(Enum):
     """文本块类型"""
+
     PARAGRAPH = "paragraph"  # 段落
-    TABLE = "table"          # 表格
-    FORMULA = "formula"      # 公式
-    HEADER = "header"        # 标题
-    FOOTER = "footer"        # 页脚
-    UNKNOWN = "unknown"      # 未知类型
+    TABLE = "table"  # 表格
+    FORMULA = "formula"  # 公式
+    HEADER = "header"  # 标题
+    FOOTER = "footer"  # 页脚
+    UNKNOWN = "unknown"  # 未知类型
 
 
 @dataclass
@@ -45,10 +45,10 @@ class BoundingBox:
     points: List[List[int]]
 
     # 可选：矩形边界框（用于快速检测）
-    x: int = 0           # 左上角 X 坐标
-    y: int = 0           # 左上角 Y 坐标
-    width: int = 0       # 宽度
-    height: int = 0      # 高度
+    x: int = 0  # 左上角 X 坐标
+    y: int = 0  # 左上角 Y 坐标
+    width: int = 0  # 宽度
+    height: int = 0  # 高度
 
     def __post_init__(self):
         """初始化后处理，自动计算矩形边界框"""
@@ -86,7 +86,7 @@ class BoundingBox:
             x=data.get("x", 0),
             y=data.get("y", 0),
             width=data.get("width", 0),
-            height=data.get("height", 0)
+            height=data.get("height", 0),
         )
 
 
@@ -99,15 +99,15 @@ class TextBlock:
     """
 
     # 基本字段
-    text: str                    # 识别的文本内容
-    confidence: float = 0.0      # 置信度（0.0 - 1.0）
+    text: str  # 识别的文本内容
+    confidence: float = 0.0  # 置信度（0.0 - 1.0）
     bbox: Optional[BoundingBox] = None  # 边界框
 
     # 扩展字段
     block_type: TextBlockType = TextBlockType.UNKNOWN  # 文本块类型
-    language: Optional[str] = None                     # 检测到的语言
-    font_size: Optional[float] = None                  # 字体大小
-    font_style: Optional[str] = None                   # 字体样式
+    language: Optional[str] = None  # 检测到的语言
+    font_size: Optional[float] = None  # 字体大小
+    font_style: Optional[str] = None  # 字体样式
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -135,10 +135,7 @@ class TextBlock:
         bbox_data = data.pop("bbox", None)
         bbox = BoundingBox.from_dict(bbox_data) if bbox_data else None
 
-        return cls(
-            bbox=bbox,
-            **data
-        )
+        return cls(bbox=bbox, **data)
 
 
 @dataclass
@@ -155,32 +152,32 @@ class OCRResult:
     # -------------------------------------------------------------------------
 
     text_blocks: List[TextBlock] = field(default_factory=list)  # 文本块列表
-    full_text: str = ""                                           # 完整文本（合并所有文本块）
+    full_text: str = ""  # 完整文本（合并所有文本块）
 
     # -------------------------------------------------------------------------
     # 元数据字段
     # -------------------------------------------------------------------------
 
-    image_path: Optional[str] = None    # 图片路径（如果有）
-    image_width: int = 0               # 图片宽度（像素）
-    image_height: int = 0              # 图片高度（像素）
+    image_path: Optional[str] = None  # 图片路径（如果有）
+    image_width: int = 0  # 图片宽度（像素）
+    image_height: int = 0  # 图片高度（像素）
 
     recognize_time: Optional[datetime] = None  # 识别时间
-    duration: float = 0.0                     # 识别耗时（秒）
+    duration: float = 0.0  # 识别耗时（秒）
 
     # -------------------------------------------------------------------------
     # 引擎信息
     # -------------------------------------------------------------------------
 
-    engine_type: str = ""              # 引擎类型（如 "paddle", "baidu"）
-    engine_name: str = ""              # 引擎名称
-    engine_version: str = ""           # 引擎版本
+    engine_type: str = ""  # 引擎类型（如 "paddle", "baidu"）
+    engine_name: str = ""  # 引擎名称
+    engine_version: str = ""  # 引擎版本
 
     # -------------------------------------------------------------------------
     # 状态信息
     # -------------------------------------------------------------------------
 
-    success: bool = True              # 是否成功
+    success: bool = True  # 是否成功
     error_code: Optional[str] = None  # 错误码（如果失败）
     error_message: Optional[str] = None  # 错误信息（如果失败）
 
@@ -188,8 +185,8 @@ class OCRResult:
     # 批量识别支持
     # -------------------------------------------------------------------------
 
-    batch_index: int = 0             # 批量中的索引（0表示单张）
-    batch_total: int = 1             # 批量总数
+    batch_index: int = 0  # 批量中的索引（0表示单张）
+    batch_total: int = 1  # 批量总数
     page_number: Optional[int] = None  # 页码（用于PDF等文档）
 
     # -------------------------------------------------------------------------
@@ -225,7 +222,9 @@ class OCRResult:
         texts = [block.text for block in self.text_blocks if block.text]
         return separator.join(texts)
 
-    def get_text_blocks_by_confidence(self, min_confidence: float = 0.5) -> List[TextBlock]:
+    def get_text_blocks_by_confidence(
+        self, min_confidence: float = 0.5
+    ) -> List[TextBlock]:
         """
         获取指定置信度以上的文本块
 
@@ -235,7 +234,9 @@ class OCRResult:
         Returns:
             List[TextBlock]: 筛选后的文本块列表
         """
-        return [block for block in self.text_blocks if block.confidence >= min_confidence]
+        return [
+            block for block in self.text_blocks if block.confidence >= min_confidence
+        ]
 
     def get_text_blocks_by_type(self, block_type: TextBlockType) -> List[TextBlock]:
         """
@@ -289,7 +290,9 @@ class OCRResult:
 
         # 解析 TextBlock 列表
         if "text_blocks" in data:
-            data["text_blocks"] = [TextBlock.from_dict(block) for block in data["text_blocks"]]
+            data["text_blocks"] = [
+                TextBlock.from_dict(block) for block in data["text_blocks"]
+            ]
 
         return cls(**data)
 
@@ -304,6 +307,7 @@ class OCRResult:
             str: JSON 字符串
         """
         import json
+
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
 
     @classmethod
@@ -318,6 +322,7 @@ class OCRResult:
             OCRResult: 结果对象
         """
         import json
+
         data = json.loads(json_str)
         return cls.from_dict(data)
 
@@ -357,7 +362,9 @@ class OCRResult:
         return merged
 
     @staticmethod
-    def paginate_results(results: List["OCRResult"], page_size: int) -> List[List["OCRResult"]]:
+    def paginate_results(
+        results: List["OCRResult"], page_size: int
+    ) -> List[List["OCRResult"]]:
         """
         对结果列表进行分页
 
@@ -370,7 +377,7 @@ class OCRResult:
         """
         pages = []
         for i in range(0, len(results), page_size):
-            page = results[i:i + page_size]
+            page = results[i : i + page_size]
             # 为每页结果设置页码
             for j, result in enumerate(page):
                 result.page_number = i // page_size + 1
@@ -413,15 +420,17 @@ class OCRResult:
             width = block.bbox.width if block.bbox else 0
             height = block.bbox.height if block.bbox else 0
 
-            writer.writerow([
-                block.text,
-                f"{block.confidence:.4f}",
-                x,
-                y,
-                width,
-                height,
-                block.block_type.value
-            ])
+            writer.writerow(
+                [
+                    block.text,
+                    f"{block.confidence:.4f}",
+                    x,
+                    y,
+                    width,
+                    height,
+                    block.block_type.value,
+                ]
+            )
 
         return output.getvalue()
 
@@ -433,43 +442,44 @@ class OCRResult:
             str: XML 格式字符串
         """
         lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-        lines.append('<OCRResult>')
+        lines.append("<OCRResult>")
 
         # 元数据
-        lines.append(f'  <metadata>')
-        lines.append(f'    <engine_type>{self.engine_type}</engine_type>')
-        lines.append(f'    <engine_name>{self.engine_name}</engine_name>')
-        lines.append(f'    <success>{str(self.success).lower()}</success>')
+        lines.append("  <metadata>")
+        lines.append(f"    <engine_type>{self.engine_type}</engine_type>")
+        lines.append(f"    <engine_name>{self.engine_name}</engine_name>")
+        lines.append(f"    <success>{str(self.success).lower()}</success>")
         if self.duration > 0:
-            lines.append(f'    <duration>{self.duration:.3f}</duration>')
-        lines.append(f'  </metadata>')
+            lines.append(f"    <duration>{self.duration:.3f}</duration>")
+        lines.append("  </metadata>")
 
         # 文本块
-        lines.append(f'  <text_blocks>')
+        lines.append("  <text_blocks>")
         for i, block in enumerate(self.text_blocks, 1):
             lines.append(f'    <block id="{i}">')
-            lines.append(f'      <text>{block.text}</text>')
-            lines.append(f'      <confidence>{block.confidence:.4f}</confidence>')
-            lines.append(f'      <type>{block.block_type.value}</type>')
+            lines.append(f"      <text>{block.text}</text>")
+            lines.append(f"      <confidence>{block.confidence:.4f}</confidence>")
+            lines.append(f"      <type>{block.block_type.value}</type>")
 
             if block.bbox:
-                lines.append(f'      <bbox>')
-                lines.append(f'        <x>{block.bbox.x}</x>')
-                lines.append(f'        <y>{block.bbox.y}</y>')
-                lines.append(f'        <width>{block.bbox.width}</width>')
-                lines.append(f'        <height>{block.bbox.height}</height>')
-                lines.append(f'      </bbox>')
+                lines.append("      <bbox>")
+                lines.append(f"        <x>{block.bbox.x}</x>")
+                lines.append(f"        <y>{block.bbox.y}</y>")
+                lines.append(f"        <width>{block.bbox.width}</width>")
+                lines.append(f"        <height>{block.bbox.height}</height>")
+                lines.append("      </bbox>")
 
-            lines.append(f'    </block>')
-        lines.append(f'  </text_blocks>')
+            lines.append("    </block>")
+        lines.append("  </text_blocks>")
 
-        lines.append('</OCRResult>')
+        lines.append("</OCRResult>")
         return "\n".join(lines)
 
 
 # =============================================================================
 # 批量结果类
 # =============================================================================
+
 
 @dataclass
 class BatchOCRResult:
@@ -547,7 +557,7 @@ class BatchOCRResult:
             "success_rate": self.get_success_rate(),
             "total_duration": self.total_duration,
             "average_duration": self.get_average_duration(),
-            "results": [result.to_dict() for result in self.results]
+            "results": [result.to_dict() for result in self.results],
         }
 
     def to_json(self, indent: int = 2) -> str:
@@ -561,4 +571,5 @@ class BatchOCRResult:
             str: JSON 字符串
         """
         import json
+
         return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)

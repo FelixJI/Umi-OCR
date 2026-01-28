@@ -14,7 +14,6 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import logging
 from typing import List, Optional, Set
 
 from PySide6.QtCore import QObject, Signal
@@ -40,10 +39,10 @@ class BatchDocController(QObject):
     """
 
     # 信号定义
-    tasks_submitted = Signal(str)        # 任务已提交(group_id)
-    progress_updated = Signal(str, float) # 进度更新(group_id, progress)
-    tasks_completed = Signal(str)        # 任务完成(group_id)
-    tasks_failed = Signal(str, str)      # 任务失败(group_id, error)
+    tasks_submitted = Signal(str)  # 任务已提交(group_id)
+    progress_updated = Signal(str, float)  # 进度更新(group_id, progress)
+    tasks_completed = Signal(str)  # 任务完成(group_id)
+    tasks_failed = Signal(str, str)  # 任务失败(group_id, error)
 
     def __init__(self):
         """初始化批量文档OCR控制器"""
@@ -69,7 +68,7 @@ class BatchDocController(QObject):
         pdf_paths: List[str],
         title: str = "批量文档OCR",
         priority: int = 0,
-        dpi: int = 200
+        dpi: int = 200,
     ) -> str:
         """
         提交PDF批量识别任务
@@ -87,11 +86,9 @@ class BatchDocController(QObject):
 
         # 提交到任务管理器(使用内置的submit_pdf_tasks方法)
         group_id = self._task_manager.submit_pdf_tasks(
-            pdf_paths=pdf_paths,
-            title=title,
-            priority=priority
+            pdf_paths=pdf_paths, title=title, priority=priority
         )
-        
+
         self._submitted_groups.add(group_id)
 
         # 发送信号
@@ -181,7 +178,7 @@ class BatchDocController(QObject):
         """
         logger.info(f"导出为Excel: {group_id}")
         self._export_result(group_id, output_path, ExcelExporter())
-        
+
     def _export_result(self, group_id: str, output_path: str, exporter) -> None:
         """
         通用导出逻辑
@@ -190,7 +187,7 @@ class BatchDocController(QObject):
         if not group:
             logger.error(f"导出失败，任务组不存在: {group_id}")
             return
-            
+
         # 收集结果
         data = []
         # 对于嵌套任务组，需要递归收集
@@ -199,29 +196,26 @@ class BatchDocController(QObject):
             # 收集其下所有 Page 的结果
             pdf_text = ""
             pdf_title = child.title
-            
+
             # 假设结果存储在 Task 对象中，或者我们需要从某处获取结果
             # 目前 TaskManager 只有 task_completed 信号
             # 我们需要一种方式获取已完成任务的结果
             # TaskGroup 应该有 results? TaskGroup 没有 results 字段，Task 有 result 字段
             # TaskWorker 将结果存入 Task.result
-            
+
             # 遍历子组的所有任务
             for task in child.get_all_tasks():
                 if task.result:
                     # 假设 result 是 OCRResult 对象或字典
                     # 这里需要根据实际 result 结构适配
                     # 假设 result.text 是文本
-                    if hasattr(task.result, 'text'):
+                    if hasattr(task.result, "text"):
                         pdf_text += task.result.text + "\n"
                     elif isinstance(task.result, dict):
-                        pdf_text += task.result.get('text', '') + "\n"
-            
-            data.append({
-                "title": pdf_title,
-                "text": pdf_text
-            })
-            
+                        pdf_text += task.result.get("text", "") + "\n"
+
+            data.append({"title": pdf_title, "text": pdf_text})
+
         exporter.export(data, output_path)
 
     def _on_group_progress(self, group_id: str, progress: float) -> None:

@@ -19,11 +19,11 @@ Date: 2026-01-27
 
 import logging
 from enum import Enum
-from typing import Optional, Dict
+from typing import Optional
 
 from PySide6.QtWidgets import QWidget, QApplication
 from PySide6.QtCore import Qt, Signal, QPoint, QRect
-from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QColor, QCursor
+from PySide6.QtGui import QPixmap, QPainter, QPen, QBrush, QColor
 
 from .screen_capture import ScreenCapture
 from .window_detector import WindowDetector, WindowInfo
@@ -34,17 +34,18 @@ logger = logging.getLogger(__name__)
 
 class DragMode(Enum):
     """拖动模式"""
+
     NONE = "none"
-    CREATE = "create"          # 创建新选区
-    MOVE = "move"              # 移动选区
-    RESIZE_N = "resize_n"      # 调整上边
-    RESIZE_S = "resize_s"      # 调整下边
-    RESIZE_E = "resize_e"      # 调整右边
-    RESIZE_W = "resize_w"      # 调整左边
-    RESIZE_NE = "resize_ne"    # 调整右上角
-    RESIZE_NW = "resize_nw"    # 调整左上角
-    RESIZE_SE = "resize_se"    # 调整右下角
-    RESIZE_SW = "resize_sw"    # 调整左下角
+    CREATE = "create"  # 创建新选区
+    MOVE = "move"  # 移动选区
+    RESIZE_N = "resize_n"  # 调整上边
+    RESIZE_S = "resize_s"  # 调整下边
+    RESIZE_E = "resize_e"  # 调整右边
+    RESIZE_W = "resize_w"  # 调整左边
+    RESIZE_NE = "resize_ne"  # 调整右上角
+    RESIZE_NW = "resize_nw"  # 调整左上角
+    RESIZE_SE = "resize_se"  # 调整右下角
+    RESIZE_SW = "resize_sw"  # 调整左下角
 
 
 class RegionSelector(QWidget):
@@ -61,25 +62,29 @@ class RegionSelector(QWidget):
     """
 
     # 信号定义
-    region_selected = Signal(QRect)       # 选区完成
-    selection_cancelled = Signal()        # 取消选择
+    region_selected = Signal(QRect)  # 选区完成
+    selection_cancelled = Signal()  # 取消选择
 
     # 比例预设
     ASPECT_RATIOS = {
-        "free": None,                  # 自由比例
-        "1:1": 1.0,                   # 正方形
-        "4:3": 4/3,
-        "16:9": 16/9,
-        "3:2": 3/2,
+        "free": None,  # 自由比例
+        "1:1": 1.0,  # 正方形
+        "4:3": 4 / 3,
+        "16:9": 16 / 9,
+        "3:2": 3 / 2,
     }
 
     # 手柄尺寸
     HANDLE_SIZE = 10
 
-    def __init__(self, parent: Optional[QWidget] = None, screen_capture: Optional[ScreenCapture] = None):
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        screen_capture: Optional[ScreenCapture] = None,
+    ):
         """
         初始化区域选择器
-        
+
         Args:
             parent: 父窗口
             screen_capture: 屏幕捕获实例
@@ -87,11 +92,7 @@ class RegionSelector(QWidget):
         super().__init__(parent)
 
         # 创建跨屏无边框窗口
-        self.setWindowFlags(
-            Qt.FramelessWindowHint |
-            Qt.WindowStaysOnTopHint |
-            Qt.Tool
-        )
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # 初始化服务
@@ -173,7 +174,7 @@ class RegionSelector(QWidget):
         Returns:
             QRect: 全局屏幕坐标矩形
         """
-        if not hasattr(self, '_virtual_geometry'):
+        if not hasattr(self, "_virtual_geometry"):
             return local_rect
 
         # 窗口的左上角在全局屏幕中的位置
@@ -184,7 +185,7 @@ class RegionSelector(QWidget):
             local_rect.left() + offset.x(),
             local_rect.top() + offset.y(),
             local_rect.width(),
-            local_rect.height()
+            local_rect.height(),
         )
 
         return global_rect
@@ -201,14 +202,11 @@ class RegionSelector(QWidget):
         Returns:
             QPoint: 本地坐标点
         """
-        if not hasattr(self, '_virtual_geometry'):
+        if not hasattr(self, "_virtual_geometry"):
             return global_pos
 
         offset = self._virtual_geometry.topLeft()
-        return QPoint(
-            global_pos.x() - offset.x(),
-            global_pos.y() - offset.y()
-        )
+        return QPoint(global_pos.x() - offset.x(), global_pos.y() - offset.y())
 
     def paintEvent(self, event) -> None:
         """
@@ -229,8 +227,8 @@ class RegionSelector(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # 1. 绘制半透明遮罩层
-        mask_color = QColor(0, 0, 0, 100)
+        # 1. 绘制半透明遮罩层（降低透明度使遮罩更浅）
+        mask_color = QColor(0, 0, 0, 60)
         painter.fillRect(self.rect(), mask_color)
 
         # 2. 绘制选区(无遮罩,显示原图)
@@ -249,6 +247,9 @@ class RegionSelector(QWidget):
 
             # 绘制坐标信息
             self._draw_coordinate_info(painter)
+
+            # 绘制比例选择工具栏
+            self._draw_ratio_toolbar(painter)
 
         # 3. 绘制鼠标位置信息
         self._draw_mouse_info(painter)
@@ -274,14 +275,14 @@ class RegionSelector(QWidget):
 
         # 手柄位置
         handles = {
-            'tl': rect.topLeft(),
-            'tr': rect.topRight(),
-            'bl': rect.bottomLeft(),
-            'br': rect.bottomRight(),
-            't': QPoint(rect.center().x(), rect.top()),
-            'b': QPoint(rect.center().x(), rect.bottom()),
-            'l': QPoint(rect.left(), rect.center().y()),
-            'r': QPoint(rect.right(), rect.center().y())
+            "tl": rect.topLeft(),
+            "tr": rect.topRight(),
+            "bl": rect.bottomLeft(),
+            "br": rect.bottomRight(),
+            "t": QPoint(rect.center().x(), rect.top()),
+            "b": QPoint(rect.center().x(), rect.bottom()),
+            "l": QPoint(rect.left(), rect.center().y()),
+            "r": QPoint(rect.right(), rect.center().y()),
         }
 
         # 绘制手柄
@@ -289,11 +290,13 @@ class RegionSelector(QWidget):
         painter.setPen(QPen(QColor(0, 0, 0), 1))
 
         for pos in handles.values():
-            painter.drawRect(pos.x() - h, pos.y() - h, self.HANDLE_SIZE, self.HANDLE_SIZE)
+            painter.drawRect(
+                pos.x() - h, pos.y() - h, self.HANDLE_SIZE, self.HANDLE_SIZE
+            )
 
     def _draw_coordinate_info(self, painter: QPainter) -> None:
         """
-        绘制坐标信息
+        绘制坐标信息（显示在选区左上角）
 
         Args:
             painter: 绘制器
@@ -303,51 +306,58 @@ class RegionSelector(QWidget):
 
         rect = self._selection_rect
 
-        # 准备信息文本
-        lines = [
-            f"尺寸: {rect.width()} x {rect.height()}",
-            f"起点: ({rect.left()}, {rect.top()})",
-            f"终点: ({rect.right()}, {rect.bottom()})"
-        ]
-
-        # 添加比例信息
-        if self._current_aspect_ratio:
-            ratio_name = self._get_aspect_ratio_name(self._current_aspect_ratio)
-            lines.append(f"比例: {ratio_name}")
-        elif self._is_shift_pressed:
-            lines.append("比例: Shift锁定")
+        # 准备信息文本：坐标和大小
+        lines = [f"{rect.width()} x {rect.height()}", f"({rect.left()}, {rect.top()})"]
 
         # 绘制背景框
         font = painter.font()
-        font.setPointSize(10)
+        font.setPointSize(9)
         painter.setFont(font)
 
         font_metrics = painter.fontMetrics()
         line_height = font_metrics.height()
         max_width = max(font_metrics.horizontalAdvance(line) for line in lines)
 
-        # 计算文本位置（优先显示在选区下方，超出屏幕则显示在上方）
-        text_y = rect.bottom() + 15
-        if text_y + len(lines) * line_height > self.height():
-            text_y = rect.top() - len(lines) * line_height - 10
+        # 计算文本位置（显示在选区左上角外侧）
+        padding = 6
+        bg_width = max_width + padding * 2
+        bg_height = len(lines) * line_height + padding
 
-        text_x = max(10, min(rect.left(), self.width() - max_width - 20))
+        # 默认显示在左上角上方
+        text_x = rect.left()
+        text_y = rect.top() - bg_height - 4
+
+        # 如果上方空间不足，显示在选区内部左上角
+        if text_y < 0:
+            text_y = rect.top() + padding
+            text_x = rect.left() + padding
+        else:
+            text_x = rect.left() + padding
 
         # 绘制半透明背景
         bg_rect = QRect(
-            text_x - 5,
-            text_y - line_height + 5,
-            max_width + 10,
-            len(lines) * line_height + 5
+            text_x - padding,
+            text_y - padding + 4 if text_y > rect.top() else text_y - padding,
+            bg_width,
+            bg_height,
         )
-        painter.setBrush(QBrush(QColor(0, 0, 0, 180)))
+        painter.setBrush(QBrush(QColor(0, 0, 0, 160)))
         painter.setPen(Qt.NoPen)
-        painter.drawRoundedRect(bg_rect, 5, 5)
+        painter.drawRoundedRect(bg_rect, 4, 4)
 
         # 绘制文本
         painter.setPen(QPen(QColor(255, 255, 255), 1))
         for i, line in enumerate(lines):
-            painter.drawText(text_x, text_y + i * line_height, line)
+            y_offset = (
+                text_y
+                + i * line_height
+                + (
+                    font_metrics.ascent()
+                    if text_y > rect.top()
+                    else font_metrics.ascent()
+                )
+            )
+            painter.drawText(text_x, y_offset, line)
 
     def _get_aspect_ratio_name(self, ratio: float) -> str:
         """
@@ -364,6 +374,101 @@ class RegionSelector(QWidget):
                 return name
         return f"{ratio:.2f}"
 
+    def _draw_ratio_toolbar(self, painter: QPainter) -> None:
+        """
+        绘制比例选择工具栏（悬浮在选区下方）
+
+        Args:
+            painter: 绘制器
+        """
+        if not self._selection_rect:
+            return
+
+        rect = self._selection_rect
+
+        # 比例按钮配置
+        ratios = ["自由", "1:1", "4:3", "16:9", "3:2"]
+        ratio_values = [None, 1.0, 4 / 3, 16 / 9, 3 / 2]
+        button_width = 50
+        button_height = 28
+        button_spacing = 4
+        toolbar_padding = 8
+
+        # 计算工具栏尺寸
+        toolbar_width = (
+            len(ratios) * button_width
+            + (len(ratios) - 1) * button_spacing
+            + toolbar_padding * 2
+        )
+        toolbar_height = button_height + toolbar_padding * 2
+
+        # 计算工具栏位置（选区下方居中）
+        toolbar_x = rect.center().x() - toolbar_width // 2
+        toolbar_y = rect.bottom() + 12
+
+        # 如果下方空间不足，显示在选区上方
+        if toolbar_y + toolbar_height > self.height():
+            toolbar_y = rect.top() - toolbar_height - 12
+
+        # 确保不超出屏幕边界
+        toolbar_x = max(10, min(toolbar_x, self.width() - toolbar_width - 10))
+        toolbar_y = max(10, toolbar_y)
+
+        self._toolbar_rect = QRect(toolbar_x, toolbar_y, toolbar_width, toolbar_height)
+
+        # 绘制工具栏背景
+        painter.setBrush(QBrush(QColor(40, 40, 40, 220)))
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(self._toolbar_rect, 8, 8)
+
+        # 绘制各个比例按钮
+        font = painter.font()
+        font.setPointSize(9)
+        painter.setFont(font)
+        font_metrics = painter.fontMetrics()
+
+        self._ratio_button_rects = []
+        for i, (ratio_name, ratio_value) in enumerate(zip(ratios, ratio_values)):
+            # 计算按钮位置
+            btn_x = toolbar_x + toolbar_padding + i * (button_width + button_spacing)
+            btn_y = toolbar_y + toolbar_padding
+            btn_rect = QRect(btn_x, btn_y, button_width, button_height)
+            self._ratio_button_rects.append((btn_rect, ratio_value))
+
+            # 判断是否当前选中
+            is_selected = self._current_aspect_ratio == ratio_value or (
+                self._current_aspect_ratio is None and ratio_value is None
+            )
+
+            # 绘制按钮背景
+            if is_selected:
+                painter.setBrush(QBrush(QColor(0, 120, 215)))
+                painter.setPen(Qt.NoPen)
+                painter.drawRoundedRect(btn_rect, 6, 6)
+            else:
+                # 检查鼠标是否悬停
+                if (
+                    hasattr(self, "_toolbar_hover_index")
+                    and self._toolbar_hover_index == i
+                ):
+                    painter.setBrush(QBrush(QColor(80, 80, 80)))
+                    painter.setPen(Qt.NoPen)
+                    painter.drawRoundedRect(btn_rect, 6, 6)
+
+            # 绘制按钮文字
+            if is_selected:
+                painter.setPen(QPen(QColor(255, 255, 255), 1))
+            else:
+                painter.setPen(QPen(QColor(200, 200, 200), 1))
+
+            text_width = font_metrics.horizontalAdvance(ratio_name)
+            text_x = btn_x + (button_width - text_width) // 2
+            text_y = (
+                btn_y
+                + (button_height + font_metrics.ascent() - font_metrics.descent()) // 2
+            )
+            painter.drawText(text_x, text_y, ratio_name)
+
     def _draw_mouse_info(self, painter: QPainter) -> None:
         """
         绘制鼠标位置信息
@@ -377,7 +482,7 @@ class RegionSelector(QWidget):
         # 快捷键提示
         hints = [
             "Enter/Space: 确认 | Esc: 取消",
-            "1-5: 比例 | Shift: 锁定 | 拖动边缘: 调整"
+            "1-5: 比例 | Shift: 锁定 | 拖动边缘: 调整",
         ]
 
         # 设置字体
@@ -389,8 +494,13 @@ class RegionSelector(QWidget):
         line_height = font_metrics.height()
 
         # 绘制半透明背景
-        bg_width = max(font_metrics.horizontalAdvance(mouse_text),
-                      max(font_metrics.horizontalAdvance(h) for h in hints)) + 20
+        bg_width = (
+            max(
+                font_metrics.horizontalAdvance(mouse_text),
+                max(font_metrics.horizontalAdvance(h) for h in hints),
+            )
+            + 20
+        )
         bg_height = line_height * len(hints) + 30
 
         bg_rect = QRect(10, 10, bg_width, bg_height)
@@ -432,12 +542,22 @@ class RegionSelector(QWidget):
         """
         鼠标按下事件
 
-        开始创建或调整选区。
+        开始创建或调整选区，或点击比例按钮。
 
         Args:
             event: 鼠标事件
         """
         pos = event.pos()
+
+        # 检查是否点击在比例工具栏上
+        if hasattr(self, "_ratio_button_rects") and self._selection_rect:
+            for i, (btn_rect, ratio_value) in enumerate(self._ratio_button_rects):
+                if btn_rect.contains(pos):
+                    self._current_aspect_ratio = ratio_value
+                    self.update()
+                    logger.debug(f"选择比例: {ratio_value}")
+                    return
+
         self._is_dragging = True
         self._drag_start_pos = pos
 
@@ -488,14 +608,16 @@ class RegionSelector(QWidget):
 
                 # 按比例约束（包括 Shift 临时锁定的正方形）
                 if self._current_aspect_ratio or self._is_shift_pressed:
-                    ratio = self._current_aspect_ratio if self._current_aspect_ratio else 1.0
+                    ratio = (
+                        self._current_aspect_ratio
+                        if self._current_aspect_ratio
+                        else 1.0
+                    )
                     self._apply_aspect_ratio_with_ratio(ratio)
 
             elif self._drag_mode == DragMode.MOVE:
                 # 移动选区
-                self._selection_rect.moveTo(
-                    self._drag_start_rect.topLeft() + delta
-                )
+                self._selection_rect.moveTo(self._drag_start_rect.topLeft() + delta)
 
             else:
                 # 调整大小
@@ -506,8 +628,21 @@ class RegionSelector(QWidget):
 
         # 检测窗口悬停
         if not self._selection_rect or not self._selection_rect.contains(pos):
-            self._hovered_window = self._window_detector.get_window_at(self.mapToGlobal(pos))
+            self._hovered_window = self._window_detector.get_window_at(
+                self.mapToGlobal(pos)
+            )
             self.update()
+
+        # 检测比例工具栏悬停
+        if self._selection_rect and hasattr(self, "_ratio_button_rects"):
+            hover_index = -1
+            for i, (btn_rect, _) in enumerate(self._ratio_button_rects):
+                if btn_rect.contains(pos):
+                    hover_index = i
+                    break
+            if hover_index != getattr(self, "_toolbar_hover_index", -1):
+                self._toolbar_hover_index = hover_index
+                self.update()
 
     def mouseReleaseEvent(self, event) -> None:
         """
@@ -555,7 +690,9 @@ class RegionSelector(QWidget):
             if self._selection_rect:
                 # 转换为全局坐标
                 global_rect = self._local_to_global_rect(self._selection_rect)
-                logger.info(f"选区确认 (本地: {self._selection_rect}, 全局: {global_rect})")
+                logger.info(
+                    f"选区确认 (本地: {self._selection_rect}, 全局: {global_rect})"
+                )
                 self.region_selected.emit(global_rect)
                 self.stop()
             return
@@ -593,11 +730,8 @@ class RegionSelector(QWidget):
         if event.key() == Qt.Key_Shift:
             self._is_shift_pressed = False
             # 如果没有预设比例，清除比例锁定
-            ratio_keys = list(self.ASPECT_RATIOS.keys())
             # 检查是否在预设比例中，如果不是则清除
             if self._current_aspect_ratio == 1.0:
-                # 检查是否通过数字键设置的
-                preset_values = [v for v in self.ASPECT_RATIOS.values() if v is not None]
                 # 这里简化处理：如果是通过数字键设置的，保留
                 # 如果只是 Shift 临时设置的，清除
                 self._current_aspect_ratio = None
@@ -628,7 +762,7 @@ class RegionSelector(QWidget):
             DragMode.RESIZE_N: QPoint(rect.center().x(), rect.top()),
             DragMode.RESIZE_S: QPoint(rect.center().x(), rect.bottom()),
             DragMode.RESIZE_W: QPoint(rect.left(), rect.center().y()),
-            DragMode.RESIZE_E: QPoint(rect.right(), rect.center().y())
+            DragMode.RESIZE_E: QPoint(rect.right(), rect.center().y()),
         }
 
         for mode, handle_pos in handles.items():
@@ -688,21 +822,13 @@ class RegionSelector(QWidget):
         elif mode == DragMode.RESIZE_W:
             rect.setLeft(self._drag_start_rect.left() + delta.x())
         elif mode == DragMode.RESIZE_NE:
-            rect.setTopRight(
-                self._drag_start_rect.topRight() + delta
-            )
+            rect.setTopRight(self._drag_start_rect.topRight() + delta)
         elif mode == DragMode.RESIZE_NW:
-            rect.setTopLeft(
-                self._drag_start_rect.topLeft() + delta
-            )
+            rect.setTopLeft(self._drag_start_rect.topLeft() + delta)
         elif mode == DragMode.RESIZE_SE:
-            rect.setBottomRight(
-                self._drag_start_rect.bottomRight() + delta
-            )
+            rect.setBottomRight(self._drag_start_rect.bottomRight() + delta)
         elif mode == DragMode.RESIZE_SW:
-            rect.setBottomLeft(
-                self._drag_start_rect.bottomLeft() + delta
-            )
+            rect.setBottomLeft(self._drag_start_rect.bottomLeft() + delta)
 
         # 应用比例约束
         if self._current_aspect_ratio:

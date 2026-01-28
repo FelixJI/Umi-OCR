@@ -30,7 +30,7 @@ class TextExporter(BaseExporter):
         output_path: str,
         separator: str = "\n\n",
         include_coordinates: bool = False,
-        **kwargs
+        **kwargs,
     ) -> bool:
         """
         导出为文本

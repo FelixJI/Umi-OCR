@@ -23,7 +23,6 @@ import logging
 import threading
 import time
 from typing import Dict, Any, Optional, List, Type, Callable
-from pathlib import Path
 from dataclasses import dataclass, field
 
 from PySide6.QtCore import QObject, Signal
@@ -57,6 +56,7 @@ def set_config_manager(config_manager) -> None:
 # 引擎注册信息
 # =============================================================================
 
+
 @dataclass
 class EngineInfo:
     """
@@ -64,11 +64,12 @@ class EngineInfo:
 
     包含引擎的元数据和工厂方法。
     """
-    engine_type: str                        # 引擎类型标识
-    engine_class: Type[BaseOCREngine]       # 引擎类
-    factory: Callable                       # 工厂方法
-    is_local: bool = False                  # 是否为本地引擎
-    priority: int = 0                       # 优先级（数字越小优先级越高）
+
+    engine_type: str  # 引擎类型标识
+    engine_class: Type[BaseOCREngine]  # 引擎类
+    factory: Callable  # 工厂方法
+    is_local: bool = False  # 是否为本地引擎
+    priority: int = 0  # 优先级（数字越小优先级越高）
 
 
 @dataclass
@@ -78,18 +79,20 @@ class EngineState:
 
     跟踪引擎实例的运行时状态。
     """
-    engine_type: str                        # 引擎类型
+
+    engine_type: str  # 引擎类型
     engine_instance: Optional[BaseOCREngine] = None  # 引擎实例（延迟加载）
     config: Dict[str, Any] = field(default_factory=dict)  # 当前配置
-    config_path: str = ""                  # 配置路径（如 "ocr.paddle"）
-    is_initialized: bool = False           # 是否已初始化
-    last_used_time: float = 0.0            # 最后使用时间（Unix timestamp）
+    config_path: str = ""  # 配置路径（如 "ocr.paddle"）
+    is_initialized: bool = False  # 是否已初始化
+    last_used_time: float = 0.0  # 最后使用时间（Unix timestamp）
     destroy_timer: Optional[threading.Timer] = None  # 销毁计时器
 
 
 # =============================================================================
 # 引擎管理器
 # =============================================================================
+
 
 class EngineManager(QObject):
     """
@@ -183,7 +186,7 @@ class EngineManager(QObject):
         engine_class: Type[BaseOCREngine],
         factory: Optional[Callable] = None,
         is_local: bool = False,
-        priority: int = 0
+        priority: int = 0,
     ) -> None:
         """
         注册 OCR 引擎
@@ -217,16 +220,17 @@ class EngineManager(QObject):
                 engine_class=engine_class,
                 factory=factory,
                 is_local=is_local,
-                priority=priority
+                priority=priority,
             )
 
             # 初始化引擎状态
             self._engine_states[engine_type] = EngineState(
-                engine_type=engine_type,
-                config_path=f"ocr.{engine_type}"
+                engine_type=engine_type, config_path=f"ocr.{engine_type}"
             )
 
-            logger.info(f"注册引擎: {engine_type} (local={is_local}, priority={priority})")
+            logger.info(
+                f"注册引擎: {engine_type} (local={is_local}, priority={priority})"
+            )
 
     def unregister_engine(self, engine_type: str) -> bool:
         """
@@ -268,10 +272,12 @@ class EngineManager(QObject):
         with self._state_lock:
             # 按优先级排序（本地引擎优先）
             engines = list(self._engine_registry.keys())
-            engines.sort(key=lambda e: (
-                0 if self._engine_registry[e].is_local else 1,
-                self._engine_registry[e].priority
-            ))
+            engines.sort(
+                key=lambda e: (
+                    0 if self._engine_registry[e].is_local else 1,
+                    self._engine_registry[e].priority,
+                )
+            )
             return engines
 
     def get_engine_info(self, engine_type: str) -> Optional[EngineInfo]:
@@ -568,10 +574,7 @@ class EngineManager(QObject):
     # -------------------------------------------------------------------------
 
     def recognize(
-        self,
-        image: Any,
-        task_id: Optional[str] = None,
-        **kwargs
+        self, image: Any, task_id: Optional[str] = None, **kwargs
     ) -> OCRResult:
         """
         执行 OCR 识别（统一接口）
@@ -595,13 +598,13 @@ class EngineManager(QObject):
                     success=False,
                     error_code=OCRErrorCode.NOT_INITIALIZED.value,
                     error_message="没有可用的本地OCR引擎。\n\n"
-                                 "请安装OCR引擎：\n"
-                                 "1. 重新启动程序，按照安装向导的提示安装OCR引擎\n"
-                                 "2. 或运行: pip install -e \".[cpu]\" (CPU版本)\n"
-                                 "3. 重新启动程序后使用\n\n"
-                                 "提示：第18-19阶段将支持在线OCR服务（需要网络）",
+                    "请安装OCR引擎：\n"
+                    "1. 重新启动程序，按照安装向导的提示安装OCR引擎\n"
+                    '2. 或运行: pip install -e ".[cpu]" (CPU版本)\n'
+                    "3. 重新启动程序后使用\n\n"
+                    "提示：第18-19阶段将支持在线OCR服务（需要网络）",
                     engine_type="none",
-                    engine_name="Unknown"
+                    engine_name="Unknown",
                 )
             engine = self.get_current_engine()
 
@@ -611,9 +614,9 @@ class EngineManager(QObject):
                     success=False,
                     error_code=OCRErrorCode.NOT_INITIALIZED.value,
                     error_message="没有可用的 OCR 引擎（回退失败）\n\n"
-                                 "请尝试重新安装OCR引擎，或联系技术支持。",
+                    "请尝试重新安装OCR引擎，或联系技术支持。",
                     engine_type="none",
-                    engine_name="Unknown"
+                    engine_name="Unknown",
                 )
 
         # 更新最后使用时间（取消销毁计时器）
@@ -667,38 +670,41 @@ class EngineManager(QObject):
             engine_class=PaddleOCREngine,
             factory=lambda config: PaddleOCREngine(config),
             is_local=True,
-            priority=1
+            priority=1,
         )
 
         # 注册云引擎（第18-19阶段实现）
         # 百度云 OCR
         from .cloud import BaiduOCREngine
+
         self.register_engine(
             engine_type="baidu_cloud",
             engine_class=BaiduOCREngine,
             factory=lambda config: BaiduOCREngine(config, qps_limit=10),
             is_local=False,
-            priority=10
+            priority=10,
         )
 
         # 腾讯云 OCR
         from .cloud import TencentOCREngine
+
         self.register_engine(
             engine_type="tencent_cloud",
             engine_class=TencentOCREngine,
             factory=lambda config: TencentOCREngine(config, qps_limit=10),
             is_local=False,
-            priority=11
+            priority=11,
         )
 
         # 阿里云 OCR
         from .cloud import AliyunOCREngine
+
         self.register_engine(
             engine_type="aliyun_cloud",
             engine_class=AliyunOCREngine,
             factory=lambda config: AliyunOCREngine(config, qps_limit=10),
             is_local=False,
-            priority=12
+            priority=12,
         )
 
         logger.info(f"已注册 {len(self._engine_registry)} 个引擎")
@@ -727,14 +733,15 @@ class EngineManager(QObject):
         # 创建监听器函数
         def on_config_changed(event):
             """配置变更回调"""
-            from src.models.config_model import ConfigChangeEvent
 
             key_path = event.key_path
 
             # 监听 OCR 引擎类型变更
             if key_path == "ocr.engine_type":
                 new_engine_type = event.new_value
-                logger.info(f"检测到引擎配置变更: {event.old_value} -> {new_engine_type}")
+                logger.info(
+                    f"检测到引擎配置变更: {event.old_value} -> {new_engine_type}"
+                )
 
                 # 尝试切换引擎
                 if new_engine_type and new_engine_type in self._engine_registry:
@@ -745,7 +752,7 @@ class EngineManager(QObject):
                         self.engine_failed.emit(
                             new_engine_type,
                             OCRErrorCode.ENGINE_INIT_FAILED.value,
-                            f"无法切换到引擎: {new_engine_type}"
+                            f"无法切换到引擎: {new_engine_type}",
                         )
 
             # 监听引擎配置变更
@@ -804,7 +811,6 @@ class EngineManager(QObject):
     # -------------------------------------------------------------------------
     # 工具方法
     # -------------------------------------------------------------------------
-
 
     def get_engine_state(self, engine_type: str) -> Optional[EngineState]:
         """

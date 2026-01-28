@@ -13,13 +13,12 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-import logging
 import os
 from typing import List, Optional
 
 from PySide6.QtCore import QObject, Signal
 
-from services.qrcode.qrcode_scanner import QRCodeScanner, QRCodeResult
+from services.qrcode.qrcode_scanner import QRCodeScanner
 from services.qrcode.qrcode_generator import QRCodeGenerator
 from utils.logger import get_logger
 
@@ -36,12 +35,12 @@ class QRCodeController(QObject):
     """
 
     # 信号定义
-    scan_started = Signal()                    # 开始扫描
-    scan_completed = Signal(list)              # 扫描完成(QRCodeResult列表)
-    scan_failed = Signal(str)                  # 扫描失败
-    generate_started = Signal()                # 开始生成
-    generate_completed = Signal(str)             # 生成成功(文件路径)
-    generate_failed = Signal(str)               # 生成失败
+    scan_started = Signal()  # 开始扫描
+    scan_completed = Signal(list)  # 扫描完成(QRCodeResult列表)
+    scan_failed = Signal(str)  # 扫描失败
+    generate_started = Signal()  # 开始生成
+    generate_completed = Signal(str)  # 生成成功(文件路径)
+    generate_failed = Signal(str)  # 生成失败
 
     def __init__(self):
         """初始化二维码控制器"""
@@ -92,7 +91,7 @@ class QRCodeController(QObject):
         output_path: str = "",
         code_type: str = "QR_CODE",
         correction: str = "M",
-        size: int = 300
+        size: int = 300,
     ) -> None:
         """
         生成QR码（UI调用的方法）
@@ -129,10 +128,7 @@ class QRCodeController(QObject):
             self.generate_failed.emit(str(e))
 
     def batch_generate_qr_codes(
-        self,
-        data_list: List[str],
-        output_dir: str,
-        options: Optional[dict] = None
+        self, data_list: List[str], output_dir: str, options: Optional[dict] = None
     ) -> List[str]:
         """
         批量生成二维码
@@ -158,7 +154,7 @@ class QRCodeController(QObject):
                 output_path=output_path,
                 code_type=options.get("code_type", "QR_CODE"),
                 correction=options.get("correction", "M"),
-                size=options.get("size", 300)
+                size=options.get("size", 300),
             )
             generated_files.append(output_path)
 

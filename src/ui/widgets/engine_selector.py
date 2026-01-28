@@ -15,21 +15,27 @@ Author: Umi-OCR Team
 Date: 2026-01-27
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Optional
 from PySide6.QtWidgets import (
-    QWidget, QComboBox, QLabel, QHBoxLayout, QVBoxLayout,
-    QStyle, QSizePolicy
+    QWidget,
+    QComboBox,
+    QLabel,
+    QHBoxLayout,
+    QStyle,
+    QSizePolicy,
 )
 from PySide6.QtCore import Signal, Qt, QTimer
-from PySide6.QtGui import QIcon, QPixmap
-
-from ...services.ocr.engine_manager import EngineManager, EngineInfo, EngineState
+from PySide6.QtGui import QIcon
+import logging
+from ...services.ocr.engine_manager import EngineManager, EngineInfo
 from ...utils.credential_manager import CredentialManager
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # 引擎选择器控件
 # =============================================================================
+
 
 class EngineSelector(QWidget):
     """
@@ -219,7 +225,9 @@ class EngineSelector(QWidget):
                 self._combo.setCurrentIndex(index)
                 self._update_status_indicator(current_engine_type)
 
-    def _get_engine_display_name(self, engine_type: str, engine_info: EngineInfo) -> str:
+    def _get_engine_display_name(
+        self, engine_type: str, engine_info: EngineInfo
+    ) -> str:
         """
         获取引擎显示名称
 
@@ -236,13 +244,15 @@ class EngineSelector(QWidget):
         else:
             # 云引擎
             provider_names = {
-                'baidu_cloud': "百度云",
-                'tencent_cloud': "腾讯云",
-                'aliyun_cloud': "阿里云"
+                "baidu_cloud": "百度云",
+                "tencent_cloud": "腾讯云",
+                "aliyun_cloud": "阿里云",
             }
             return provider_names.get(engine_type, engine_info.engine_name)
 
-    def _check_engine_configured(self, engine_type: str, engine_info: EngineInfo) -> bool:
+    def _check_engine_configured(
+        self, engine_type: str, engine_info: EngineInfo
+    ) -> bool:
         """
         检查引擎是否已配置
 
@@ -260,7 +270,7 @@ class EngineSelector(QWidget):
         # 云引擎检查凭证
         try:
             cred_manager = CredentialManager()
-            return cred_manager.exists(engine_type.replace('_cloud', ''))
+            return cred_manager.exists(engine_type.replace("_cloud", ""))
         except Exception:
             return False
 
@@ -360,8 +370,6 @@ class EngineSelector(QWidget):
 
         定时检查云引擎的凭证配置状态
         """
-        engines = self._engine_manager.get_available_engines()
-
         for i in range(self._combo.count()):
             engine_type = self._combo.itemData(i)
             if not engine_type:
@@ -420,7 +428,10 @@ class EngineSelector(QWidget):
         if engine_info.is_local:
             tooltip = f"{engine_info.engine_name} - 本地引擎"
         else:
-            tooltip = f"{self._get_engine_display_name(engine_type, engine_info)} - {'已配置' if is_configured else '未配置'}"
+            tooltip = (
+                f"{self._get_engine_display_name(engine_type, engine_info)} - "
+                f"{'已配置' if is_configured else '未配置'}"
+            )
 
         self._combo.setItemData(index, tooltip)
 
@@ -462,6 +473,3 @@ class EngineSelector(QWidget):
 # =============================================================================
 # 日志记录器
 # =============================================================================
-
-import logging
-logger = logging.getLogger(__name__)

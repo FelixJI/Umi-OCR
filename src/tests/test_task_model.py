@@ -21,17 +21,16 @@ from src.services.task.task_model import (
     TaskGroup,
     TaskStatus,
     TaskType,
-    CancelMode,
     InvalidStateTransition,
     InvalidTaskStructure,
     create_simple_task,
-    create_simple_task_group
+    create_simple_task_group,
 )
-
 
 # =============================================================================
 # 测试 Task 类
 # =============================================================================
+
 
 class TestTask:
     """测试 Task 类"""
@@ -39,8 +38,7 @@ class TestTask:
     def test_task_creation(self):
         """测试任务创建"""
         task = Task(
-            task_type=TaskType.OCR,
-            input_data={"image_path": "/test/image.jpg"}
+            task_type=TaskType.OCR, input_data={"image_path": "/test/image.jpg"}
         )
 
         assert task.id  # ID 应该自动生成
@@ -60,19 +58,11 @@ class TestTask:
     def test_task_progress_clamping(self):
         """测试进度值的限制"""
         # 测试过大的进度值
-        task = Task(
-            task_type=TaskType.OCR,
-            input_data={},
-            progress=1.5
-        )
+        task = Task(task_type=TaskType.OCR, input_data={}, progress=1.5)
         assert task.progress == 1.0
 
         # 测试负进度值
-        task2 = Task(
-            task_type=TaskType.OCR,
-            input_data={},
-            progress=-0.5
-        )
+        task2 = Task(task_type=TaskType.OCR, input_data={}, progress=-0.5)
         assert task2.progress == 0.0
 
     def test_task_status_query(self):
@@ -97,11 +87,7 @@ class TestTask:
 
     def test_task_retryable(self):
         """测试任务可重试状态"""
-        task = Task(
-            task_type=TaskType.OCR,
-            input_data={},
-            max_retries=3
-        )
+        task = Task(task_type=TaskType.OCR, input_data={}, max_retries=3)
 
         # 第一次失败，可重试
         task.transition_to(TaskStatus.RUNNING)
@@ -152,7 +138,7 @@ class TestTask:
             task_type=TaskType.OCR,
             input_data={"image_path": "/test/image.jpg"},
             max_retries=3,
-            metadata={"tag": "test"}
+            metadata={"tag": "test"},
         )
 
         # 转换为字典
@@ -169,10 +155,7 @@ class TestTask:
 
     def test_task_json_serialization(self):
         """测试任务 JSON 序列化"""
-        task = Task(
-            task_type=TaskType.OCR,
-            input_data={"path": "/test.jpg"}
-        )
+        task = Task(task_type=TaskType.OCR, input_data={"path": "/test.jpg"})
 
         # 转换为 JSON
         json_str = task.to_json()
@@ -188,16 +171,14 @@ class TestTask:
 # 测试 TaskGroup 类
 # =============================================================================
 
+
 class TestTaskGroup:
     """测试 TaskGroup 类"""
 
     def test_group_creation(self):
         """测试任务组创建"""
         group = TaskGroup(
-            id="group-1",
-            title="测试任务组",
-            priority=5,
-            max_concurrency=2
+            id="group-1", title="测试任务组", priority=5, max_concurrency=2
         )
 
         assert group.id == "group-1"
@@ -331,11 +312,7 @@ class TestTaskGroup:
         group = TaskGroup(id="group-1", title="测试")
 
         # 添加任务（重试次数耗尽）
-        task = Task(
-            task_type=TaskType.OCR,
-            input_data={},
-            max_retries=0
-        )
+        task = Task(task_type=TaskType.OCR, input_data={}, max_retries=0)
         group.add_task(task)
 
         # 任务失败
@@ -376,10 +353,7 @@ class TestTaskGroup:
     def test_group_serialization(self):
         """测试任务组序列化"""
         group = TaskGroup(
-            id="group-1",
-            title="测试任务组",
-            priority=3,
-            max_concurrency=2
+            id="group-1", title="测试任务组", priority=3, max_concurrency=2
         )
 
         # 添加任务
@@ -420,6 +394,7 @@ class TestTaskGroup:
 # =============================================================================
 # 测试嵌套结构
 # =============================================================================
+
 
 class TestNestedStructure:
     """测试嵌套结构"""
@@ -511,15 +486,14 @@ class TestNestedStructure:
 # 测试便捷函数
 # =============================================================================
 
+
 class TestUtilityFunctions:
     """测试便捷函数"""
 
     def test_create_simple_task(self):
         """测试创建简单任务"""
         task = create_simple_task(
-            task_type=TaskType.OCR,
-            input_data={"path": "/test.jpg"},
-            max_retries=5
+            task_type=TaskType.OCR, input_data={"path": "/test.jpg"}, max_retries=5
         )
 
         assert task.task_type == TaskType.OCR
@@ -534,10 +508,7 @@ class TestUtilityFunctions:
         ]
 
         group = create_simple_task_group(
-            title="批量OCR",
-            tasks=tasks,
-            priority=10,
-            max_concurrency=2
+            title="批量OCR", tasks=tasks, priority=10, max_concurrency=2
         )
 
         assert group.title == "批量OCR"

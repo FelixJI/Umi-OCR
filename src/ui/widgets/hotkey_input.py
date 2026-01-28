@@ -16,17 +16,14 @@ Date: 2026-01-27
 """
 
 from typing import Optional, Set
-from PySide6.QtWidgets import (
-    QLineEdit, QWidget, QHBoxLayout, QPushButton,
-    QSizePolicy
-)
+from PySide6.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QPushButton, QSizePolicy
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QKeyEvent, QKeySequence
-
 
 # =============================================================================
 # 快捷键输入控件
 # =============================================================================
+
 
 class HotkeyInput(QLineEdit):
     """
@@ -224,6 +221,7 @@ class HotkeyInput(QLineEdit):
 # =============================================================================
 # 带清除按钮的快捷键输入控件
 # =============================================================================
+
 
 class HotkeyInputWithClear(QWidget):
     """

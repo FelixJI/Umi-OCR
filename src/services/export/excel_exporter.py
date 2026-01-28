@@ -11,7 +11,6 @@ Date: 2026-01-27
 
 import logging
 from typing import List, Dict, Any
-from pathlib import Path
 import openpyxl
 
 from .base_exporter import BaseExporter
@@ -26,12 +25,7 @@ class ExcelExporter(BaseExporter):
         """初始化Excel导出器"""
         logger.info("Excel导出器初始化完成")
 
-    def export(
-        self,
-        data: List[Dict[str, Any]],
-        output_path: str,
-        **kwargs
-    ) -> bool:
+    def export(self, data: List[Dict[str, Any]], output_path: str, **kwargs) -> bool:
         """
         导出为Excel
 
@@ -47,19 +41,19 @@ class ExcelExporter(BaseExporter):
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = "OCR 识别结果"
-            
+
             # 表头
             ws.append(["文件", "页码", "识别内容", "置信度"])
-            
+
             for item in data:
                 text = item.get("text", "")
                 title = item.get("title", "")
                 page = item.get("page", "")
                 confidence = item.get("confidence", 0.0)
-                
+
                 # 如果需要，可以将文本拆分为多行，或者放在一个单元格中
                 ws.append([title, page, text, confidence])
-            
+
             wb.save(output_path)
             logger.info(f"Excel导出成功: {output_path}")
 

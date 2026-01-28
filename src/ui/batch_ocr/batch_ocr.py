@@ -8,9 +8,20 @@ Date: 2026-01-27
 """
 
 import os
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton,
-                            QLabel, QProgressBar, QComboBox, QTextEdit, QFileDialog, QAbstractItemView)
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidget,
+    QPushButton,
+    QLabel,
+    QProgressBar,
+    QComboBox,
+    QTextEdit,
+    QFileDialog,
+    QAbstractItemView,
+)
+from PySide6.QtCore import QSize
 
 from src.utils.logger import get_logger
 
@@ -30,6 +41,7 @@ class BatchOCRView(QWidget):
         # 初始化控制器
         try:
             from controllers.batch_ocr_controller import BatchOcrController
+
             self._controller = BatchOcrController.instance()
         except ModuleNotFoundError as e:
             logger.warning(f"批量图片控制器加载失败，部分功能不可用: {e}")
@@ -71,7 +83,9 @@ class BatchOCRView(QWidget):
 
         # 导出格式下拉框
         self.export_format_combo = QComboBox()
-        self.export_format_combo.addItems(["纯文本(TXT)", "结构化数据(JSON)", "Excel(CSV)"])
+        self.export_format_combo.addItems(
+            ["纯文本(TXT)", "结构化数据(JSON)", "Excel(CSV)"]
+        )
         self.export_format_combo.setCurrentIndex(0)
         toolbar_layout.addWidget(self.export_format_combo)
 
@@ -132,7 +146,7 @@ class BatchOCRView(QWidget):
             self,
             "选择图片文件",
             "",
-            "Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.tiff);;All Files (*.*)"
+            "Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.tiff);;All Files (*.*)",
         )
 
         if files:
@@ -226,10 +240,7 @@ class BatchOCRView(QWidget):
             default_ext = ".csv"
 
         output_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "保存导出文件",
-            "",
-            file_filter
+            self, "保存导出文件", "", file_filter
         )
 
         if not output_path:
@@ -242,13 +253,22 @@ class BatchOCRView(QWidget):
 
         # 调用控制器导出
         if self._current_group_id:
-            if self._controller.export_results(self._current_group_id, output_path, format_text):
-                 from PySide6.QtWidgets import QMessageBox
-                 QMessageBox.information(self, "导出成功", f"结果已保存到:\n{output_path}")
+            if self._controller.export_results(
+                self._current_group_id, output_path, format_text
+            ):
+                from PySide6.QtWidgets import QMessageBox
+
+                QMessageBox.information(
+                    self, "导出成功", f"结果已保存到:\n{output_path}"
+                )
             else:
-                 from PySide6.QtWidgets import QMessageBox
-                 QMessageBox.warning(self, "导出失败", "导出过程中发生错误，请查看日志。")
+                from PySide6.QtWidgets import QMessageBox
+
+                QMessageBox.warning(
+                    self, "导出失败", "导出过程中发生错误，请查看日志。"
+                )
         else:
             logger.warning("没有可导出的任务组")
             from PySide6.QtWidgets import QMessageBox
+
             QMessageBox.warning(self, "提示", "请先执行识别任务。")

@@ -17,25 +17,26 @@ Date: 2025-01-25
 """
 
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Any
 from enum import Enum
-from pathlib import Path
-
 
 # =============================================================================
 # 枚举类型定义
 # =============================================================================
 
+
 class OcrEngineType(Enum):
     """OCR 引擎类型"""
-    PADDLE = "paddle"           # 本地 PaddleOCR
-    BAIDU = "baidu"             # 百度云 OCR
-    TENCENT = "tencent"         # 腾讯云 OCR
-    ALIYUN = "aliyun"           # 阿里云 OCR
+
+    PADDLE = "paddle"  # 本地 PaddleOCR
+    BAIDU = "baidu"  # 百度云 OCR
+    TENCENT = "tencent"  # 腾讯云 OCR
+    ALIYUN = "aliyun"  # 阿里云 OCR
 
 
 class ImageFormat(Enum):
     """图片格式"""
+
     PNG = "png"
     JPEG = "jpeg"
     BMP = "bmp"
@@ -44,6 +45,7 @@ class ImageFormat(Enum):
 
 class OutputFormat(Enum):
     """导出格式"""
+
     TXT = "txt"
     TXT_PLAIN = "txt_plain"
     JSON = "json"
@@ -55,6 +57,7 @@ class OutputFormat(Enum):
 
 class LogLevel(Enum):
     """日志级别"""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -66,54 +69,59 @@ class LogLevel(Enum):
 # OCR 配置
 # =============================================================================
 
+
 @dataclass
 class OcrPreprocessingConfig:
     """OCR 图像预处理配置"""
+
     # 图像增强
-    enable_denoise: bool = False           # 降噪
-    enable_binarization: bool = False      # 二值化
-    enable_deskew: bool = False            # 纠偏
+    enable_denoise: bool = False  # 降噪
+    enable_binarization: bool = False  # 二值化
+    enable_deskew: bool = False  # 纠偏
 
     # 尺寸调整
-    max_image_size: int = 0                # 最大图片尺寸（0表示不限制）
-    min_image_size: int = 0                # 最小图片尺寸
-    resize_factor: float = 1.0             # 缩放因子
+    max_image_size: int = 0  # 最大图片尺寸（0表示不限制）
+    min_image_size: int = 0  # 最小图片尺寸
+    resize_factor: float = 1.0  # 缩放因子
 
     # 其他
-    rotate_angle: float = 0.0              # 旋转角度（度）
+    rotate_angle: float = 0.0  # 旋转角度（度）
 
 
 @dataclass
 class PaddleEngineConfig:
     """PaddleOCR 引擎配置"""
+
     # 模型选择
-    det_model_name: str = "ch_PP-OCRv4_det"      # 检测模型
-    rec_model_name: str = "ch_PP-OCRv4_rec"      # 识别模型
-    use_angle_cls: bool = True                   # 是否使用方向分类器
-    lang: str = "ch"                             # 语言
+    det_model_name: str = "ch_PP-OCRv4_det"  # 检测模型
+    rec_model_name: str = "ch_PP-OCRv4_rec"  # 识别模型
+    use_angle_cls: bool = True  # 是否使用方向分类器
+    lang: str = "ch"  # 语言
 
     # 性能参数
-    use_gpu: bool = False                        # 是否使用 GPU
-    cpu_threads: int = 4                         # CPU 线程数
-    enable_mkldnn: bool = True                   # 是否使用 MKL-DNN 加速
+    use_gpu: bool = False  # 是否使用 GPU
+    cpu_threads: int = 4  # CPU 线程数
+    enable_mkldnn: bool = True  # 是否使用 MKL-DNN 加速
 
     # 路径配置
-    models_dir: str = ""                         # 模型目录（空表示使用默认路径）
+    models_dir: str = ""  # 模型目录（空表示使用默认路径）
 
 
 @dataclass
 class CloudOcrConfig:
     """云 OCR 配置（基类）"""
-    api_key: str = ""                    # API Key
-    secret_key: str = ""                 # Secret Key（用于签名）
-    endpoint: str = ""                   # API 端点
-    timeout: int = 30                    # 请求超时（秒）
-    max_retry: int = 3                   # 最大重试次数
+
+    api_key: str = ""  # API Key
+    secret_key: str = ""  # Secret Key（用于签名）
+    endpoint: str = ""  # API 端点
+    timeout: int = 30  # 请求超时（秒）
+    max_retry: int = 3  # 最大重试次数
 
 
 @dataclass
 class BaiduOcrConfig(CloudOcrConfig):
     """百度云 OCR 配置"""
+
     # 百度云使用 API Key 和 Secret Key 获取 AccessToken
     token_cache_duration: int = 2592000  # Token 缓存时长（30天）
 
@@ -121,20 +129,23 @@ class BaiduOcrConfig(CloudOcrConfig):
 @dataclass
 class TencentOcrConfig(CloudOcrConfig):
     """腾讯云 OCR 配置"""
-    secret_id: str = ""                  # 腾讯云使用 SecretId
-    region: str = "ap-guangzhou"         # 地域
+
+    secret_id: str = ""  # 腾讯云使用 SecretId
+    region: str = "ap-guangzhou"  # 地域
 
 
 @dataclass
 class AliyunOcrConfig(CloudOcrConfig):
     """阿里云 OCR 配置"""
-    access_key_id: str = ""              # 阿里云使用 AccessKeyId
-    region_id: str = "cn-shanghai"       # 地域
+
+    access_key_id: str = ""  # 阿里云使用 AccessKeyId
+    region_id: str = "cn-shanghai"  # 地域
 
 
 @dataclass
 class OcrConfig:
     """OCR 配置总类"""
+
     # 引擎选择
     engine_type: str = OcrEngineType.PADDLE.value
 
@@ -147,25 +158,29 @@ class OcrConfig:
     aliyun: AliyunOcrConfig = field(default_factory=AliyunOcrConfig)
 
     # 预处理配置
-    preprocessing: OcrPreprocessingConfig = field(default_factory=OcrPreprocessingConfig)
+    preprocessing: OcrPreprocessingConfig = field(
+        default_factory=OcrPreprocessingConfig
+    )
 
     # 识别参数
-    confidence_threshold: float = 0.5    # 置信度阈值
-    merge_lines: bool = True             # 是否合并相邻行
+    confidence_threshold: float = 0.5  # 置信度阈值
+    merge_lines: bool = True  # 是否合并相邻行
 
 
 # =============================================================================
 # 界面配置
 # =============================================================================
 
+
 @dataclass
 class MainWindowConfig:
     """主窗口配置"""
+
     # 窗口状态
     width: int = 1000
     height: int = 700
-    x: int = -1              # -1 表示居中
-    y: int = -1              # -1 表示居中
+    x: int = -1  # -1 表示居中
+    y: int = -1  # -1 表示居中
     maximized: bool = False
 
     # 布局
@@ -176,15 +191,17 @@ class MainWindowConfig:
 @dataclass
 class ThemeConfig:
     """主题配置"""
-    mode: str = "light"              # light / dark / auto
-    accent_color: str = "#0078d4"    # 主题色
-    font_family: str = ""            # 字体族（空表示系统默认）
-    font_size: int = 9               # 字体大小
+
+    mode: str = "light"  # light / dark / auto
+    accent_color: str = "#0078d4"  # 主题色
+    font_family: str = ""  # 字体族（空表示系统默认）
+    font_size: int = 9  # 字体大小
 
 
 @dataclass
 class UiConfig:
     """界面配置总类"""
+
     # 主窗口
     main_window: MainWindowConfig = field(default_factory=MainWindowConfig)
 
@@ -192,96 +209,104 @@ class UiConfig:
     theme: ThemeConfig = field(default_factory=ThemeConfig)
 
     # 语言
-    language: str = "zh_CN"           # 界面语言
+    language: str = "zh_CN"  # 界面语言
 
     # 其他
-    show_tray_icon: bool = True      # 显示托盘图标
-    minimize_to_tray: bool = False   # 最小化到托盘
-    close_to_tray: bool = False      # 关闭到托盘
+    show_tray_icon: bool = True  # 显示托盘图标
+    minimize_to_tray: bool = False  # 最小化到托盘
+    close_to_tray: bool = False  # 关闭到托盘
 
 
 # =============================================================================
 # 快捷键配置
 # =============================================================================
 
+
 @dataclass
 class HotkeyConfig:
     """快捷键配置"""
+
     # 快捷键格式：modifiers+key
     # modifiers: Ctrl, Shift, Alt, Win
     # key: A-Z, 0-9, F1-F12, etc.
 
-    screenshot: str = "Ctrl+Shift+A"         # 截图 OCR
-    clipboard: str = "Ctrl+Shift+X"          # 剪贴板 OCR
-    translate: str = ""                      # 划词翻译
-    batch: str = ""                          # 批量 OCR
-    show_hide: str = ""                      # 显示/隐藏主窗口
+    screenshot: str = "Ctrl+Shift+A"  # 截图 OCR
+    clipboard: str = "Ctrl+Shift+X"  # 剪贴板 OCR
+    translate: str = ""  # 划词翻译
+    batch: str = ""  # 批量 OCR
+    show_hide: str = ""  # 显示/隐藏主窗口
 
 
 # =============================================================================
 # 导出配置
 # =============================================================================
 
+
 @dataclass
 class ExportConfig:
     """导出配置"""
+
     # 默认格式
     default_format: str = OutputFormat.TXT.value
 
     # 文本格式配置
-    txt_line_break: str = "\n"               # 换行符
-    txt_with_confidence: bool = False        # 是否包含置信度
+    txt_line_break: str = "\n"  # 换行符
+    txt_with_confidence: bool = False  # 是否包含置信度
 
     # JSON 格式配置
-    json_indent: int = 2                     # 缩进空格数
+    json_indent: int = 2  # 缩进空格数
 
     # PDF 格式配置
-    pdf_image_quality: int = 90              # 图片质量 (1-100)
-    pdf_page_size: str = "a4"               # 页面大小
+    pdf_image_quality: int = 90  # 图片质量 (1-100)
+    pdf_page_size: str = "a4"  # 页面大小
 
     # 导出路径
-    export_dir: str = ""                     # 默认导出目录（空表示系统默认）
-    auto_copy: bool = True                   # 识别后自动复制到剪贴板
+    export_dir: str = ""  # 默认导出目录（空表示系统默认）
+    auto_copy: bool = True  # 识别后自动复制到剪贴板
 
 
 # =============================================================================
 # 任务配置
 # =============================================================================
 
+
 @dataclass
 class TaskConfig:
     """任务配置"""
+
     # 并发控制
-    max_workers: int = 4                     # 最大并发任务数
-    queue_size: int = 100                    # 任务队列大小
+    max_workers: int = 4  # 最大并发任务数
+    queue_size: int = 100  # 任务队列大小
 
     # 重试配置
-    max_retry: int = 2                       # 失败重试次数
-    retry_delay: float = 1.0                 # 重试延迟（秒）
+    max_retry: int = 2  # 失败重试次数
+    retry_delay: float = 1.0  # 重试延迟（秒）
 
     # 超时配置
-    task_timeout: int = 300                  # 单任务超时（秒）
+    task_timeout: int = 300  # 单任务超时（秒）
 
     # 进度通知
-    progress_throttle: float = 0.1           # 进度通知节流（秒）
+    progress_throttle: float = 0.1  # 进度通知节流（秒）
 
 
 # =============================================================================
 # 系统配置
 # =============================================================================
 
+
 @dataclass
 class SystemConfig:
     """系统配置"""
+
     # 日志
     log_level: str = LogLevel.INFO.value
     log_to_file: bool = True
-    log_max_size: int = 10                   # 日志文件最大大小 (MB)
+    log_max_size: int = 10  # 日志文件最大大小 (MB)
     log_backup_count: int = 5
 
     # 启动
-    startup_launch: bool = False             # 开机自启
-    check_update: bool = True                # 检查更新
+    startup_launch: bool = False  # 开机自启
+    check_update: bool = True  # 检查更新
 
     # 服务器
     http_server_enabled: bool = False
@@ -293,6 +318,7 @@ class SystemConfig:
 # 应用配置总类
 # =============================================================================
 
+
 @dataclass
 class AppConfig:
     """
@@ -300,6 +326,7 @@ class AppConfig:
 
     包含所有配置模块，提供序列化和反序列化方法。
     """
+
     # 版本号（用于配置迁移）
     version: str = "2.0.0"
 
@@ -347,7 +374,11 @@ class AppConfig:
         # 处理嵌套对象
         ocr_data = data.get("ocr", {})
         ocr = OcrConfig(
-            **{k: v for k, v in ocr_data.items() if k not in ("paddle", "baidu", "tencent", "aliyun", "preprocessing")}
+            **{
+                k: v
+                for k, v in ocr_data.items()
+                if k not in ("paddle", "baidu", "tencent", "aliyun", "preprocessing")
+            }
         )
         if "paddle" in ocr_data:
             ocr.paddle = PaddleEngineConfig(**ocr_data["paddle"])
@@ -382,7 +413,7 @@ class AppConfig:
             export=export,
             task=task,
             system=system,
-            extra=data.get("extra", {})
+            extra=data.get("extra", {}),
         )
 
     def get(self, key_path: str, default: Any = None) -> Any:
@@ -484,6 +515,7 @@ class AppConfig:
 # 配置变更事件
 # =============================================================================
 
+
 @dataclass
 class ConfigChangeEvent:
     """
@@ -491,7 +523,8 @@ class ConfigChangeEvent:
 
     当配置项发生变化时，通过 Qt Signal 发送此事件。
     """
-    key_path: str                    # 变化的配置路径
-    old_value: Any                   # 旧值
-    new_value: Any                   # 新值
-    source: str = "unknown"          # 变更来源（user/file/default）
+
+    key_path: str  # 变化的配置路径
+    old_value: Any  # 旧值
+    new_value: Any  # 新值
+    source: str = "unknown"  # 变更来源（user/file/default）

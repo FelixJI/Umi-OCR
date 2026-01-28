@@ -43,7 +43,11 @@ class _Shortcut:
         lnkName = UmiAbout["name"]
         appPath = UmiAbout["app"]["path"]
         if not appPath or not os.path.exists(appPath):
-            return f"[Error] 未找到程序exe文件。请尝试手动创建快捷方式。\n[Error] Exe path not exist. Please try creating a shortcut manually.\n\n{appPath}"
+            return (
+                f"[Error] 未找到程序exe文件。请尝试手动创建快捷方式。\n"
+                f"[Error] Exe path not exist. Please try creating a shortcut manually.\n"
+                f"\n{appPath}"
+            )
         lnkPathBase = _Shortcut._getPath(position)
         lnkPathBase = os.path.join(lnkPathBase, lnkName)
         lnkPath = lnkPathBase + ".lnk"
@@ -54,7 +58,13 @@ class _Shortcut:
         appFile = QFile(appPath)
         res = appFile.link(lnkPath)
         if not res:
-            return f"[Error] {appFile.errorString()}\n请尝试以管理员权限启动软件。\nPlease try starting the software as an administrator.\nappPath: {appPath}\nlnkPath: {lnkPath}"
+            return (
+                f"[Error] {appFile.errorString()}\n"
+                f"请尝试以管理员权限启动软件。\n"
+                f"Please try starting the software as an administrator.\n"
+                f"appPath: {appPath}\n"
+                f"lnkPath: {lnkPath}"
+            )
         return "[Success]"
 
     # 删除快捷方式，返回删除文件的个数

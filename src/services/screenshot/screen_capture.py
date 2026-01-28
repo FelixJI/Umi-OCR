@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import List
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QScreen, QPixmap
+from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QRect, QPoint
 
 logger = logging.getLogger(__name__)
@@ -29,10 +29,11 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ScreenInfo:
     """显示器信息"""
-    name: str                      # 显示器名称
-    geometry: QRect                 # 显示器几何信息
-    is_primary: bool               # 是否为主显示器
-    scale_factor: float            # 缩放因子 (DPI缩放)
+
+    name: str  # 显示器名称
+    geometry: QRect  # 显示器几何信息
+    is_primary: bool  # 是否为主显示器
+    scale_factor: float  # 缩放因子 (DPI缩放)
 
 
 class ScreenCapture:
@@ -65,7 +66,7 @@ class ScreenCapture:
                 name=screen.name(),
                 geometry=screen.geometry(),
                 is_primary=screen == self._app.primaryScreen(),
-                scale_factor=screen.devicePixelRatio()
+                scale_factor=screen.devicePixelRatio(),
             )
             screen_info_list.append(screen_info)
 
@@ -121,12 +122,16 @@ class ScreenCapture:
         if target_screen:
             # 在单个屏幕内截取
             logger.debug(f"在显示器 {target_screen.name()} 上截取区域 {rect}")
-            pixmap = target_screen.grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height())
+            pixmap = target_screen.grabWindow(
+                0, rect.x(), rect.y(), rect.width(), rect.height()
+            )
         else:
             # 跨多个屏幕，使用主屏幕的抓取方法
             logger.debug(f"跨屏截取区域 {rect}")
             screen = self._app.primaryScreen()
-            pixmap = screen.grabWindow(0, rect.x(), rect.y(), rect.width(), rect.height())
+            pixmap = screen.grabWindow(
+                0, rect.x(), rect.y(), rect.width(), rect.height()
+            )
 
         if pixmap.isNull():
             logger.error("截取失败,返回空图像")

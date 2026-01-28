@@ -21,34 +21,39 @@ from enum import Enum
 from datetime import datetime
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QPushButton, QProgressBar, QFrame, QSizePolicy
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QProgressBar,
+    QFrame,
 )
-from PySide6.QtCore import Signal, Qt, QTimer
-from PySide6.QtGui import QColor
-
+from PySide6.QtCore import Signal, QTimer
 
 # =============================================================================
 # 进度状态枚举
 # =============================================================================
 
+
 class ProgressStatus(Enum):
     """进度状态"""
-    PENDING = "pending"       # 等待中
-    RUNNING = "running"       # 运行中
-    PAUSED = "paused"        # 已暂停
+
+    PENDING = "pending"  # 等待中
+    RUNNING = "running"  # 运行中
+    PAUSED = "paused"  # 已暂停
     COMPLETED = "completed"  # 已完成
-    FAILED = "failed"        # 失败
+    FAILED = "failed"  # 失败
     CANCELLED = "cancelled"  # 已取消
 
 
 # 状态颜色映射
 STATUS_COLORS = {
-    ProgressStatus.PENDING: "#faad14",    # 黄色
-    ProgressStatus.RUNNING: "#1890ff",    # 蓝色
-    ProgressStatus.PAUSED: "#722ed1",     # 紫色
+    ProgressStatus.PENDING: "#faad14",  # 黄色
+    ProgressStatus.RUNNING: "#1890ff",  # 蓝色
+    ProgressStatus.PAUSED: "#722ed1",  # 紫色
     ProgressStatus.COMPLETED: "#52c41a",  # 绿色
-    ProgressStatus.FAILED: "#ff4d4f",     # 红色
+    ProgressStatus.FAILED: "#ff4d4f",  # 红色
     ProgressStatus.CANCELLED: "#8c8c8c",  # 灰色
 }
 
@@ -66,6 +71,7 @@ STATUS_TEXT = {
 # =============================================================================
 # 进度卡片控件
 # =============================================================================
+
 
 class ProgressCard(QFrame):
     """
@@ -402,7 +408,7 @@ class ProgressCard(QFrame):
         is_terminal = self._status in (
             ProgressStatus.COMPLETED,
             ProgressStatus.FAILED,
-            ProgressStatus.CANCELLED
+            ProgressStatus.CANCELLED,
         )
 
         # 暂停按钮：运行中显示

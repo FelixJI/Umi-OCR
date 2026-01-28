@@ -66,7 +66,7 @@ class ImagePreprocessor:
         import numpy as np
 
         # 转换为灰度图
-        gray_image = image.convert('L')
+        gray_image = image.convert("L")
 
         # 应用阈值
         cv_image = np.array(gray_image)
@@ -93,7 +93,7 @@ class ImagePreprocessor:
 
         # 使用霍夫变换检测角度
         edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-        lines = cv2.HoughLines(edges, 1, np.pi/180, threshold=100)
+        lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=100)
 
         if lines is not None:
             angles = [line[0][1] for line in lines]
@@ -174,36 +174,38 @@ class ImagePreprocessor:
         return enhancer.enhance(factor)
 
     @staticmethod
-    def enhance_document_quality(image: Image.Image, 
-                               contrast_factor: float = 1.5, 
-                               sharpness_factor: float = 1.5,
-                               denoise_strength: float = 0.5) -> Image.Image:
+    def enhance_document_quality(
+        image: Image.Image,
+        contrast_factor: float = 1.5,
+        sharpness_factor: float = 1.5,
+        denoise_strength: float = 0.5,
+    ) -> Image.Image:
         """
         综合增强文档质量
-        
+
         对文档图像应用多种预处理操作以提高OCR识别准确率。
-        
+
         Args:
             image: PIL Image 对象
             contrast_factor: 对比度增强因子
             sharpness_factor: 锐度增强因子
             denoise_strength: 降噪强度
-        
+
         Returns:
             Image.Image: 增强后的图像
         """
         processed = image
-        
+
         # 1. 增强对比度
         if contrast_factor != 1.0:
             processed = ImagePreprocessor.enhance_contrast(processed, contrast_factor)
-        
+
         # 2. 增强锐度
         if sharpness_factor != 1.0:
             processed = ImagePreprocessor.enhance_sharpness(processed, sharpness_factor)
-        
+
         # 3. 适度降噪
         if denoise_strength > 0:
             processed = ImagePreprocessor.denoise(processed, denoise_strength)
-        
+
         return processed

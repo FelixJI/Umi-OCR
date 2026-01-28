@@ -5,7 +5,6 @@ Umi-OCR Nuitka 打包脚本
 使用 Nuitka 编译 PySide6 + QML 项目
 """
 
-import os
 import sys
 import json
 import shutil
@@ -117,7 +116,7 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         "--standalone",
         "--assume-yes-for-downloads",
         f"--output-dir={output_dir}",
-        f"--output-filename=Umi-OCR.exe",
+        "--output-filename=Umi-OCR.exe",
         "--enable-plugin=pyside6",
         "--include-package=PySide6.QtCore",
         "--include-package=PySide6.QtGui",
@@ -126,10 +125,10 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         "--include-package=PySide6.QtQuickControls2",
         "--include-package=PySide6.QtWebEngineWidgets",
         "--include-package-data=PySide6",
-        f"--include-data-files=resources/qml=qml",
-        f"--include-data-files=resources/i18n=i18n",
-        f"--include-data-files=resources/themes.json=themes.json",
-        f"--include-data-files=resources/about.json=about.json",
+        "--include-data-files=resources/qml=qml",
+        "--include-data-files=resources/i18n=i18n",
+        "--include-data-files=resources/themes.json=themes.json",
+        "--include-data-files=resources/about.json=about.json",
         f"--windows-icon-from-ico={RESOURCES_DIR / 'images/icons/umiocr.ico'}",
         "--company-name=Umi-OCR",
         f"--product-name={about['name']}",
@@ -213,7 +212,7 @@ def package_7z(output_dir: Path, package_name: str, sfx: bool = False):
         str(output_dir),
     ]
 
-    print(f"\n=== 创建压缩包 ===")
+    print("\n=== 创建压缩包 ===")
     print(f"压缩包: {package_name}.7z")
     result = subprocess.run(cmd)
 

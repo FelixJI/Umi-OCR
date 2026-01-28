@@ -20,19 +20,13 @@ import sys
 import subprocess
 import threading
 import logging
-from typing import List, Optional, Dict, Callable
+from typing import List, Optional, Dict
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 
 from PySide6.QtCore import QObject, Signal, QThread
 
-from .check_dependencies import (
-    InstallOption,
-    DependencyInfo,
-    DependencyStatus
-)
-
+from .check_dependencies import InstallOption
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +35,7 @@ logger = logging.getLogger(__name__)
 # 镜像源配置
 # =============================================================================
 
+
 @dataclass
 class MirrorSource:
     """
@@ -48,10 +43,11 @@ class MirrorSource:
 
     包含镜像源的URL和优先级。
     """
-    name: str                          # 镜像源名称
-    url: str                           # 镜像源URL
-    priority: int                      # 优先级（数字越小优先级越高）
-    is_official: bool = False          # 是否为官方源
+
+    name: str  # 镜像源名称
+    url: str  # 镜像源URL
+    priority: int  # 优先级（数字越小优先级越高）
+    is_official: bool = False  # 是否为官方源
 
     def get_pip_command(self) -> List[str]:
         """
@@ -72,7 +68,12 @@ class MirrorSource:
 
         # 添加信任源（针对国内镜像）
         if not self.is_official:
-            cmd.extend(["--trusted-host", self.url.replace("https://", "").replace("http://", "")])
+            cmd.extend(
+                [
+                    "--trusted-host",
+                    self.url.replace("https://", "").replace("http://", ""),
+                ]
+            )
 
         return cmd
 
@@ -84,35 +85,32 @@ DEFAULT_MIRRORS = [
         name="清华镜像",
         url="https://pypi.tuna.tsinghua.edu.cn/simple",
         priority=1,
-        is_official=False
+        is_official=False,
     ),
     # 阿里云镜像
     MirrorSource(
         name="阿里云镜像",
         url="https://mirrors.aliyun.com/pypi/simple/",
         priority=2,
-        is_official=False
+        is_official=False,
     ),
     # 豆瓣镜像
     MirrorSource(
         name="豆瓣镜像",
         url="https://pypi.douban.com/simple",
         priority=3,
-        is_official=False
+        is_official=False,
     ),
     # 中国科学技术大学镜像
     MirrorSource(
         name="中科大镜像",
         url="https://pypi.mirrors.ustc.edu.cn/simple",
         priority=4,
-        is_official=False
+        is_official=False,
     ),
     # pip官方源（作为后备）
     MirrorSource(
-        name="pip官方源",
-        url="https://pypi.org/simple",
-        priority=100,
-        is_official=True
+        name="pip官方源", url="https://pypi.org/simple", priority=100, is_official=True
     ),
 ]
 
@@ -133,14 +131,16 @@ PADDLEOCR_VERSION = "3.3.0"
 # 安装状态
 # =============================================================================
 
+
 class InstallStatus(Enum):
     """安装状态"""
-    PREPARING = "preparing"              # 准备中
-    DOWNLOADING = "downloading"          # 下载中
-    INSTALLING = "installing"            # 安装中
-    COMPLETED = "completed"              # 已完成
-    FAILED = "failed"                    # 失败
-    CANCELLED = "cancelled"              # 已取消
+
+    PREPARING = "preparing"  # 准备中
+    DOWNLOADING = "downloading"  # 下载中
+    INSTALLING = "installing"  # 安装中
+    COMPLETED = "completed"  # 已完成
+    FAILED = "failed"  # 失败
+    CANCELLED = "cancelled"  # 已取消
 
 
 @dataclass
@@ -150,18 +150,20 @@ class InstallProgress:
 
     用于通知UI安装进度。
     """
-    status: InstallStatus                # 安装状态
-    message: str                        # 状态消息
-    percentage: float = 0.0             # 进度百分比
-    current_step: int = 1               # 当前步骤
-    total_steps: int = 1                # 总步骤
-    mirror_name: str = ""               # 当前使用的镜像源
-    error_message: Optional[str] = None   # 错误信息
+
+    status: InstallStatus  # 安装状态
+    message: str  # 状态消息
+    percentage: float = 0.0  # 进度百分比
+    current_step: int = 1  # 当前步骤
+    total_steps: int = 1  # 总步骤
+    mirror_name: str = ""  # 当前使用的镜像源
+    error_message: Optional[str] = None  # 错误信息
 
 
 # =============================================================================
 # 安装配置
 # =============================================================================
+
 
 @dataclass
 class InstallConfig:
@@ -170,17 +172,21 @@ class InstallConfig:
 
     包含安装选项和参数。
     """
-    option: InstallOption                # 安装选项（CPU/GPU）
-    mirrors: List[MirrorSource] = field(default_factory=lambda: DEFAULT_MIRRORS.copy())  # 镜像源列表
-    max_retries: int = 3                # 最大重试次数
-    timeout: int = 300                  # 超时时间（秒）
-    user_agent: Optional[str] = None     # 自定义User-Agent
-    proxy: Optional[str] = None         # 代理设置
+
+    option: InstallOption  # 安装选项（CPU/GPU）
+    mirrors: List[MirrorSource] = field(
+        default_factory=lambda: DEFAULT_MIRRORS.copy()
+    )  # 镜像源列表
+    max_retries: int = 3  # 最大重试次数
+    timeout: int = 300  # 超时时间（秒）
+    user_agent: Optional[str] = None  # 自定义User-Agent
+    proxy: Optional[str] = None  # 代理设置
 
 
 # =============================================================================
 # 安装工作线程
 # =============================================================================
+
 
 class InstallWorker(QThread):
     """
@@ -190,9 +196,9 @@ class InstallWorker(QThread):
     """
 
     # 信号定义
-    progress = Signal(object)              # 安装进度 (InstallProgress)
-    finished = Signal(bool, str)          # 安装完成 (成功, 消息)
-    error = Signal(str)                   # 错误 (错误消息)
+    progress = Signal(object)  # 安装进度 (InstallProgress)
+    finished = Signal(bool, str)  # 安装完成 (成功, 消息)
+    error = Signal(str)  # 错误 (错误消息)
 
     def __init__(self, config: InstallConfig):
         """
@@ -235,7 +241,7 @@ class InstallWorker(QThread):
                     percentage=(mirror_idx / len(self.config.mirrors)) * 100,
                     current_step=current_step,
                     total_steps=total_steps,
-                    mirror_name=mirror.name
+                    mirror_name=mirror.name,
                 )
                 self.progress.emit(progress)
 
@@ -287,31 +293,39 @@ class InstallWorker(QThread):
         if self.config.option == InstallOption.GPU:
             # GPU版本 - 使用paddlepaddle-gpu包名和飞桨官方GPU源
             # 默认使用CUDA 11.8源（兼容性更好），后续可根据检测到的CUDA版本选择
-            packages.append({
-                "name": "paddlepaddle-gpu",
-                "version": f"=={PADDLEPADDLE_VERSION}",
-                "source": PADDLE_OFFICIAL_SOURCES["gpu_cu118"],
-                "use_official_source": True,  # 标记使用官方源
-            })
+            packages.append(
+                {
+                    "name": "paddlepaddle-gpu",
+                    "version": f"=={PADDLEPADDLE_VERSION}",
+                    "source": PADDLE_OFFICIAL_SOURCES["gpu_cu118"],
+                    "use_official_source": True,  # 标记使用官方源
+                }
+            )
         else:
             # CPU版本 - 使用paddlepaddle包名和飞桨官方CPU源
-            packages.append({
-                "name": "paddlepaddle",
-                "version": f"=={PADDLEPADDLE_VERSION}",
-                "source": PADDLE_OFFICIAL_SOURCES["cpu"],
-                "use_official_source": True,
-            })
+            packages.append(
+                {
+                    "name": "paddlepaddle",
+                    "version": f"=={PADDLEPADDLE_VERSION}",
+                    "source": PADDLE_OFFICIAL_SOURCES["cpu"],
+                    "use_official_source": True,
+                }
+            )
 
         # PaddleOCR - 可使用国内镜像源
-        packages.append({
-            "name": "paddleocr",
-            "version": f">={PADDLEOCR_VERSION}",
-            "use_official_source": False,
-        })
+        packages.append(
+            {
+                "name": "paddleocr",
+                "version": f">={PADDLEOCR_VERSION}",
+                "use_official_source": False,
+            }
+        )
 
         return packages
 
-    def _install_from_mirror(self, mirror: MirrorSource, packages: List[Dict[str, any]]) -> bool:
+    def _install_from_mirror(
+        self, mirror: MirrorSource, packages: List[Dict[str, any]]
+    ) -> bool:
         """
         从指定镜像安装包
 
@@ -348,12 +362,16 @@ class InstallWorker(QThread):
                     cmd.extend(["--proxy", self.config.proxy])
 
                 # 添加其他选项
-                cmd.extend([
-                    "--upgrade",          # 升级已安装的包
-                ])
+                cmd.extend(
+                    [
+                        "--upgrade",  # 升级已安装的包
+                    ]
+                )
 
                 # 获取源名称用于显示
-                source_name = "飞桨官方源" if package.get("use_official_source") else mirror.name
+                source_name = (
+                    "飞桨官方源" if package.get("use_official_source") else mirror.name
+                )
 
                 logger.info(f"安装命令: {' '.join(cmd)}")
 
@@ -363,7 +381,7 @@ class InstallWorker(QThread):
                     message=f"正在安装 {package['name']} ({source_name})...",
                     current_step=i + 1,
                     total_steps=len(packages),
-                    mirror_name=source_name
+                    mirror_name=source_name,
                 )
                 self.progress.emit(progress)
 
@@ -373,8 +391,8 @@ class InstallWorker(QThread):
                     capture_output=True,
                     text=True,
                     timeout=self.config.timeout,
-                    encoding='utf-8',
-                    errors='replace'
+                    encoding="utf-8",
+                    errors="replace",
                 )
 
                 # 检查是否成功
@@ -398,7 +416,9 @@ class InstallWorker(QThread):
             logger.error(f"安装异常: {e}", exc_info=True)
             return False
 
-    def _emit_progress(self, status: InstallStatus, message: str, percentage: float = 0.0):
+    def _emit_progress(
+        self, status: InstallStatus, message: str, percentage: float = 0.0
+    ):
         """
         发射进度信号
 
@@ -408,9 +428,7 @@ class InstallWorker(QThread):
             percentage: 进度百分比
         """
         progress = InstallProgress(
-            status=status,
-            message=message,
-            percentage=percentage
+            status=status, message=message, percentage=percentage
         )
         self.progress.emit(progress)
 
@@ -418,6 +436,7 @@ class InstallWorker(QThread):
 # =============================================================================
 # 安装管理器
 # =============================================================================
+
 
 class DependencyInstaller(QObject):
     """
@@ -427,9 +446,9 @@ class DependencyInstaller(QObject):
     """
 
     # 信号定义
-    progress = Signal(object)              # 安装进度 (InstallProgress)
-    finished = Signal(bool, str)          # 安装完成 (成功, 消息)
-    error = Signal(str)                   # 错误 (错误消息)
+    progress = Signal(object)  # 安装进度 (InstallProgress)
+    finished = Signal(bool, str)  # 安装完成 (成功, 消息)
+    error = Signal(str)  # 错误 (错误消息)
 
     def __init__(self):
         """初始化安装管理器"""

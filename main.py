@@ -6,7 +6,6 @@ Umi-OCR Windows 运行时环境初始化入口
 
 import os
 import sys
-import json
 import argparse
 import site
 import subprocess
@@ -79,8 +78,6 @@ def initRuntimeEnvironment():
     pass
 
     # OpenGL 共享（Qt6 自动处理）
-    from PySide6.QtCore import Qt
-    from PySide6.QtGui import QGuiApplication
 
     try:
         # Qt6 自动处理 OpenGL 上下文共享
@@ -96,7 +93,9 @@ def parse_args():
     parser.add_argument("--server", action="store_true", help="启动 HTTP 服务器")
     parser.add_argument("--image", nargs="+", help="要执行 OCR 的图像路径")
     parser.add_argument("--output", help="输出文件路径（默认：标准输出）")
-    parser.add_argument("--format", choices=["txt", "json"], default="txt", help="输出格式")
+    parser.add_argument(
+        "--format", choices=["txt", "json"], default="txt", help="输出格式"
+    )
     parser.add_argument("--debug", action="store_true", help="启用调试日志")
     return parser.parse_args()
 
@@ -109,10 +108,12 @@ def main():
         if not is_gui:
             os.environ["QT_QPA_PLATFORM"] = "offscreen"
         from src.app import UmiApplication, set_app_instance
+
         app = UmiApplication(sys.argv)
         set_app_instance(app)
         if args.image or args.server:
             from src.cli_handler import CliHandler
+
             handler = CliHandler(args)
             exit_code = handler.run()
             sys.exit(exit_code)
@@ -121,6 +122,7 @@ def main():
             app.setQuitOnLastWindowClosed(False)
 
             from src.controllers.main_controller import MainController
+
             controller = MainController()
             controller.show_window()
 

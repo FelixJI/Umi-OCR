@@ -37,6 +37,7 @@ from enum import Enum
 
 class LogLevel(Enum):
     """日志级别枚举"""
+
     DEBUG = logging.DEBUG
     INFO = logging.INFO
     WARNING = logging.WARNING
@@ -200,7 +201,9 @@ class Logger:
     BACKUP_COUNT = 5
 
     # 控制台日志格式
-    CONSOLE_FORMAT = "%(asctime)s %(level_symbol)s %(name)s.%(funcName)s:%(lineno)d | %(message)s"
+    CONSOLE_FORMAT = (
+        "%(asctime)s %(level_symbol)s %(name)s.%(funcName)s:%(lineno)d | %(message)s"
+    )
     CONSOLE_DATE_FORMAT = "%H:%M:%S"
 
     def __new__(cls) -> "Logger":
@@ -281,8 +284,7 @@ class Logger:
         console_handler.setLevel(logging.DEBUG)
 
         formatter = LevelFormatter(
-            fmt=self.CONSOLE_FORMAT,
-            datefmt=self.CONSOLE_DATE_FORMAT
+            fmt=self.CONSOLE_FORMAT, datefmt=self.CONSOLE_DATE_FORMAT
         )
         console_handler.setFormatter(formatter)
 
@@ -490,6 +492,7 @@ class Logger:
             os.startfile(self.logs_dir)
         elif os.name == "posix":  # macOS / Linux
             import subprocess
+
             opener = "open" if sys.platform == "darwin" else "xdg-open"
             subprocess.run([opener, self.logs_dir])
 

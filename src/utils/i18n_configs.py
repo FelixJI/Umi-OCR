@@ -5,6 +5,7 @@ import ctypes
 from PySide6.QtCore import QTranslator
 
 from . import pre_configs
+
 try:
     from plugin_i18n import setLangCode
 except ImportError:
@@ -13,6 +14,8 @@ except ImportError:
         """设置插件语言代码的临时占位符"""
         logger.debug(f"[I18n] Plugin language code: {code}")
         pass
+
+
 from umi_log import logger
 
 
@@ -152,16 +155,17 @@ class _I18n:
             # 映射首位代号
             if code in LanguageCodes:
                 langStr = LanguageCodes[code]
-                for c, l in LanguageCodes.items():
-                    if l == langStr:
-                        code = c
+                for code_key, lang_name in LanguageCodes.items():
+                    if lang_name == langStr:
+                        code = code_key
                         break
             # 尝试写入配置
             if not self.setLanguage(code):
                 # 写入配置失败，则使用默认语言
                 self.setLanguage(DefaultLang)
                 logger.warning(
-                    f"The current system language is {code} and there is no corresponding i18n file. The default language used is {DefaultLang}."
+                    f"The current system language is {code} and there is no "
+                    f"corresponding i18n file. The default language used is {DefaultLang}."
                 )
 
 
