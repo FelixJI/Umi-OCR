@@ -131,12 +131,54 @@ class ScreenshotController(QObject):
             image_paths=[str(self._temp_file)],
             title="截图OCR",
             priority=10,  # 截图优先级较高
+            engine_config={"mode": self._ocr_mode}
         )
 
-        logger.info(f"已提交OCR任务组: {group_id}")
+        logger.info(f"已提交OCR任务组: {group_id} (模式: {self._ocr_mode})")
 
         # 停止选择器
         self._selector.stop()
+
+    def _on_save_requested(self, rect: QRect) -> None:
+        """保存截图"""
+        logger.info(f"保存请求: {rect}")
+        image = self._screen_capture.capture_region(rect)
+        self._selector.stop()
+        if image.isNull():
+            return
+        
+        from PySide6.QtWidgets import QFileDialog
+        
+        file_path, _ = QFileDialog.getSaveFileName(
+            None, "保存截图", "", "Images (*.png *.jpg *.bmp)"
+        )
+        if file_path:
+            image.save(file_path)
+            logger.info(f"截图已保存: {file_path}")
+        
+        # 视为完成/取消流程
+        self.capture_cancelled.emit()
+
+    def _on_copy_requested(self, rect: QRect) -> None:
+        """复制截图"""
+        logger.info(f"复制请求: {rect}")
+        image = self._screen_capture.capture_region(rect)
+        self._selector.stop()
+        if image.isNull():
+            return
+            
+        from PySide6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        clipboard.setPixmap(image)
+        logger.info("截图已复制到剪贴板")
+        
+        # 视为完成/取消流程
+        self.capture_cancelled.emit()
+
+    def _on_mode_changed(self, mode: str) -> None:
+        """OCR模式切换"""
+        logger.info(f"OCR模式切换: {mode}")
+        self._ocr_mode = mode
 
     def _on_selection_cancelled(self) -> None:
         """选区取消处理"""

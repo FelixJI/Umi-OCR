@@ -34,9 +34,9 @@ class QRCodeView(QWidget):
 
         # 初始化控制器（容错：缺失可选依赖时不阻塞主界面）
         try:
-            from controllers.qrcode_controller import QRCodeController
+            from controllers.qrcode_controller import QrcodeController
 
-            self._controller = QRCodeController()
+            self._controller = QrcodeController()
         except ModuleNotFoundError as e:
             logger.warning(f"二维码控制器加载失败，部分功能不可用: {e}")
             self._controller = None

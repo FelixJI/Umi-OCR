@@ -25,7 +25,7 @@ from utils.logger import get_logger
 logger = get_logger()
 
 
-class QRCodeController(QObject):
+class QrcodeController(QObject):
     """
     二维码控制器
 
@@ -42,9 +42,14 @@ class QRCodeController(QObject):
     generate_completed = Signal(str)  # 生成成功(文件路径)
     generate_failed = Signal(str)  # 生成失败
 
-    def __init__(self):
-        """初始化二维码控制器"""
-        super().__init__()
+    def __init__(self, parent: Optional[QObject] = None):
+        """
+        初始化二维码控制器
+
+        Args:
+            parent: 父对象
+        """
+        super().__init__(parent)
 
         self._scanner = QRCodeScanner()
         self._generator = QRCodeGenerator()

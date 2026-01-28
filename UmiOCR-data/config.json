@@ -54,8 +54,8 @@
         "main_window": {
             "width": 1000,
             "height": 700,
-            "x": 227,
-            "y": 291,
+            "x": 313,
+            "y": 276,
             "maximized": false,
             "sidebar_width": 200,
             "sidebar_visible": true

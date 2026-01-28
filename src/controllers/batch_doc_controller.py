@@ -44,9 +44,14 @@ class BatchDocController(QObject):
     tasks_completed = Signal(str)  # 任务完成(group_id)
     tasks_failed = Signal(str, str)  # 任务失败(group_id, error)
 
-    def __init__(self):
-        """初始化批量文档OCR控制器"""
-        super().__init__()
+    def __init__(self, parent: Optional[QObject] = None):
+        """
+        初始化批量文档OCR控制器
+
+        Args:
+            parent: 父对象
+        """
+        super().__init__(parent)
 
         self._pdf_parser = PDFParser()
         self._task_manager = TaskManager.instance()

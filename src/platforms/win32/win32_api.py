@@ -6,7 +6,9 @@ import os
 import subprocess
 from PySide6.QtCore import QStandardPaths as Qsp, QFile, QFileInfo
 
-from umi_log import logger
+from src.utils.logger import get_logger
+
+logger = get_logger()
 from umi_about import UmiAbout
 from .key_translator import getKeyName
 

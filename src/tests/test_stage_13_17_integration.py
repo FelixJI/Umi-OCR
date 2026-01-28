@@ -30,7 +30,7 @@ from services.export.pdf_exporter import PdfExporter
 from controllers.screenshot_controller import ScreenshotController
 from controllers.batch_ocr_controller import BatchOcrController
 from controllers.batch_doc_controller import BatchDocController
-from controllers.qrcode_controller import QRCodeController
+from controllers.qrcode_controller import QrcodeController
 
 from ui.screenshot_ocr.screenshot_ocr import ScreenshotOCRView
 from ui.batch_ocr.batch_ocr import BatchOCRView
@@ -118,9 +118,9 @@ class IntegrationTest:
             print("  ✅ BatchDocController 初始化成功")
 
             # 测试二维码控制器
-            qrcode_controller = QRCodeController()
+            qrcode_controller = QrcodeController()
             assert qrcode_controller is not None
-            print("  ✅ QRCodeController 初始化成功")
+            print("  ✅ QrcodeController 初始化成功")
 
             self.test_results.append(("控制器层", True))
 
@@ -183,11 +183,11 @@ class IntegrationTest:
             assert hasattr(batch_doc_controller, "export_as_excel")
             print("  ✅ BatchDocController 方法完整")
 
-            # 测试QRCodeController方法
-            qrcode_controller = QRCodeController()
+            # 测试QrcodeController方法
+            qrcode_controller = QrcodeController()
             assert hasattr(qrcode_controller, "scan_qr_code")
             assert hasattr(qrcode_controller, "batch_generate_qr_codes")
-            print("  ✅ QRCodeController 方法完整")
+            print("  ✅ QrcodeController 方法完整")
 
             self.test_results.append(("控制器方法", True))
 
@@ -215,12 +215,12 @@ class IntegrationTest:
             assert hasattr(batch_doc_controller, "tasks_failed")
             print("  ✅ BatchDocController 信号定义完整")
 
-            qrcode_controller = QRCodeController()
+            qrcode_controller = QrcodeController()
             assert hasattr(qrcode_controller, "scan_started")
             assert hasattr(qrcode_controller, "scan_completed")
             assert hasattr(qrcode_controller, "generate_started")
             assert hasattr(qrcode_controller, "generate_completed")
-            print("  ✅ QRCodeController 信号定义完整")
+            print("  ✅ QrcodeController 信号定义完整")
 
             self.test_results.append(("信号连接", True))
 
