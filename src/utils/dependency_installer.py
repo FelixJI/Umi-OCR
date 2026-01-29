@@ -18,6 +18,8 @@ Date: 2026-01-27
 """
 
 import sys
+import os
+import shutil
 import subprocess
 import threading
 import logging
@@ -29,8 +31,37 @@ from enum import Enum
 from PySide6.QtCore import QObject, Signal, QThread
 
 from .check_dependencies import InstallOption
+from .python_installer import PythonInstaller
 
 logger = logging.getLogger(__name__)
+
+
+def get_python_executable() -> str:
+    """
+    获取 Python 解释器路径
+
+    如果是 Nuitka 打包环境，尝试寻找绑定的 python 运行时或系统 python。
+    """
+    # 检查是否为打包环境
+    is_frozen = getattr(sys, "frozen", False) or "__compiled__" in globals()
+
+    if not is_frozen:
+        return sys.executable
+
+    # 打包环境下，寻找外部 Python
+    # 1. 检查应用目录下的 python_runtime/python.exe (推荐的绑定方式)
+    app_dir = os.path.dirname(sys.executable)
+    bundled_python = os.path.join(app_dir, "python_runtime", "python.exe")
+    if os.path.exists(bundled_python):
+        return bundled_python
+
+    # 2. 检查系统路径
+    system_python = shutil.which("python")
+    if system_python:
+        return system_python
+
+    # 3. 最后的手段：尝试直接调用 'python' 命令
+    return "python"
 
 
 # =============================================================================
@@ -69,7 +100,7 @@ class MirrorSource:
         Returns:
             List[str]: pip 命令列表
         """
-        cmd = [sys.executable, "-m", "pip", "install"]
+        cmd = [get_python_executable(), "-m", "pip", "install"]
 
         if self.is_official:
             pass
@@ -223,7 +254,33 @@ class InstallWorker(QThread):
         在后台线程中执行，不阻塞UI。
         """
         try:
-            self._emit_progress(InstallStatus.PREPARING, "准备安装...")
+            self._emit_progress(InstallStatus.PREPARING, "正在检查环境...")
+            self._check_cancelled()
+            
+            # 0. 检查并安装 Python 环境 (如果需要)
+            # 在 Nuitka 打包环境下，我们需要确保嵌入式 Python 已就绪
+            is_frozen = getattr(sys, "frozen", False) or "__compiled__" in globals()
+            if is_frozen:
+                # 获取应用根目录
+                app_dir = os.path.dirname(sys.executable)
+                py_installer = PythonInstaller(app_dir)
+                
+                if not py_installer.is_installed():
+                    self._emit_progress(InstallStatus.PREPARING, "正在准备 Python 运行环境...")
+                    
+                    def py_progress(msg, pct):
+                        self._check_cancelled()
+                        # 将 Python 安装进度映射到总进度的 0-30%
+                        total_pct = pct * 0.3
+                        self._emit_progress(InstallStatus.DOWNLOADING, msg, percentage=total_pct)
+                    
+                    try:
+                        py_installer.install(progress_callback=py_progress)
+                    except Exception as e:
+                        if self._is_cancelled:
+                            raise InterruptedError("安装已被用户取消")
+                        raise RuntimeError(f"Python 环境准备失败: {str(e)}")
+            
             self._check_cancelled()
 
             packages = self._get_packages_to_install()
@@ -261,10 +318,16 @@ class InstallWorker(QThread):
                         + retry * len(packages)
                         + 1
                     )
+                    
+                    # 调整进度计算，留出 30% 给 Python 环境准备
+                    base_progress = 30.0 if is_frozen else 0.0
+                    remaining_progress = 100.0 - base_progress
+                    current_progress = base_progress + (current_step / total_steps) * remaining_progress
+                    
                     progress = InstallProgress(
                         status=InstallStatus.DOWNLOADING,
                         message=f"正在使用 {mirror.name} 下载...",
-                        percentage=(current_step / total_steps) * 100,
+                        percentage=current_progress,
                         current_step=current_step,
                         total_steps=total_steps,
                         mirror_name=mirror.name,
@@ -375,7 +438,7 @@ class InstallWorker(QThread):
                 self._check_cancelled()
 
                 if package.get("use_official_source"):
-                    cmd = [sys.executable, "-m", "pip", "install"]
+                    cmd = [get_python_executable(), "-m", "pip", "install"]
                     cmd.extend(["-i", package["source"]])
                 else:
                     cmd = mirror.get_pip_command()

@@ -18,11 +18,13 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QSpinBox,
     QScrollArea,
+    QPushButton,
 )
 from PySide6.QtCore import Qt
 
 from src.models.config_model import OcrEngineType
 from src.controllers.settings_controller import SettingsController
+from .style import PANEL_STYLESHEET
 
 
 class OcrSettingsPanel(QWidget):
@@ -35,7 +37,7 @@ class OcrSettingsPanel(QWidget):
 
     def _init_ui(self):
         # 设置统一的背景色
-        self.setStyleSheet("background-color: #ffffff;")
+        self.setStyleSheet(PANEL_STYLESHEET)
 
         # 创建主布局
         main_layout = QVBoxLayout(self)
@@ -152,6 +154,15 @@ class OcrSettingsPanel(QWidget):
         group_pre = QGroupBox("图像预处理")
         layout_pre = QVBoxLayout(group_pre)
 
+        # 全选按钮
+        hbox_select_all_pre = QHBoxLayout()
+        self.btn_select_all_pre = QPushButton("全选")
+        self.btn_select_all_pre.setCheckable(True)
+        self.btn_select_all_pre.clicked.connect(self._on_select_all_preprocessing)
+        hbox_select_all_pre.addWidget(self.btn_select_all_pre)
+        hbox_select_all_pre.addStretch()
+        layout_pre.addLayout(hbox_select_all_pre)
+
         # 降噪
         self.cb_denoise = QCheckBox("启用降噪")
         self.cb_denoise.setChecked(
@@ -244,11 +255,110 @@ class OcrSettingsPanel(QWidget):
         hbox_sharpness.addStretch()
         layout_pre.addLayout(hbox_sharpness)
 
+        # 亮度调整
+        hbox_brightness = QHBoxLayout()
+        self.cb_brightness = QCheckBox("启用亮度调整")
+        self.cb_brightness.setChecked(
+            self.controller.get_config("ocr.preprocessing.enable_brightness", False)
+        )
+        self.cb_brightness.toggled.connect(
+            lambda v: self.controller.set_config(
+                "ocr.preprocessing.enable_brightness", v
+            )
+        )
+        hbox_brightness.addWidget(self.cb_brightness)
+
+        hbox_brightness.addWidget(QLabel("因子:"))
+        self.spin_brightness = QDoubleSpinBox()
+        self.spin_brightness.setRange(0.1, 3.0)
+        self.spin_brightness.setSingleStep(0.1)
+        self.spin_brightness.setValue(
+            self.controller.get_config("preprocessing.brightness", 1.0)
+        )
+        self.spin_brightness.valueChanged.connect(
+            lambda v: self.controller.set_config("preprocessing.brightness", v)
+        )
+        hbox_brightness.addWidget(self.spin_brightness)
+        hbox_brightness.addStretch()
+        layout_pre.addLayout(hbox_brightness)
+
+        # 自动旋转
+        self.cb_auto_rotate = QCheckBox("自动旋转 (基于EXIF)")
+        self.cb_auto_rotate.setChecked(
+            self.controller.get_config("preprocessing.auto_rotate", False)
+        )
+        self.cb_auto_rotate.toggled.connect(
+            lambda v: self.controller.set_config("preprocessing.auto_rotate", v)
+        )
+        layout_pre.addWidget(self.cb_auto_rotate)
+
+        # 灰度转换
+        self.cb_grayscale = QCheckBox("转换为灰度图")
+        self.cb_grayscale.setChecked(
+            self.controller.get_config("preprocessing.grayscale", False)
+        )
+        self.cb_grayscale.toggled.connect(
+            lambda v: self.controller.set_config("preprocessing.grayscale", v)
+        )
+        layout_pre.addWidget(self.cb_grayscale)
+
+        # 图像尺寸限制
+        hbox_size = QHBoxLayout()
+        hbox_size.addWidget(QLabel("尺寸限制:"))
+
+        hbox_size.addWidget(QLabel("最小:"))
+        self.spin_min_size = QSpinBox()
+        self.spin_min_size.setRange(0, 10000)
+        self.spin_min_size.setValue(
+            self.controller.get_config("preprocessing.min_size", 0)
+        )
+        self.spin_min_size.setSuffix(" px")
+        self.spin_min_size.valueChanged.connect(
+            lambda v: self.controller.set_config("preprocessing.min_size", v)
+        )
+        hbox_size.addWidget(self.spin_min_size)
+
+        hbox_size.addWidget(QLabel("最大:"))
+        self.spin_max_size = QSpinBox()
+        self.spin_max_size.setRange(0, 10000)
+        self.spin_max_size.setValue(
+            self.controller.get_config("preprocessing.max_size", 0)
+        )
+        self.spin_max_size.setSuffix(" px")
+        self.spin_max_size.valueChanged.connect(
+            lambda v: self.controller.set_config("preprocessing.max_size", v)
+        )
+        hbox_size.addWidget(self.spin_max_size)
+
+        hbox_size.addWidget(QLabel("缩放:"))
+        self.spin_resize_factor = QDoubleSpinBox()
+        self.spin_resize_factor.setRange(0.1, 3.0)
+        self.spin_resize_factor.setSingleStep(0.1)
+        self.spin_resize_factor.setValue(
+            self.controller.get_config("preprocessing.scale", 1.0)
+        )
+        self.spin_resize_factor.valueChanged.connect(
+            lambda v: self.controller.set_config("preprocessing.scale", v)
+        )
+        hbox_size.addWidget(self.spin_resize_factor)
+
+        hbox_size.addStretch()
+        layout_pre.addLayout(hbox_size)
+
         layout.addWidget(group_pre)
 
         # === PaddleOCR官方预处理 ===
         group_paddle_pre = QGroupBox("PaddleOCR官方预处理")
         layout_paddle_pre = QVBoxLayout(group_paddle_pre)
+
+        # 全选按钮
+        hbox_select_all_paddle = QHBoxLayout()
+        self.btn_select_all_paddle = QPushButton("全选")
+        self.btn_select_all_paddle.setCheckable(True)
+        self.btn_select_all_paddle.clicked.connect(self._on_select_all_paddle_preprocessing)
+        hbox_select_all_paddle.addWidget(self.btn_select_all_paddle)
+        hbox_select_all_paddle.addStretch()
+        layout_paddle_pre.addLayout(hbox_select_all_paddle)
 
         # 文档方向分类
         self.cb_doc_orientation = QCheckBox("文档方向分类")
@@ -424,3 +534,23 @@ class OcrSettingsPanel(QWidget):
     def _on_engine_changed(self, index):
         engine = self.combo_engine.itemData(index)
         self.controller.set_config("ocr.engine_type", engine)
+
+    def _on_select_all_preprocessing(self, checked):
+        """全选/取消全选通用预处理"""
+        select_all = bool(checked)
+        self.cb_denoise.setChecked(select_all)
+        self.cb_binarize.setChecked(select_all)
+        self.cb_deskew.setChecked(select_all)
+        self.cb_contrast.setChecked(select_all)
+        self.cb_sharpness.setChecked(select_all)
+        self.cb_brightness.setChecked(select_all)
+        self.cb_auto_rotate.setChecked(select_all)
+        self.cb_grayscale.setChecked(select_all)
+
+    def _on_select_all_paddle_preprocessing(self, checked):
+        """全选/取消全选PaddleOCR官方预处理"""
+        select_all = bool(checked)
+        self.cb_doc_orientation.setChecked(select_all)
+        self.cb_doc_unwarping.setChecked(select_all)
+        self.cb_det_resize.setChecked(select_all)
+        self.cb_rec_resize.setChecked(select_all)

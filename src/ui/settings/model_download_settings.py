@@ -33,6 +33,7 @@ from src.services.ocr.model_download_config import (
     get_preset_by_id,
 )
 from src.services.ocr.models.model_manager_core import get_model_manager
+from .style import PANEL_STYLESHEET
 
 
 class ModelDownloadThread(QThread):
@@ -153,7 +154,7 @@ class ModelDownloadSettingsPanel(QWidget):
 
     def _init_ui(self):
         # 设置统一的背景色
-        self.setStyleSheet("background-color: #ffffff;")
+        self.setStyleSheet(PANEL_STYLESHEET)
 
         # 创建主布局
         main_layout = QVBoxLayout(self)

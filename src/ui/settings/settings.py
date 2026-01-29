@@ -13,6 +13,7 @@ from PySide6.QtCore import QObject
 from src.controllers.settings_controller import SettingsController
 from src.utils.logger import get_logger
 from src.utils.startup_manager import StartupManager
+from .style import PANEL_STYLESHEET
 
 logger = get_logger()
 
@@ -43,6 +44,9 @@ class SettingsWindow(QObject):
         # 从 ui 对象获取控件
         self.sidebar = self.ui.listWidget_sidebar
         self.pages = self.ui.stackedWidget_pages
+
+        if self.pages:
+            self.pages.setStyleSheet(PANEL_STYLESHEET)
 
         if self.sidebar:
             self.sidebar.clear()

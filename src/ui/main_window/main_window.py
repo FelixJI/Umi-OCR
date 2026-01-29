@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
         # 初始化各功能页面视图
         if self.pageScreenshotOcr:
             try:
-                self.screenshotView = ScreenshotOCRView()
+                self.screenshotView = ScreenshotOCRNewView()
                 self._set_page_widget(self.pageScreenshotOcr, self.screenshotView)
                 self.logger.debug("截图OCR视图初始化成功")
             except Exception as e:

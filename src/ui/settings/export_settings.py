@@ -21,6 +21,7 @@ from PySide6.QtCore import Qt
 
 from src.models.config_model import OutputFormat
 from src.controllers.settings_controller import SettingsController
+from .style import PANEL_STYLESHEET
 
 
 class ExportSettingsPanel(QWidget):
@@ -32,6 +33,9 @@ class ExportSettingsPanel(QWidget):
         self._init_ui()
 
     def _init_ui(self):
+        # 设置统一的背景色
+        self.setStyleSheet(PANEL_STYLESHEET)
+
         layout = QVBoxLayout(self)
         layout.setSpacing(20)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)

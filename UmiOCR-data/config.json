@@ -111,14 +111,14 @@
             "sharpness_factor": 3.2000000000000015
         },
         "confidence_threshold": 0.5,
-        "merge_lines": true
+        "merge_lines": false
     },
     "ui": {
         "main_window": {
-            "width": 1077,
+            "width": 898,
             "height": 638,
-            "x": 284,
-            "y": 254,
+            "x": 647,
+            "y": 373,
             "maximized": false,
             "sidebar_width": 200,
             "sidebar_visible": true

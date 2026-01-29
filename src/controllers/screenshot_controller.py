@@ -249,11 +249,17 @@ class ScreenshotController(QObject):
         """
         logger.debug(f"任务完成: {task_id}")
 
+        # 确保结果中包含图片路径
+        if self._temp_file and (not result.get("image_path")):
+            result["image_path"] = str(self._temp_file)
+
         # 发送结果信号
         self.ocr_result_ready.emit(result)
 
-        # 清理临时文件
-        self._cleanup_temp_file()
+        # 注意：不立即删除临时文件，因为UI可能需要显示它（例如在历史记录或预览中）
+        # 文件将在程序退出或下一次截图时清理（如果在 _save_temp_image 中有清理逻辑的话）
+        # 或者依赖系统的临时文件清理机制
+        # self._cleanup_temp_file()
 
     def _on_task_failed(self, task_id: str, error: str) -> None:
         """

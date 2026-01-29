@@ -54,7 +54,13 @@ else:
     os.chdir(script_dir)
 
 # 添加 site-packages 到路径
-for n in ["."]:
+extra_paths = [
+    ".",
+    "site-packages",
+    "python_runtime/Lib/site-packages",
+    "python_runtime/lib/site-packages",
+]
+for n in extra_paths:
     path = os.path.abspath(n)
     if os.path.exists(path):
         site.addsitedir(path)
@@ -139,9 +145,14 @@ def build_nuitka(output_dir: Path, plugins: list | None = None, clean: bool = Tr
         "--include-module=pymupdf",
         "--include-module=fontTools",
         "--include-module=zxingcpp",
+        "--nofollow-import-to=paddle",
+        "--nofollow-import-to=paddleocr",
         "--nofollow-module-to=PySide6.Qt3D",
         "--nofollow-module-to=PySide6.QtCharts",
         "--nofollow-module-to=PySide6.QtDataVisualization",
+        # 确保 ssl 模块可用（Python installer 下载需要）
+        "--include-module=ssl",
+        "--include-module=_ssl",
         str(entry_script),
     ]
 

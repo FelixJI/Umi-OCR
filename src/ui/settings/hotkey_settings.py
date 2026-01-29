@@ -16,6 +16,7 @@ from PySide6.QtGui import QKeyEvent, QKeySequence
 
 from src.utils.config_manager import ConfigManager
 from src.controllers.settings_controller import SettingsController
+from .style import PANEL_STYLESHEET
 
 
 class HotkeyRecorder(QLineEdit):
@@ -78,6 +79,9 @@ class HotkeySettingsPanel(QWidget):
         self._load_data()
 
     def _init_ui(self):
+        # 设置统一的背景色
+        self.setStyleSheet(PANEL_STYLESHEET)
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
