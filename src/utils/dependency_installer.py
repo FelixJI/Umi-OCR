@@ -36,6 +36,14 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # 镜像源配置
 # =============================================================================
+# 镜像源配置
+# =============================================================================
+
+# 重要说明：DEFAULT_MIRRORS 是 pip 包安装镜像源，用于安装 paddlepaddle/ocr 包
+# PaddleOCR 模型下载源由环境变量 PADDLE_PDX_MODEL_SOURCE 控制，只支持：
+#   - "HuggingFace" (默认值，从 3.2.0+ 开始)
+#   - "BOS" (百度对象存储，国内推荐)
+# 更多信息请参考：paddle_doc/docs/update/update.en.md
 
 
 @dataclass
@@ -44,6 +52,9 @@ class MirrorSource:
     镜像源配置
 
     包含镜像源的URL和优先级。
+
+    注意：这些是 pip 包安装镜像源，用于安装 paddlepaddle/ocr 包，
+    不是 PaddleOCR 模型下载源。
     """
 
     name: str
@@ -225,7 +236,9 @@ class InstallWorker(QThread):
                 # 使用默认镜像源列表
                 mirrors_to_try = self.config.mirrors
 
-            total_steps = len(packages) * len(mirrors_to_try) * (self.config.max_retries + 1)
+            total_steps = (
+                len(packages) * len(mirrors_to_try) * (self.config.max_retries + 1)
+            )
 
             # 遍历镜像源
             for mirror_idx, mirror in enumerate(mirrors_to_try):

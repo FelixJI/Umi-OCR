@@ -77,6 +77,21 @@ class SettingsWindow(QObject):
             self.ui.page_ocr_engine, controller=self.controller
         )
 
+        # 添加到OCR引擎页面，移除spacer以确保滚动区域填满
+        page_ocr = self.ui.page_ocr_engine
+        if page_ocr:
+            layout = page_ocr.layout()
+            if layout:
+                # Index 0 is label, insert after it
+                layout.insertWidget(1, self.ocr_panel)
+                # 移除spacer以允许滚动区域填满
+                from PySide6.QtWidgets import QSpacerItem
+
+                for i in range(layout.count() - 1, -1, -1):
+                    item = layout.itemAt(i)
+                    if item and isinstance(item, QSpacerItem):
+                        layout.removeItem(item)
+
         # Initialize Model Download Settings Panel
         from .model_download_settings import ModelDownloadSettingsPanel
 
@@ -84,16 +99,20 @@ class SettingsWindow(QObject):
             self.ui.page_model, controller=self.controller
         )
 
-        # Add to page_model layout
+        # 添加到模型管理页面，移除spacer以确保滚动区域填满
         page_model = self.ui.page_model
         if page_model:
             layout = page_model.layout()
             if layout:
                 # Index 0 is label, insert after it
                 layout.insertWidget(1, self.model_panel)
-            else:
-                layout = QVBoxLayout(page_model)
-                layout.addWidget(self.model_panel)
+                # 移除spacer以允许滚动区域填满
+                from PySide6.QtWidgets import QSpacerItem
+
+                for i in range(layout.count() - 1, -1, -1):
+                    item = layout.itemAt(i)
+                    if item and isinstance(item, QSpacerItem):
+                        layout.removeItem(item)
 
         # Initialize General Settings (Startup, etc.)
         self._init_general_settings()

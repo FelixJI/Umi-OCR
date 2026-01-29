@@ -24,6 +24,9 @@ class CloudSettingsPanel(QWidget):
         self._load_data()
 
     def _init_ui(self):
+        # 设置统一的背景色
+        self.setStyleSheet("background-color: #ffffff;")
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -81,7 +84,7 @@ class CloudSettingsPanel(QWidget):
 
         btn_layout = QHBoxLayout()
         save_btn = QPushButton("保存")
-        # test_btn = QPushButton("测试连接") 
+        # test_btn = QPushButton("测试连接")
         # Test logic to be implemented later or via controller
 
         btn_layout.addWidget(save_btn)

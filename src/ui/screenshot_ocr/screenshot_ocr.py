@@ -53,6 +53,9 @@ class ScreenshotOCRView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(10)
 
+        # 设置统一的背景色
+        self.setStyleSheet("background-color: #ffffff;")
+
         # 标题
         title_label = QLabel("截图 OCR")
         title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
@@ -170,10 +173,10 @@ class ScreenshotOCRView(QWidget):
                     </div>
                     <div class="metadata">
                         <p><strong>引擎:</strong> 
-                            {result.get('engine_name', 'Unknown')}
+                            {result.get("engine_name", "Unknown")}
                         </p>
-                        <p><strong>置信度:</strong> {result.get('confidence', 0):.0}</p>
-                        <p><strong>耗时:</strong> {result.get('duration_ms', 0)}ms</p>
+                        <p><strong>置信度:</strong> {result.get("confidence", 0):.0}</p>
+                        <p><strong>耗时:</strong> {result.get("duration_ms", 0)}ms</p>
                     </div>
                 </div>
             </body>

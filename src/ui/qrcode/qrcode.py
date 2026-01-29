@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QPushButton,
     QFileDialog,
+    QScrollArea,
 )
 from PySide6.QtCore import Qt
 
@@ -51,6 +52,19 @@ class QRCodeView(QWidget):
 
     def _setup_ui(self):
         """创建界面"""
+        # 设置统一的背景色
+        self.setStyleSheet("background-color: #ffffff;")
+
+        # 创建滚动区域
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+        # 创建滚动区域的容器widget
+        scroll_content = QWidget()
+        scroll_area.setWidget(scroll_content)
+
         # 主布局
         main_layout = QVBoxLayout()
         main_layout.setSpacing(10)
@@ -171,7 +185,14 @@ class QRCodeView(QWidget):
 
         main_layout.addStretch()
 
-        self.setLayout(main_layout)
+        # 设置滚动内容的布局
+        scroll_content.setLayout(main_layout)
+
+        # 设置主布局
+        outer_layout = QVBoxLayout()
+        outer_layout.addWidget(scroll_area)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(outer_layout)
 
     def _connect_signals(self):
         """连接控制器信号"""

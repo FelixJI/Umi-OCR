@@ -38,6 +38,12 @@ class TaskManagerView(QObject):
         # Find widgets from ui
         self.cards_layout = self.ui.verticalLayout_cards
 
+        # 设置滚动区域内容widget的背景色
+        self.ui.scrollAreaWidgetContents.setStyleSheet("background-color: #ffffff;")
+
+        # 设置任务管理器页面的背景色
+        self.ui.pageTaskManager.setStyleSheet("background-color: #ffffff;")
+
         self.btn_pause_all = self.ui.btn_pause_all
         self.btn_resume_all = self.ui.btn_resume_all
         self.btn_clear_completed = self.ui.btn_clear_completed

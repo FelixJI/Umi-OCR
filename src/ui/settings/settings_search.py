@@ -137,16 +137,6 @@ class SettingsSearch(QObject):
                 "description": "选择本地 OCR 引擎或云服务 OCR",
             },
             {
-                "key": "ocr.paddle.det_model_name",
-                "label": "检测模型",
-                "description": "PaddleOCR 文字检测模型名称",
-            },
-            {
-                "key": "ocr.paddle.rec_model_name",
-                "label": "识别模型",
-                "description": "PaddleOCR 文字识别模型名称",
-            },
-            {
                 "key": "ocr.paddle.use_gpu",
                 "label": "使用 GPU",
                 "description": "是否启用 GPU 加速",

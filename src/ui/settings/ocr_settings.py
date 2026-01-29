@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QDoubleSpinBox,
     QSpinBox,
+    QScrollArea,
 )
 from PySide6.QtCore import Qt
 
@@ -33,8 +34,25 @@ class OcrSettingsPanel(QWidget):
         self._init_ui()
 
     def _init_ui(self):
-        # 创建主布局并设置为自身的布局
-        layout = QVBoxLayout(self)
+        # 设置统一的背景色
+        self.setStyleSheet("background-color: #ffffff;")
+
+        # 创建主布局
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # 创建滚动区域
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+        # 创建滚动区域的容器widget
+        scroll_content = QWidget()
+        scroll_area.setWidget(scroll_content)
+
+        # 创建内容布局
+        layout = QVBoxLayout(scroll_content)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -396,6 +414,12 @@ class OcrSettingsPanel(QWidget):
         layout_param.addWidget(self.cb_merge)
 
         layout.addWidget(group_param)
+
+        # 添加stretch确保内容从顶部开始
+        layout.addStretch()
+
+        # 将滚动区域添加到主布局
+        main_layout.addWidget(scroll_area)
 
     def _on_engine_changed(self, index):
         engine = self.combo_engine.itemData(index)
