@@ -28,6 +28,7 @@ from io import BytesIO
 import logging
 from ..base_engine import BaseOCREngine, OCRErrorCode, OCRResult
 from ..ocr_result import TextBlock, BoundingBox, TextBlockType
+from ...utils.image_preprocessing import ImagePreprocessor, DocumentQualityAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +194,42 @@ class BaseCloudEngine(BaseOCREngine, ABC):
     # BaseOCREngine 抽象方法实现
     # -------------------------------------------------------------------------
 
+    def _preprocess_image(self, image) -> Any:
+        """
+        云OCR本地预处理（使用通用预处理器，不包含PaddleOCR相关处理）
+
+        Args:
+            image: PIL Image 对象
+
+        Returns:
+            Any: 处理后的图像
+        """
+        # 检查是否启用本地预处理
+        if not self.config.get("enable_local_preprocess", False):
+            return image
+
+        # 获取预处理配置
+        preprocess_config = self.config.get("preprocessing", {})
+        if not preprocess_config.get("enabled", False):
+            return image
+
+        try:
+            # 创建通用预处理器
+            preprocessor = ImagePreprocessor(preprocess_config)
+
+            # 执行预处理
+            processed_image = preprocessor.process(image)
+
+            # 记录预处理信息
+            logger.debug(f"云OCR本地预处理完成")
+
+            return processed_image
+
+        except Exception as e:
+            logger.error(f"云OCR本地预处理失败: {e}", exc_info=True)
+            # 预处理失败时返回原图
+            return image
+
     def _do_initialize(self) -> bool:
         """
         执行云引擎初始化
@@ -276,9 +313,12 @@ class BaseCloudEngine(BaseOCREngine, ABC):
         # 解析参数
         ocr_type = kwargs.get("ocr_type", CloudOCRType.GENERAL)
 
-        # 编码图片为 Base64
+        # 1. 本地预处理（如果启用）
+        processed_image = self._preprocess_image(image)
+
+        # 2. 编码图片为 Base64
         try:
-            image_bytes = self._image_to_bytes(image)
+            image_bytes = self._image_to_bytes(processed_image)
             image_base64 = self._encode_image(image_bytes)
         except Exception as e:
             return OCRResult(

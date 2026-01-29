@@ -65,6 +65,19 @@ class PaddleConfig:
     denoise_strength: float = 0.5  # 降噪强度
     max_image_size: int = 0  # 最大图片尺寸（0 表示不限制)
 
+    # PaddleOCR官方预处理管道
+    enable_doc_orientation_classify: bool = False  # 文档方向分类
+    enable_doc_unwarping: bool = False  # 文档纠平（UVDoc）
+
+    # PaddleOCR官方Resize
+    enable_det_resize_img: bool = False  # 使用官方检测resize
+    enable_rec_resize_img: bool = False  # 使用官方识别resize
+    det_image_shape: tuple = (3, 640, 640)  # 检测图像形状
+    det_limit_type: str = "min"  # 限制类型: 'min' or 'max'
+    det_limit_side_len: int = 736  # 限制边长
+    rec_image_shape: tuple = (3, 48, 320)  # 识别图像形状
+    rec_max_wh_ratio: float = 16.0  # 最大宽高比
+
     # ========== 表格识别配置 ==========
     # 表格结构模型: slanet, slanet_plus, slanext_wired, slanext_wireless
     table_structure_model: str = "slanet_plus"

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QThread, Signal
 
-from src.services.ocr.models.model_download_config import (
+from src.services.ocr.model_download_config import (
     MODEL_PRESETS, ALL_MODELS, get_model_by_id, get_preset_by_id
 )
 from src.services.ocr.models.model_manager_core import get_model_manager

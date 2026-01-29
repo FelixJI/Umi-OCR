@@ -335,13 +335,19 @@ class PaddleOCREngine(BaseOCREngine):
     def _preprocess_image(self, image: Image.Image) -> Image.Image:
         """图像预处理流程
 
-        预处理顺序（按最佳实践）:
+        预处理顺序（按最佳实践，修复后）:
         1. 调整大小 - 限制内存占用
         2. 纠偏 - 校正文档旋转
-        3. 对比度增强 - 提升文字清晰度
-        4. 锐度增强 - 提升边缘清晰度
-        5. 二值化 - 去除背景干扰
-        6. 降噪 - 去除器件噪声
+        3. 降噪 - 去除器件噪声
+        4. 对比度增强 - 提升文字清晰度
+        5. 锐度增强 - 提升边缘清晰度
+        6. 二值化 - 去除背景干扰（最后一步）
+
+        修复说明：
+        - 将二值化从第5步调整到第6步（最后一步）
+        - 原因：二值化后图像变成黑白，后续的对比度增强和锐度增强效果会大打折扣
+        - 将降噪从第6步调整到第3步
+        - 原因：先去除噪声，再进行增强，效果更好
         """
         processed = image
 
@@ -357,25 +363,25 @@ class PaddleOCREngine(BaseOCREngine):
             if abs(angle) > 1:
                 logger.debug(f"图像纠偏: {angle:.1f}°")
 
-        # 3. 对比度增强
+        # 3. 降噪 - 先去除噪声
+        if self.paddle_config.enable_denoise:
+            processed = ImagePreprocessor.denoise(processed)
+
+        # 4. 对比度增强
         if self.paddle_config.enable_contrast_enhance:
             processed = ImagePreprocessor.enhance_contrast(
                 processed, self.paddle_config.contrast_factor
             )
 
-        # 4. 锐度增强
+        # 5. 锐度增强
         if self.paddle_config.enable_sharpness_enhance:
             processed = ImagePreprocessor.enhance_sharpness(
                 processed, self.paddle_config.sharpness_factor
             )
 
-        # 5. 二值化
+        # 6. 二值化 - 最后一步，去除背景干扰
         if self.paddle_config.enable_binarization:
             processed = ImagePreprocessor.binarize(processed)
-
-        # 6. 降噪
-        if self.paddle_config.enable_denoise:
-            processed = ImagePreprocessor.denoise(processed)
 
         # 7. 综合文档质量增强（可选，当启用了多项增强时）
         if (
@@ -694,8 +700,7 @@ class PaddleOCREngine(BaseOCREngine):
                     "title": "启用表格识别",
                     "default": False,
                     "description": (
-                        "使用PP-TableMagic v2产线进行表格识别，"
-                        "需要安装表格相关模型"
+                        "使用PP-TableMagic v2产线进行表格识别，需要安装表格相关模型"
                     ),
                 },
                 "use_structure": {
@@ -703,8 +708,7 @@ class PaddleOCREngine(BaseOCREngine):
                     "title": "启用版面分析",
                     "default": False,
                     "description": (
-                        "使用PP-DocLayout进行版面结构分析，"
-                        "需要安装版面相关模型"
+                        "使用PP-DocLayout进行版面结构分析，需要安装版面相关模型"
                     ),
                 },
                 "table_structure_model": {

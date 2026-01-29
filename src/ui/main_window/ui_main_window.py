@@ -184,6 +184,20 @@ class Ui_MainWindow(object):
         self.verticalLayout_engine.addItem(self.verticalSpacer_engine)
         self.stackedWidget_pages.addWidget(self.page_ocr_engine)
 
+        self.page_model = QWidget()
+        self.page_model.setObjectName("page_model")
+        self.verticalLayout_model = QVBoxLayout(self.page_model)
+        self.verticalLayout_model.setObjectName("verticalLayout_model")
+        self.label_model = QLabel(self.page_model)
+        self.label_model.setObjectName("label_model")
+        self.label_model.setFont(font1)
+        self.verticalLayout_model.addWidget(self.label_model)
+        self.verticalSpacer_model = QSpacerItem(
+            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
+        )
+        self.verticalLayout_model.addItem(self.verticalSpacer_model)
+        self.stackedWidget_pages.addWidget(self.page_model)
+
         self.page_cloud = QWidget()
         self.page_cloud.setObjectName("page_cloud")
         self.verticalLayout_cloud = QVBoxLayout(self.page_cloud)
@@ -240,6 +254,9 @@ class Ui_MainWindow(object):
         )
         self.label_cloud.setText(
             QCoreApplication.translate("MainWindow", "云服务设置", None)
+        )
+        self.label_model.setText(
+            QCoreApplication.translate("MainWindow", "模型管理", None)
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.pageScreenshotOcr),

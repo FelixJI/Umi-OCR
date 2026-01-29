@@ -78,6 +78,8 @@ class OcrPreprocessingConfig:
     enable_denoise: bool = False  # 降噪
     enable_binarization: bool = False  # 二值化
     enable_deskew: bool = False  # 纠偏
+    enable_contrast_enhance: bool = False  # 对比度增强
+    enable_sharpness_enhance: bool = False  # 锐度增强
 
     # 尺寸调整
     max_image_size: int = 0  # 最大图片尺寸（0表示不限制）
@@ -86,6 +88,44 @@ class OcrPreprocessingConfig:
 
     # 其他
     rotate_angle: float = 0.0  # 旋转角度（度）
+    contrast_factor: float = 1.5  # 对比度因子
+    sharpness_factor: float = 1.5  # 锐度因子
+
+
+@dataclass
+class CloudPreprocessingConfig:
+    """
+    云OCR本地预处理配置
+
+    注意：云OCR的本地预处理不应依赖PaddleOCR相关功能
+    只使用通用的图像预处理方法
+    """
+
+    # 是否启用本地预处理
+    enable_local_preprocess: bool = False
+
+    # 通用预处理配置（基于image_preprocessing.py）
+    enabled: bool = False  # 是否启用预处理
+    denoise: int = 0  # 降噪强度 (0-9, 奇数, 0表示禁用)
+    sharpen: float = 1.0  # 锐化系数 (0.0-3.0, 1.0表示不变)
+    contrast: float = 1.0  # 对比度系数 (0.5-2.0, 1.0表示不变)
+    brightness: float = 1.0  # 亮度系数 (0.5-2.0, 1.0表示不变)
+    grayscale: bool = False  # 是否转为灰度图
+    threshold: int = -1  # 二值化阈值 (0-255, -1表示禁用, 0表示自适应)
+
+    # 高级预处理
+    enable_clahe: bool = False  # 启用CLAHE对比度增强
+    clahe_clip_limit: float = 2.0  # CLAHE裁剪限 (0.5-10.0)
+    clahe_tile_size: int = 8  # CLAHE网格大小 (4-16)
+
+    # 双边滤波降噪
+    enable_bilateral: bool = False  # 启用双边滤波
+    bilateral_d: int = 9  # 邻域直径 (5-25)
+    bilateral_sigma_color: int = 75  # 颜色空间标准差 (50-150)
+    bilateral_sigma_space: int = 75  # 坐标空间标准差 (50-150)
+
+    # 自适应预处理
+    enable_adaptive_preprocess: bool = False  # 是否启用自适应预处理
 
 
 @dataclass
@@ -102,6 +142,8 @@ class PaddleEngineConfig:
     use_gpu: bool = False  # 是否使用 GPU
     cpu_threads: int = 4  # CPU 线程数
     enable_mkldnn: bool = True  # 是否使用 MKL-DNN 加速
+    use_table: bool = False  # 表格识别 (PP-TableMagic)
+    use_structure: bool = False  # 版面结构分析
 
     # 路径配置
     models_dir: str = ""  # 模型目录（空表示使用默认路径）
@@ -111,11 +153,18 @@ class PaddleEngineConfig:
 class CloudOcrConfig:
     """云 OCR 配置（基类）"""
 
+    # API凭证
     api_key: str = ""  # API Key
     secret_key: str = ""  # Secret Key（用于签名）
     endpoint: str = ""  # API 端点
     timeout: int = 30  # 请求超时（秒）
     max_retry: int = 3  # 最大重试次数
+
+    # 本地预处理配置（云OCR本地预处理，不包含PaddleOCR相关处理）
+    enable_local_preprocess: bool = False  # 是否启用本地预处理
+    preprocessing: CloudPreprocessingConfig = field(
+        default_factory=CloudPreprocessingConfig
+    )
 
 
 @dataclass
@@ -383,11 +432,26 @@ class AppConfig:
         if "paddle" in ocr_data:
             ocr.paddle = PaddleEngineConfig(**ocr_data["paddle"])
         if "baidu" in ocr_data:
-            ocr.baidu = BaiduOcrConfig(**ocr_data["baidu"])
+            baidu_data = ocr_data["baidu"]
+            if "preprocessing" in baidu_data:
+                baidu_data["preprocessing"] = CloudPreprocessingConfig(
+                    **baidu_data["preprocessing"]
+                )
+            ocr.baidu = BaiduOcrConfig(**baidu_data)
         if "tencent" in ocr_data:
-            ocr.tencent = TencentOcrConfig(**ocr_data["tencent"])
+            tencent_data = ocr_data["tencent"]
+            if "preprocessing" in tencent_data:
+                tencent_data["preprocessing"] = CloudPreprocessingConfig(
+                    **tencent_data["preprocessing"]
+                )
+            ocr.tencent = TencentOcrConfig(**tencent_data)
         if "aliyun" in ocr_data:
-            ocr.aliyun = AliyunOcrConfig(**ocr_data["aliyun"])
+            aliyun_data = ocr_data["aliyun"]
+            if "preprocessing" in aliyun_data:
+                aliyun_data["preprocessing"] = CloudPreprocessingConfig(
+                    **aliyun_data["preprocessing"]
+                )
+            ocr.aliyun = AliyunOcrConfig(**aliyun_data)
         if "preprocessing" in ocr_data:
             ocr.preprocessing = OcrPreprocessingConfig(**ocr_data["preprocessing"])
 

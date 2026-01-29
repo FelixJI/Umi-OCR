@@ -78,10 +78,10 @@ class RegionSelector(QWidget):
     }
 
     # 手柄尺寸
-    HANDLE_SIZE = 14
+    HANDLE_SIZE = 12
 
     # 边缘检测宽度（用于光标变化检测）
-    EDGE_DETECT_WIDTH = 12
+    EDGE_DETECT_WIDTH = 8
 
     def __init__(
         self,
@@ -114,7 +114,7 @@ class RegionSelector(QWidget):
         self._hovered_window: Optional[WindowInfo] = None
         self._current_aspect_ratio: Optional[float] = None
         self._is_shift_pressed = False
-        self._ocr_mode = "text"  # OCR模式: text, table
+        self._ocr_mode = None  # OCR模式: text, table, None表示未选择
 
         # 拖动状态
         self._is_dragging = False
@@ -150,7 +150,7 @@ class RegionSelector(QWidget):
         self._is_dragging = False
         self._hovered_window = None
         self._current_aspect_ratio = None
-        self._ocr_mode = "text"
+        self._ocr_mode = None
         self._is_shift_pressed = False
 
         # 重置光标
