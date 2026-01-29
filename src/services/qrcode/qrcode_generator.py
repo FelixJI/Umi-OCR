@@ -113,7 +113,13 @@ class QRCodeGenerator:
                     logger.info(f"码生成成功: {output_path}")
                     with open(output_path, "rb") as f:
                         return f.read()
-                return None # TODO: Return bytes directly if needed
+                
+                # 直接返回内存中的图片数据
+                import io
+                img_byte_arr = io.BytesIO()
+                # 默认使用 PNG 格式
+                img.save(img_byte_arr, format='PNG')
+                return img_byte_arr.getvalue()
         except Exception as e:
             logger.error(f"生成失败: {e}", exc_info=True)
             return None

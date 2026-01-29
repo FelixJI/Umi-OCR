@@ -30,10 +30,19 @@ class web_server:
 
 # 适配 CmdActuator 功能
 class CmdActuator:
+    _modules = {}
+
     @staticmethod
     def initCollect(moduleDict):
+        if moduleDict:
+            CmdActuator._modules.update(moduleDict)
+            logger.info(f"CmdActuator collected modules: {list(moduleDict.keys())}")
+
         # TODO: 连接到 src/cli_handler.py 或新的命令处理系统
-        logger.info("CmdActuator.initCollect called (placeholder)")
+        # 目前 cli_handler.py 独立运行，主要处理 CLI 参数启动的任务。
+        # 这里收集的 moduleDict 是 UI 启动后的模块引用，
+        # 未来如果需要实现“通过命令行控制正在运行的 UI 实例”的功能（如 IPC），
+        # 可以从 _modules 中获取目标模块进行操作。
 
 
 class GlobalConfigsConnector(QObject):
