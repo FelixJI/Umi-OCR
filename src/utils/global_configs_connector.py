@@ -8,26 +8,32 @@ from .i18n_configs import I18n
 from ..platforms import Platform
 from .pre_configs import getErrorStr
 
-# from ..server import web_server  # TODO: server 模块未实现
-# from ..server.cmd_server import CmdActuator  # TODO: server 模块未实现
-# from umi_log import change_save_log_level, open_logs_dir  # TODO: 导入路径问题
+from src.utils.config_manager import ConfigManager
+from src.utils.logger import logger
 
 
-# 临时占位符，直到 server 模块实现
+# 适配 web_server 功能
 class web_server:
     @staticmethod
     def runUmiWeb(qmlObj, callback, host):
-        print("[GlobalConfigs] Web server not implemented yet")
+        # 更新主机配置
+        ConfigManager.get_instance().set("system.http_server_host", host)
+        # 注意：实际服务启动由 MainController 管理
+        logger.info(f"Web server configured for host: {host}")
+        return 1
 
     @staticmethod
     def setPort(port):
-        print(f"[GlobalConfigs] Set port: {port}")
+        ConfigManager.get_instance().set("system.http_server_port", port)
+        logger.info(f"Web server port set to: {port}")
 
 
+# 适配 CmdActuator 功能
 class CmdActuator:
     @staticmethod
     def initCollect(moduleDict):
-        print("[GlobalConfigs] Cmd actuator not implemented yet")
+        # TODO: 连接到 src/cli_handler.py 或新的命令处理系统
+        logger.info("CmdActuator.initCollect called (placeholder)")
 
 
 class GlobalConfigsConnector(QObject):

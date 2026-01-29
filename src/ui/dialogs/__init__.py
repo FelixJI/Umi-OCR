@@ -129,12 +129,7 @@ class OCREngineInstallDialog(QDialog):
         # 图标
         icon_label = QLabel()
         icon_label.setFixedSize(48, 48)
-        # TODO: 添加OCR图标
-        # icon_label.setPixmap(
-        #     QPixmap(":/icons/ocr.png").scaled(
-        #         48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation
-        #     )
-        # )
+        # 使用 Emoji 作为临时图标，直到有合适的图标文件
         icon_label.setText("🔍")
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setStyleSheet("font-size: 36px;")

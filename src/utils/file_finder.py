@@ -10,16 +10,28 @@ from typing import List
 
 from src.event_bus.pubsub_service import PubSubService  # 发布事件
 
-# from ..mission.mission_doc import MissionDOC, DocSuf  # TODO: mission 模块未实现
-# from ..mission.mission_ocr import ImageSuf  # TODO: mission 模块未实现
-from umi_log import logger
+from src.services.pdf.pdf_parser import PDFParser
+from src.utils.logger import logger
 
 
-# 临时占位符，直到 mission 模块实现
+# 适配 MissionDOC 功能
 class MissionDOC:
+    _parser = PDFParser()
+
     @staticmethod
     def getDocInfo(fp):
-        return {"error": "Mission module not implemented yet"}
+        try:
+            info = MissionDOC._parser.parse_pdf(fp)
+            if info:
+                return {
+                    "path": info.path,
+                    "page_count": info.page_count,
+                    "is_encrypted": info.is_encrypted,
+                    "error": None
+                }
+            return {"error": "Failed to parse PDF"}
+        except Exception as e:
+            return {"error": str(e)}
 
 
 DocSuf = [".pdf", ".doc", ".docx"]

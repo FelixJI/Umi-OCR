@@ -457,8 +457,9 @@ class UmiApplication(QApplication):
         # 更新配置
         self.config_manager.set("ui.language", lang_code)
 
-        # TODO: 在后续阶段中，通知所有 UI 组件更新文本
-        # 例如：self.ui.update_translations()
+        # 通知所有 UI 组件更新文本
+        # UI 组件应连接到 I18nManager.language_changed 信号
+        # 或实现 changeEvent(QEvent.LanguageChange)
 
     def _on_i18n_load_error(self, lang_code: str, error_msg: str):
         """

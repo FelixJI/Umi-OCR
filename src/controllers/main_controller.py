@@ -18,6 +18,10 @@ Date: 2025-01-26
 
 from typing import Optional
 
+import asyncio
+import tempfile
+from pathlib import Path
+
 from PySide6.QtCore import QObject, Signal
 
 from src.ui.main_window.main_window import MainWindow
@@ -26,7 +30,6 @@ from src.utils.config_manager import get_config_manager
 from src.utils.i18n import get_i18n_manager
 from src.platforms.win32.hotkey_manager import HotkeyManager
 from src.services.server.http_server import HTTPServer
-import asyncio
 
 
 class MainController(QObject):
@@ -69,6 +72,7 @@ class MainController(QObject):
 
         # 页面控制器字典（后续阶段填充）
         self.page_controllers = {}
+        self._current_page_index = 0
 
         # 初始化主窗口
         self._init_main_window()
@@ -263,6 +267,7 @@ class MainController(QObject):
             4: 任务管理
             5: 设置
         """
+        self._current_page_index = page_index
         page_names = [
             "screenshot_ocr",
             "batch_ocr",
@@ -392,30 +397,69 @@ class MainController(QObject):
                 if file_ext in [".png", ".jpg", ".jpeg", ".bmp", ".tiff"]:
                     self.show_status_message("正在打开批量 OCR 页面...")
                     self.handle_batch_ocr()
-                    # TODO: 将文件路径传递给批量 OCR 控制器
+                    # 将文件路径传递给批量 OCR 控制器
+                    if "batch_ocr" in self.page_controllers:
+                        self.page_controllers["batch_ocr"].add_files([file_path])
 
                 # 文档文件 -> 批量文档
                 elif file_ext in [".pdf", ".doc", ".docx"]:
                     self.show_status_message("正在打开批量文档页面...")
-                    # TODO: 切换到批量文档页面
-                    # self.main_window.switch_to_page(2)
-
-                else:
+                    # 切换到批量文档页面 (页面索引 2)
+                    if self.main_window:
+                        self.main_window.switch_to_page(2)
+                    
+                    # 将文件路径传递给批量文档控制器
+                    if "batch_doc" in self.page_controllers:
+                        # 假设 BatchDocController 有 process_pdfs 或类似方法来添加/处理文件
+                        # 根据 BatchDocController 代码，它有 process_pdfs(return id) 或 submit_pdf_batch
+                        # 这里我们需要先添加文件到列表还是直接处理？
+                        # BatchDocController 似乎没有 add_files 方法，只有 process_pdfs (UI调用的方法)
+                        # 我们调用 process_pdfs 直接提交任务，或者如果只是想添加到列表...
+                        # 查看 BatchDocController 代码，它没有显式的 pending list 像 BatchOCR
+                        # 它直接 submit_pdf_batch。
+                        # 所以我们直接调用 process_pdfs
+                        self.page_controllers["batch_doc"].process_pdfs([file_path])
                     self.show_status_message("不支持的文件类型")
 
     # 导出结果
     def handle_export(self):
         """处理导出命令"""
         self.logger.debug("执行导出命令")
-        from PySide6.QtWidgets import QMessageBox
+        from PySide6.QtWidgets import QMessageBox, QFileDialog
 
         if self.main_window:
-            # TODO: 根据当前活动页面确定要导出的内容
-            # 暂时只显示提示信息
+            # 根据当前活动页面确定要导出的内容
+            page_index = self._current_page_index
+            
+            # 批量 OCR (Index 1)
+            if page_index == 1:
+                if "batch_ocr" in self.page_controllers:
+                    # 提示用户：批量OCR通常在任务完成后自动导出，或使用界面上的导出按钮
+                    # 这里我们简单提示，因为不知道要导出哪个任务组
+                    QMessageBox.information(
+                        self.main_window,
+                        "导出提示",
+                        "请在批量OCR页面使用'导出结果'按钮来导出特定任务组的结果。",
+                        QMessageBox.StandardButton.Ok,
+                    )
+                return
+
+            # 批量文档 (Index 2)
+            elif page_index == 2:
+                if "batch_doc" in self.page_controllers:
+                    QMessageBox.information(
+                        self.main_window,
+                        "导出提示",
+                        "请在批量文档页面使用'导出'按钮来导出特定文档的结果。",
+                        QMessageBox.StandardButton.Ok,
+                    )
+                return
+
+            # 默认提示
             QMessageBox.information(
                 self.main_window,
                 "导出功能",
-                "导出功能尚未完全实现。请使用各个页面提供的导出按钮。",
+                "当前页面不支持全局导出，或请使用页面内的导出按钮。",
                 QMessageBox.StandardButton.Ok,
             )
 
@@ -424,14 +468,35 @@ class MainController(QObject):
         """处理剪贴板 OCR 命令"""
         self.logger.debug("执行剪贴板 OCR 命令")
         from PySide6.QtWidgets import QApplication, QMessageBox
+        from src.services.task.task_manager import TaskManager
 
         clipboard = QApplication.clipboard()
         image = clipboard.image()
 
         if not image.isNull():
             self.show_status_message("正在识别剪贴板图片...")
-            # TODO: 将图片传递给截图 OCR 控制器进行识别
-            self.handle_screenshot_ocr()
+            try:
+                # 保存临时文件
+                temp_dir = Path(tempfile.gettempdir()) / "umi_ocr"
+                temp_dir.mkdir(parents=True, exist_ok=True)
+                temp_file = temp_dir / f"clipboard_{id(image)}.png"
+                image.save(str(temp_file), "PNG")
+                
+                # 切换到截图OCR页面以显示结果
+                if self.main_window:
+                    self.main_window.switch_to_page(0)
+                
+                # 使用 TaskManager 提交
+                TaskManager.instance().submit_ocr_tasks(
+                    image_paths=[str(temp_file)],
+                    title="剪贴板OCR",
+                    priority=10
+                )
+                self.logger.info(f"剪贴板图片已提交识别: {temp_file}")
+            except Exception as e:
+                self.logger.error(f"剪贴板图片处理失败: {e}")
+                self.show_status_message(f"处理失败: {e}")
+
         else:
             text = clipboard.text()
             if text:

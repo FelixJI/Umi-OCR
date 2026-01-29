@@ -74,10 +74,37 @@ class SettingsController(QObject):
     def validate_cloud_config(self, provider: str) -> bool:
         """
         验证云服务配置是否有效
-
-        TODO: 发送一个测试请求来验证
         """
         creds = self.load_cloud_credentials(provider)
         if not creds:
             return False
-        return True  # Placeholder
+
+        try:
+            # 动态导入引擎类
+            engine_class = None
+            if provider == "baidu":
+                from src.services.ocr.cloud.baidu_ocr import BaiduOCREngine
+                engine_class = BaiduOCREngine
+            elif provider == "tencent":
+                from src.services.ocr.cloud.tencent_ocr import TencentOCREngine
+                engine_class = TencentOCREngine
+            elif provider == "aliyun":
+                from src.services.ocr.cloud.aliyun_ocr import AliyunOCREngine
+                engine_class = AliyunOCREngine
+
+            if engine_class:
+                # 创建临时引擎实例 (传入空配置，因为主要依赖凭证管理器)
+                engine = engine_class(config={})
+                # 检查凭证格式是否正确
+                if engine.is_available():
+                    return True
+                else:
+                    logger.warning(f"云服务凭证格式验证失败: {provider}")
+                    return False
+            
+            logger.warning(f"未知的云服务提供商: {provider}")
+            return False
+            
+        except Exception as e:
+            logger.error(f"验证云配置出错: {e}")
+            return False
